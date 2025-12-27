@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:laablume/screens/auth/login.dart';
+import 'package:laablume/screens/auth/register.dart';
 
 class Welcome3 extends StatelessWidget {
   const Welcome3({super.key});
@@ -54,7 +55,12 @@ class Welcome3 extends StatelessWidget {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Navigate to Register
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SignupScreen(),
+                    ),
+                  );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF12B8A6),
@@ -89,7 +95,7 @@ class Welcome3 extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => LoginScreen(),
-                      ), // TODO: Navigate to Login
+                      ), 
                     );
                   },
                   style: OutlinedButton.styleFrom(

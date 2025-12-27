@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:laablume/screens/auth/otp_screen.dart';
+import 'package:laablume/screens/auth/register.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -84,8 +85,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                    ),
+                      border: Border.all(color: const Color(0xFF12B8A6),),
+                     ),
+                    
                     child: Row(
                       children: [
                         DropdownButton<String>(
@@ -125,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const VerticalDivider(
                           width: 20,
                           thickness: 1,
-                          color: Color(0xFFE5E7EB),
+                          color:  Color(0xFF12B8A6),
                         ),
 
                         Expanded(
@@ -133,6 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             controller: phoneController,
                             keyboardType: TextInputType.phone,
                             decoration: InputDecoration(
+                           
                               hintText: '81290 89332',
                               hintStyle: GoogleFonts.poppins(
                                 color: const Color(0xFF9CA3AF),
@@ -205,22 +208,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Register text
                   Center(
-                    child: RichText(
-                      text: TextSpan(
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: const Color(0xFF6B7280),
-                        ),
-                        children: [
-                          const TextSpan(text: 'New to the app? '),
-                          TextSpan(
-                            text: 'Register now',
-                            style: GoogleFonts.poppins(
-                              color: const Color(0xFF12B8A6),
-                              fontWeight: FontWeight.w500,
-                            ),
+                    child: GestureDetector(onTap: ()=>Navigator.push(
+                      context,MaterialPageRoute(builder: (context) => SignupScreen(),)),
+                      child: RichText(
+                        text: TextSpan(
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: const Color(0xFF6B7280),
                           ),
-                        ],
+                          children: [
+                            const TextSpan(text: 'New to the app? '),
+                            TextSpan(
+                              text: 'Register now',
+                              style: GoogleFonts.poppins(
+                                color: const Color(0xFF12B8A6),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

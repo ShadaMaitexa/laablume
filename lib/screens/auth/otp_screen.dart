@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:laablume/screens/patient_card.dart';
 import 'package:pinput/pinput.dart';
 
 class OtpScreen extends StatelessWidget {
@@ -7,8 +8,7 @@ class OtpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenW = MediaQuery.of(context).size.width;
-    final screenH = MediaQuery.of(context).size.height;
+  
 
     final defaultPinTheme = PinTheme(
       width: 44,
@@ -29,7 +29,7 @@ class OtpScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFEAF8F6),
       body: Stack(
         children: [
-          // DNA Background (Figma-aligned)
+      
                   Positioned(
             top: MediaQuery.of(context).size.height * 0.3,
             left: MediaQuery.of(context).size.width * -0.2,
@@ -47,7 +47,7 @@ class OtpScreen extends StatelessWidget {
           SafeArea(
             child: Column(
               children: [
-                const SizedBox(height: 90),
+                const SizedBox(height: 190),
 
                 // Title (exact text)
                 Padding(
@@ -92,7 +92,12 @@ class OtpScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 46,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PersonalDataScreen(),
+                        ),
+                      );},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF12B8A6),
                         shape: RoundedRectangleBorder(
