@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:laablume/screens/common/splash_screen.dart';
-
+import 'package:laablume/screens/main_navigation_screen.dart';
 
 void main() {
   runApp(const LabLumeApp());
@@ -13,7 +12,7 @@ class LabLumeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      home: MainNavigationScreen(), // Bottom navigation with all screens
     );
   }
 }
