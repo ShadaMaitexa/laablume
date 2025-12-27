@@ -13,6 +13,56 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   String selectedCountryCode = '+91';
   final TextEditingController phoneController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    phoneController.dispose();
+    super.dispose();
+  }
+
+  void _validateAndProceed() {
+    if (phoneController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your phone number');
+      return;
+    }
+
+    if (phoneController.text.trim().length < 10) {
+      _showSnackBar('Please enter a valid phone number');
+      return;
+    }
+
+    // Set loading state
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Simulate API call for sending OTP
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        // Navigate to OTP screen
+        Navigator.push(
+          context, 
+          MaterialPageRoute(
+            builder: (context) => const OtpScreen(),
+          ),
+        );
+      }
+    });
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: const Color(0xFFEAF8F6),
       body: Stack(
         children: [
-          // DNA Background - Back to original style but properly visible
+          // DNA Background
           Positioned(
             top: MediaQuery.of(context).size.height * 0.3,
             left: MediaQuery.of(context).size.width * -0.2,
@@ -135,8 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             controller: phoneController,
                             keyboardType: TextInputType.phone,
                             decoration: InputDecoration(
-                           
-                              hintText: '81290 89332',
+                              hintText: 'Enter your phone number',
                               hintStyle: GoogleFonts.poppins(
                                 color: const Color(0xFF9CA3AF),
                               ),
@@ -155,9 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     height: 46,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder:  (context) => OtpScreen(),));
-                      },
+                      onPressed: _isLoading ? null : _validateAndProceed,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF12B8A6),
                         shape: RoundedRectangleBorder(
@@ -165,13 +212,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         elevation: 0,
                       ),
-                      child: Text(
-                        'Login',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.white,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Send OTP',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
 
@@ -198,9 +254,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _socialImage('assets/google.png'),
+                      GestureDetector(
+                        onTap: () {
+                          // Handle Google sign in
+                          _showSnackBar('Google sign in coming soon!');
+                        },
+                        child: _socialImage('assets/google.png'),
+                      ),
                       const SizedBox(width: 16),
-                      _socialImage('assets/apple.png'),
+                      GestureDetector(
+                        onTap: () {
+                          // Handle Apple sign in
+                          _showSnackBar('Apple sign in coming soon!');
+                        },
+                        child: _socialImage('assets/apple.png'),
+                      ),
                     ],
                   ),
 
@@ -208,8 +276,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Register text
                   Center(
-                    child: GestureDetector(onTap: ()=>Navigator.push(
-                      context,MaterialPageRoute(builder: (context) => SignupScreen(),)),
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SignupScreen(),
+                        ),
+                      ),
                       child: RichText(
                         text: TextSpan(
                           style: GoogleFonts.poppins(
@@ -230,6 +303,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 30),
                 ],
               ),
             ),

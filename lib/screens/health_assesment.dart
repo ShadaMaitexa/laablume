@@ -13,6 +13,64 @@ class HealthAssessmentScreen extends StatefulWidget {
 class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
   String selectedBlood = 'B';
   String selectedRh = '+';
+  
+  // Text editing controllers for input fields
+  final TextEditingController allergiesController = TextEditingController();
+  final TextEditingController chronicConditionsController = TextEditingController();
+  final TextEditingController heightController = TextEditingController();
+  final TextEditingController weightController = TextEditingController();
+  final TextEditingController systolicBPController = TextEditingController();
+  final TextEditingController diastolicBPController = TextEditingController();
+
+  @override
+  void dispose() {
+    allergiesController.dispose();
+    chronicConditionsController.dispose();
+    heightController.dispose();
+    weightController.dispose();
+    systolicBPController.dispose();
+    diastolicBPController.dispose();
+    super.dispose();
+  }
+
+  void _validateAndProceed() {
+    if (heightController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your height');
+      return;
+    }
+
+    if (weightController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your weight');
+      return;
+    }
+
+    if (systolicBPController.text.trim().isEmpty) {
+      _showSnackBar('Please enter systolic blood pressure');
+      return;
+    }
+
+    if (diastolicBPController.text.trim().isEmpty) {
+      _showSnackBar('Please enter diastolic blood pressure');
+      return;
+    }
+
+    // All validations passed, proceed to next screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const LifestyleInformationScreen(),
+      ),
+    );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,18 +186,39 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
 
               const SizedBox(height: 20),
 
-              _ovalField('Allergies', 'Peanuts'),
-              _ovalField('Chronic conditions', 'Migraines'),
+              // Allergies Input Field
+              _buildInputField(
+                label: 'Allergies',
+                controller: allergiesController,
+                hint: 'Enter any allergies (e.g., Peanuts, Pollen)',
+              ),
+
+              // Chronic Conditions Input Field
+              _buildInputField(
+                label: 'Chronic conditions',
+                controller: chronicConditionsController,
+                hint: 'Enter any chronic conditions (e.g., Migraines, Diabetes)',
+              ),
 
               Row(
                 children: [
                   Expanded(
-                      child:
-                          _ovalField('Your height (cm)', '172 cm')),
+                    child: _buildInputField(
+                      label: 'Your height (cm)',
+                      controller: heightController,
+                      hint: '172',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
-                      child:
-                          _ovalField('Your weight (kg)', '85 kg')),
+                    child: _buildInputField(
+                      label: 'Your weight (kg)',
+                      controller: weightController,
+                      hint: '85',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
                 ],
               ),
 
@@ -156,9 +235,23 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
 
               Row(
                 children: [
-                  Expanded(child: _ovalBox('120')),
+                  Expanded(
+                    child: _buildInputField(
+                      label: 'Systolic',
+                      controller: systolicBPController,
+                      hint: '120',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: _ovalBox('80')),
+                  Expanded(
+                    child: _buildInputField(
+                      label: 'Diastolic',
+                      controller: diastolicBPController,
+                      hint: '80',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
                 ],
               ),
 
@@ -169,7 +262,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => const LifestyleInformationScreen(),));},
+                  onPressed: _validateAndProceed,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF12B8A6),
                     shape: const StadiumBorder(),
@@ -194,64 +287,13 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
     );
   }
 
-  // ---------------- BLOOD CARD ----------------
-  Widget _bloodCard(String label, String roman) {
-    final isSelected = selectedBlood == label;
-
-    return Container(
-      width: 70,
-      height: 70,
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF12B8A6) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.water_drop_outlined,
-            color: isSelected
-                ? Colors.white
-                : const Color(0xFF12B8A6),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '$label ($roman)',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: isSelected ? Colors.white : Colors.black,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ---------------- RH PILL ----------------
-  Widget _rhPill(String rh) {
-    final isSelected = selectedRh == rh;
-
-    return Container(
-      height: 40,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF12B8A6) : Colors.white,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Text(
-        'Rh $rh',
-        style: GoogleFonts.poppins(
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          color: isSelected ? Colors.white : Colors.black,
-        ),
-      ),
-    );
-  }
-
-  // ---------------- OVAL FIELD ----------------
-  Widget _ovalField(String label, String value) {
+  // Generic Input Field Widget
+  Widget _buildInputField({
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+    TextInputType? keyboardType,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
@@ -271,10 +313,19 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
+            child: TextFormField(
+              controller: controller,
+              keyboardType: keyboardType,
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: GoogleFonts.poppins(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 13,
+                ),
+                border: InputBorder.none,
+              ),
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 color: Colors.black,
@@ -286,20 +337,77 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
     );
   }
 
-  // ---------------- BP BOX ----------------
-  Widget _ovalBox(String value) {
-    return Container(
-      height: 48,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
+  // ---------------- BLOOD CARD ----------------
+  Widget _bloodCard(String label, String roman) {
+    final isSelected = selectedBlood == label;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedBlood = label;
+        });
+      },
+      child: Container(
+        width: 70,
+        height: 70,
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF12B8A6) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: isSelected 
+              ? null 
+              : Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.water_drop_outlined,
+              color: isSelected
+                  ? Colors.white
+                  : const Color(0xFF12B8A6),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '$label ($roman)',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: isSelected ? Colors.white : Colors.black,
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Text(
-        value,
-        style: GoogleFonts.poppins(
-          fontSize: 13,
-          color: Colors.black,
+    );
+  }
+
+  // ---------------- RH PILL ----------------
+  Widget _rhPill(String rh) {
+    final isSelected = selectedRh == rh;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedRh = rh;
+        });
+      },
+      child: Container(
+        height: 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF12B8A6) : Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: isSelected 
+              ? null 
+              : Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: Text(
+          'Rh $rh',
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: isSelected ? Colors.white : Colors.black,
+          ),
         ),
       ),
     );

@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class LifestyleInformationScreen extends StatelessWidget {
+class LifestyleInformationScreen extends StatefulWidget {
   const LifestyleInformationScreen({super.key});
+
+  @override
+  State<LifestyleInformationScreen> createState() => _LifestyleInformationScreenState();
+}
+
+class _LifestyleInformationScreenState extends State<LifestyleInformationScreen> {
+  // Selected values for lifestyle choices
+  int _selectedSmokingIndex = 1; // Default: No
+  int _selectedAlcoholIndex = 2; // Default: Occasionally
+  int _selectedActivityIndex = 1; // Default: Moderate
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +25,10 @@ class LifestyleInformationScreen extends StatelessWidget {
             const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              // Handle skip action
+              _showSnackBar('Lifestyle information skipped');
+            },
             child: Text(
               'Skip',
               style: GoogleFonts.poppins(
@@ -109,7 +122,12 @@ class LifestyleInformationScreen extends StatelessWidget {
             _sectionTitle('Smoking'),
             _pillRow(
               const ['Yes', 'No', 'Occasionally'],
-              selectedIndex: 1, // No selected
+              selectedIndex: _selectedSmokingIndex,
+              onChanged: (index) {
+                setState(() {
+                  _selectedSmokingIndex = index;
+                });
+              },
             ),
 
             const SizedBox(height: 20),
@@ -118,7 +136,12 @@ class LifestyleInformationScreen extends StatelessWidget {
             _sectionTitle('Alcohol'),
             _pillRow(
               const ['Yes', 'No', 'Occasionally'],
-              selectedIndex: 2, // Occasionally selected
+              selectedIndex: _selectedAlcoholIndex,
+              onChanged: (index) {
+                setState(() {
+                  _selectedAlcoholIndex = index;
+                });
+              },
             ),
 
             const SizedBox(height: 20),
@@ -127,15 +150,30 @@ class LifestyleInformationScreen extends StatelessWidget {
             _sectionTitle('Activity Level'),
             _activityTile(
               'Light (sports 1–3 days a week)',
-              selected: false,
+              selected: _selectedActivityIndex == 0,
+              onTap: () {
+                setState(() {
+                  _selectedActivityIndex = 0;
+                });
+              },
             ),
             _activityTile(
               'Moderate (sports 3–5 days a week)',
-              selected: true,
+              selected: _selectedActivityIndex == 1,
+              onTap: () {
+                setState(() {
+                  _selectedActivityIndex = 1;
+                });
+              },
             ),
             _activityTile(
               'Very Active (sports 6–7 days a week)',
-              selected: false,
+              selected: _selectedActivityIndex == 2,
+              onTap: () {
+                setState(() {
+                  _selectedActivityIndex = 2;
+                });
+              },
             ),
 
             const SizedBox(height: 24),
@@ -145,14 +183,17 @@ class LifestyleInformationScreen extends StatelessWidget {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // Handle next action
+                  _showSnackBar('Lifestyle information saved!');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF12B8A6),
                   shape: const StadiumBorder(),
                   elevation: 0,
                 ),
                 child: Text(
-                  'Next',
+                  'Save Information',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -169,6 +210,15 @@ class LifestyleInformationScreen extends StatelessWidget {
     );
   }
 
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
   // ---------- SECTION TITLE ----------
   Widget _sectionTitle(String text) {
     return Text(
@@ -181,29 +231,38 @@ class LifestyleInformationScreen extends StatelessWidget {
   }
 
   // ---------- PILL ROW ----------
-  Widget _pillRow(List<String> labels, {required int selectedIndex}) {
+  Widget _pillRow(List<String> labels, {
+    required int selectedIndex,
+    required Function(int) onChanged,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: Row(
         children: List.generate(labels.length, (index) {
           final isSelected = index == selectedIndex;
           return Expanded(
-            child: Container(
-              margin: EdgeInsets.only(right: index == labels.length - 1 ? 0 : 8),
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFF12B8A6)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Text(
-                labels[index],
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected ? Colors.white : Colors.black,
+            child: GestureDetector(
+              onTap: () => onChanged(index),
+              child: Container(
+                margin: EdgeInsets.only(right: index == labels.length - 1 ? 0 : 8),
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFF12B8A6)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  border: isSelected 
+                      ? null 
+                      : Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Text(
+                  labels[index],
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isSelected ? Colors.white : Colors.black,
+                  ),
                 ),
               ),
             ),
@@ -214,21 +273,30 @@ class LifestyleInformationScreen extends StatelessWidget {
   }
 
   // ---------- ACTIVITY TILE ----------
-  Widget _activityTile(String text, {required bool selected}) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: selected ? const Color(0xFF12B8A6) : Colors.white,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.poppins(
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          color: selected ? Colors.white : Colors.black,
+  Widget _activityTile(String text, {
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF12B8A6) : Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: selected 
+              ? null 
+              : Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: selected ? Colors.white : Colors.black,
+          ),
         ),
       ),
     );

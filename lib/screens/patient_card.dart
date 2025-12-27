@@ -17,6 +17,23 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
   int selectedMonth = 1;
   int selectedYear = 1998;
 
+  // Text editing controllers for input fields
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    addressController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
@@ -109,41 +126,59 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
 
                 const SizedBox(height: 24),
 
-                ovalField(label: 'First name', hint: 'Enter your first name'),
-                ovalField(label: 'Last name', hint: 'Enter your last name'),
-
-                ovalField(
-                  label: 'Date of birth',
-                  hint: dob,
-                  onTap: _showDobDialog,
+                // First Name Input Field
+                _buildInputField(
+                  label: 'First name',
+                  controller: firstNameController,
+                  hint: 'Enter your first name',
                 ),
 
-                ovalField(
+                // Last Name Input Field
+                _buildInputField(
+                  label: 'Last name',
+                  controller: lastNameController,
+                  hint: 'Enter your last name',
+                ),
+
+                // Date of Birth Field (with dialog)
+                _buildDateOfBirthField(),
+
+                // Phone Number Input Field
+                _buildInputField(
                   label: 'Phone number',
+                  controller: phoneController,
                   hint: '800 000 0000',
                   prefix: const Text('🇮🇳 +91'),
+                  keyboardType: TextInputType.phone,
                 ),
 
-                ovalField(label: 'Email', hint: 'example@email.com'),
-
-                ovalField(
-                  label: 'City',
-                  hint: city,
-                  onTap: _showCityBottomSheet,
+                // Email Input Field
+                _buildInputField(
+                  label: 'Email',
+                  controller: emailController,
+                  hint: 'example@email.com',
+                  keyboardType: TextInputType.emailAddress,
                 ),
 
-                ovalField(
+                // City Field (with bottom sheet)
+                _buildCityField(),
+
+                // Address Input Field
+                _buildInputField(
                   label: 'Address',
+                  controller: addressController,
                   hint: 'Street name, building, apartment',
+                  maxLines: 3,
                 ),
 
                 const SizedBox(height: 24),
 
+                // Next Button
                 SizedBox(
                   width: double.infinity,
                   height: 46,
                   child: ElevatedButton(
-                    onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => const EmergencyContactScreen(),));},
+                    onPressed: _validateAndProceed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF12B8A6),
                       shape: const StadiumBorder(),
@@ -169,16 +204,15 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     );
   }
 
-  // ---------------- OVAL FIELD ----------------
-  Widget ovalField({
+  // Generic Input Field Widget
+  Widget _buildInputField({
     required String label,
+    required TextEditingController controller,
     required String hint,
     Widget? prefix,
-    VoidCallback? onTap,
+    TextInputType? keyboardType,
+    int maxLines = 1,
   }) {
-    final isPlaceholder =
-        hint.contains('Enter') || hint.contains('DD');
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
@@ -192,8 +226,60 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
             ),
           ),
           const SizedBox(height: 6),
+          Container(
+            height: maxLines > 1 ? null : 48,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: TextFormField(
+              controller: controller,
+              keyboardType: keyboardType,
+              maxLines: maxLines,
+              decoration: InputDecoration(
+                prefix: prefix != null 
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: prefix,
+                      )
+                    : null,
+                hintText: hint,
+                hintStyle: GoogleFonts.poppins(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 13,
+                ),
+                border: InputBorder.none,
+              ),
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Date of Birth Field with Dialog
+  Widget _buildDateOfBirthField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Date of birth',
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: const Color(0xFF6B7280),
+            ),
+          ),
+          const SizedBox(height: 6),
           GestureDetector(
-            onTap: onTap,
+            onTap: _showDobDialog,
             child: Container(
               height: 48,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -204,27 +290,127 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
               ),
               child: Row(
                 children: [
-                  if (prefix != null) ...[
-                    prefix,
-                    const SizedBox(width: 8),
-                  ],
                   Expanded(
                     child: Text(
-                      hint,
+                      dob,
                       style: GoogleFonts.poppins(
                         fontSize: 13,
-                        color:
-                            isPlaceholder ? const Color(0xFF9CA3AF) : Colors.black,
+                        color: dob.contains('DD') ? const Color(0xFF9CA3AF) : Colors.black,
                       ),
                     ),
                   ),
-                  if (onTap != null)
-                    const Icon(Icons.keyboard_arrow_down),
+                  const Icon(Icons.keyboard_arrow_down),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // City Field with Bottom Sheet
+  Widget _buildCityField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'City',
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: const Color(0xFF6B7280),
+            ),
+          ),
+          const SizedBox(height: 6),
+          GestureDetector(
+            onTap: _showCityBottomSheet,
+            child: Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      city,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: city.contains('Enter') ? const Color(0xFF9CA3AF) : Colors.black,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.keyboard_arrow_down),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Validate form and proceed
+  void _validateAndProceed() {
+    if (firstNameController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your first name');
+      return;
+    }
+    
+    if (lastNameController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your last name');
+      return;
+    }
+
+    if (phoneController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your phone number');
+      return;
+    }
+
+    if (emailController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your email');
+      return;
+    }
+
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(emailController.text.trim())) {
+      _showSnackBar('Please enter a valid email address');
+      return;
+    }
+
+    if (addressController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your address');
+      return;
+    }
+
+    if (dob.contains('DD')) {
+      _showSnackBar('Please select your date of birth');
+      return;
+    }
+
+    if (city.contains('Enter')) {
+      _showSnackBar('Please select your city');
+      return;
+    }
+
+    // All validations passed, proceed to next screen
+    Navigator.push(
+      context, 
+      MaterialPageRoute(
+        builder: (context) => const EmergencyContactScreen(),
+      ),
+    );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
       ),
     );
   }
