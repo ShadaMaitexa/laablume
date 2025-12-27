@@ -11,7 +11,6 @@ class EmergencyContactScreen extends StatefulWidget {
 
 class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
   String relationship = 'Select relationship';
-  String city = 'Enter or choose your city';
 
   // Text editing controllers for input fields
   final TextEditingController firstNameController = TextEditingController();
@@ -19,6 +18,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
 
   @override
   void dispose() {
@@ -27,6 +27,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
     phoneController.dispose();
     emailController.dispose();
     addressController.dispose();
+    cityController.dispose();
     super.dispose();
   }
 
@@ -225,8 +226,12 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
               keyboardType: TextInputType.emailAddress,
             ),
 
-            // City Field (with bottom sheet)
-            _buildCityField(),
+            // City Input Field (now a simple textfield)
+            _buildInputField(
+              label: 'City',
+              controller: cityController,
+              hint: 'Enter city name',
+            ),
 
             // Address Input Field
             _buildInputField(
@@ -374,52 +379,6 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
     );
   }
 
-  // City Field with Bottom Sheet
-  Widget _buildCityField() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'City',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: const Color(0xFF6B7280),
-            ),
-          ),
-          const SizedBox(height: 6),
-          GestureDetector(
-            onTap: _showCityBottomSheet,
-            child: Container(
-              height: 48,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      city,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: city.contains('Enter') ? const Color(0xFF9CA3AF) : Colors.black,
-                      ),
-                    ),
-                  ),
-                  const Icon(Icons.keyboard_arrow_down),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   // ---------------- RELATIONSHIP BOTTOM SHEET ----------------
   void _showRelationshipSheet() {
     showModalBottomSheet(
@@ -470,69 +429,6 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
           : null,
       onTap: () {
         setState(() => relationship = value);
-      },
-    );
-  }
-
-  // ---------------- CITY BOTTOM SHEET ----------------
-  void _showCityBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 16,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              TextField(
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.search),
-                  hintText: 'Search city',
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              cityTile('Boston, MA'),
-              cityTile('New York, NY'),
-              cityTile('Los Angeles, CA'),
-              cityTile('Chicago, IL'),
-              cityTile('Houston, TX'),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget cityTile(String name) {
-    return ListTile(
-      title: Text(name, style: GoogleFonts.poppins(fontSize: 14)),
-      onTap: () {
-        setState(() => city = name);
-        Navigator.pop(context);
       },
     );
   }

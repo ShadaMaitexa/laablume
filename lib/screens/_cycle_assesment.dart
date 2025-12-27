@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:laablume/screens/patient_homescreen.dart';
 
 class LifestyleInformationScreen extends StatefulWidget {
   const LifestyleInformationScreen({super.key});
 
   @override
-  State<LifestyleInformationScreen> createState() => _LifestyleInformationScreenState();
+  State<LifestyleInformationScreen> createState() =>
+      _LifestyleInformationScreenState();
 }
 
-class _LifestyleInformationScreenState extends State<LifestyleInformationScreen> {
+class _LifestyleInformationScreenState
+    extends State<LifestyleInformationScreen> {
   // Selected values for lifestyle choices
   int _selectedSmokingIndex = 1; // Default: No
   int _selectedAlcoholIndex = 2; // Default: Occasionally
@@ -21,8 +24,11 @@ class _LifestyleInformationScreenState extends State<LifestyleInformationScreen>
       appBar: AppBar(
         elevation: 0,
         backgroundColor: const Color(0xFFEFF7F6),
-        leading:
-            const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
+        leading: const Icon(
+          Icons.arrow_back_ios,
+          size: 18,
+          color: Colors.black,
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -48,49 +54,57 @@ class _LifestyleInformationScreenState extends State<LifestyleInformationScreen>
 
             // Green tab indicator
             Center(
-              child: Row(mainAxisAlignment: 
-                    MainAxisAlignment.center  ,
-                  children: [
-                    Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF12B8A6),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
                       width: 32,
                       height: 4,
                       decoration: BoxDecoration(
                         color: const Color(0xFF12B8A6),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                    ),  Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        width: 32,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF12B8A6),
-                          borderRadius: BorderRadius.circular(4),
-                        ),),
-                    ),  Container(
+                    ),
+                  ),
+                  Container(
+                    width: 32,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF12B8A6),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
                       width: 32,
                       height: 4,
                       decoration: BoxDecoration(
                         color: const Color(0xFF12B8A6),
                         borderRadius: BorderRadius.circular(4),
-                      ),),  Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                        width: 32,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF12B8A6),
-                          borderRadius: BorderRadius.circular(4),
-                        ),),
-                      ),  Container(
-                      width: 32,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 185, 231, 224),
-                        borderRadius: BorderRadius.circular(4),
-                      ),),
-                  ],
-                ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 32,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 185, 231, 224),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 16),
@@ -186,6 +200,12 @@ class _LifestyleInformationScreenState extends State<LifestyleInformationScreen>
                 onPressed: () {
                   // Handle next action
                   _showSnackBar('Lifestyle information saved!');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PatientHomeScreen(),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF12B8A6),
@@ -212,10 +232,7 @@ class _LifestyleInformationScreenState extends State<LifestyleInformationScreen>
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
     );
   }
 
@@ -223,15 +240,13 @@ class _LifestyleInformationScreenState extends State<LifestyleInformationScreen>
   Widget _sectionTitle(String text) {
     return Text(
       text,
-      style: GoogleFonts.poppins(
-        fontSize: 12,
-        color: const Color(0xFF6B7280),
-      ),
+      style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280)),
     );
   }
 
   // ---------- PILL ROW ----------
-  Widget _pillRow(List<String> labels, {
+  Widget _pillRow(
+    List<String> labels, {
     required int selectedIndex,
     required Function(int) onChanged,
   }) {
@@ -244,16 +259,16 @@ class _LifestyleInformationScreenState extends State<LifestyleInformationScreen>
             child: GestureDetector(
               onTap: () => onChanged(index),
               child: Container(
-                margin: EdgeInsets.only(right: index == labels.length - 1 ? 0 : 8),
+                margin: EdgeInsets.only(
+                  right: index == labels.length - 1 ? 0 : 8,
+                ),
                 height: 40,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF12B8A6)
-                      : Colors.white,
+                  color: isSelected ? const Color(0xFF12B8A6) : Colors.white,
                   borderRadius: BorderRadius.circular(30),
-                  border: isSelected 
-                      ? null 
+                  border: isSelected
+                      ? null
                       : Border.all(color: const Color(0xFFE5E7EB)),
                 ),
                 child: Text(
@@ -273,7 +288,8 @@ class _LifestyleInformationScreenState extends State<LifestyleInformationScreen>
   }
 
   // ---------- ACTIVITY TILE ----------
-  Widget _activityTile(String text, {
+  Widget _activityTile(
+    String text, {
     required bool selected,
     required VoidCallback onTap,
   }) {
@@ -286,9 +302,7 @@ class _LifestyleInformationScreenState extends State<LifestyleInformationScreen>
         decoration: BoxDecoration(
           color: selected ? const Color(0xFF12B8A6) : Colors.white,
           borderRadius: BorderRadius.circular(30),
-          border: selected 
-              ? null 
-              : Border.all(color: const Color(0xFFE5E7EB)),
+          border: selected ? null : Border.all(color: const Color(0xFFE5E7EB)),
         ),
         child: Text(
           text,
