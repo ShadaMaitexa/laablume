@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:laablume/screens/patient_homescreen.dart';
+import 'package:laablume/screens/main_navigation_screen.dart';
 
 class LifestyleInformationScreen extends StatefulWidget {
   const LifestyleInformationScreen({super.key});
@@ -203,7 +203,7 @@ class _LifestyleInformationScreenState
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PatientHomeScreen(),
+                      builder: (context) => const MainNavigationScreen(),
                     ),
                   );
                 },

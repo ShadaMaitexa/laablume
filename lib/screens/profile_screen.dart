@@ -45,90 +45,92 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               final user = snapshot.data!;
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 12),
-
-                  // -------- Header --------
-                  Text(
-                    'Profile',
-                    style: GoogleFonts.poppins(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 12),
+              
+                    // -------- Header --------
+                    Text(
+                      'Profile',
+                      style: GoogleFonts.poppins(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // -------- Profile Card --------
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: Colors.grey.shade300,
-                          backgroundImage: user.avatarUrl != null
-                              ? NetworkImage(user.avatarUrl!)
-                              : null,
-                          child: user.avatarUrl == null
-                              ? const Icon(Icons.person)
-                              : null,
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              user.name,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+              
+                    const SizedBox(height: 20),
+              
+                    // -------- Profile Card --------
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 24,
+                            backgroundColor: Colors.grey.shade300,
+                            backgroundImage: user.avatarUrl != null
+                                ? NetworkImage(user.avatarUrl!)
+                                : null,
+                            child: user.avatarUrl == null
+                                ? const Icon(Icons.person)
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                user.name,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${user.age} yrs, ${user.weightKg} kg',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: const Color(0xFF6B7280),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${user.age} yrs, ${user.weightKg} kg',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: const Color(0xFF6B7280),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        const Icon(Icons.chevron_right),
-                      ],
+                            ],
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.chevron_right),
+                        ],
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // -------- Menu --------
-                  _menuItem(Icons.favorite_border,
-                      'Favorite doctors'),
-                  _menuItem(Icons.warning_amber_outlined,
-                      'Emergency contact'),
-                  _menuItem(Icons.assignment_outlined,
-                      'Insurance information'),
-                  _menuItem(Icons.notifications_none,
-                      'Notification settings'),
-                  _menuItem(Icons.credit_card,
-                      'Payment settings'),
-                  _menuItem(Icons.email_outlined,
-                      'Change email'),
-                  _menuItem(Icons.lock_outline,
-                      'Security settings'),
-                  _menuItem(Icons.logout, 'Log out'),
-
-                  const SizedBox(height: 100),
-                ],
+              
+                    const SizedBox(height: 20),
+              
+                    // -------- Menu --------
+                    _menuItem(Icons.favorite_border,
+                        'Favorite doctors'),
+                    _menuItem(Icons.warning_amber_outlined,
+                        'Emergency contact'),
+                    _menuItem(Icons.assignment_outlined,
+                        'Insurance information'),
+                    _menuItem(Icons.notifications_none,
+                        'Notification settings'),
+                    _menuItem(Icons.credit_card,
+                        'Payment settings'),
+                    _menuItem(Icons.email_outlined,
+                        'Change email'),
+                    _menuItem(Icons.lock_outline,
+                        'Security settings'),
+                    _menuItem(Icons.logout, 'Log out'),
+              
+                    const SizedBox(height: 120), // Extra padding for bottom nav
+                  ],
+                ),
               );
             },
           ),

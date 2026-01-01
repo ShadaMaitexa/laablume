@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'doctor_subsections.dart';
 
 class DoctorWebDashboard extends StatefulWidget {
   const DoctorWebDashboard({super.key});
@@ -32,33 +33,64 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
               children: [
                 _buildProfessionalHeader(),
                 Expanded(
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildGreetingSection(),
-                        const SizedBox(height: 32),
-                        _buildStatsSummary(),
-                        const SizedBox(height: 40),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(flex: 3, child: _buildAppointmentQueue()),
-                            const SizedBox(width: 32),
-                            Expanded(flex: 2, child: _buildPatientPerformance()),
-                          ],
-                        ),
-                        const SizedBox(height: 40),
-                        _buildUpcomingConsultations(),
-                      ],
-                    ),
+                  child: IndexedStack(
+                    index: _selectedIndex,
+                    children: [
+                      _buildDashboardContent(), // Index 0
+                      const DoctorAppointmentsScreen(), // Index 1
+                      const DoctorPatientsScreen(), // Index 2
+                      const DoctorReportsScreen(), // Index 3
+                      const DoctorConsultationsScreen(), // Index 4
+                      const DoctorSettingsScreen(), // Index 5
+                      const DoctorHelpScreen(), // Index 6
+                    ],
                   ),
                 ),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderScreen(String title) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.construction_rounded, size: 80, color: _primaryColor.withOpacity(0.3)),
+          const SizedBox(height: 20),
+          Text(
+            '$title Screen is under development',
+            style: GoogleFonts.poppins(fontSize: 18, color: const Color(0xFF6B7280)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardContent() {
+    return SingleChildScrollView(
+      controller: _scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildGreetingSection(),
+          const SizedBox(height: 32),
+          _buildStatsSummary(),
+          const SizedBox(height: 40),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 3, child: _buildAppointmentQueue()),
+              const SizedBox(width: 32),
+              Expanded(flex: 2, child: _buildPatientPerformance()),
+            ],
+          ),
+          const SizedBox(height: 40),
+          _buildUpcomingConsultations(),
         ],
       ),
     );
@@ -423,7 +455,7 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
 
   Widget _appointmentItem(String name, String type, String time, String status, Color statusColor) {
     return Padding(
-      padding: const EdgeInsets.bottom(24),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Row(
         children: [
           Container(

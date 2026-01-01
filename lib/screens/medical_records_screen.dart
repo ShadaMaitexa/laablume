@@ -83,6 +83,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 100), // Space for floating bottom nav
             ],
           ),
         ),

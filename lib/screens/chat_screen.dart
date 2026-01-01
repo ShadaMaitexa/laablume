@@ -132,6 +132,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   },
                 ),
               ),
+              const SizedBox(height: 100), // Space for floating bottom nav
             ],
           ),
         ),

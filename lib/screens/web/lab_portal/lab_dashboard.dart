@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'lab_subsections.dart';
 
 class LabWebDashboard extends StatefulWidget {
   const LabWebDashboard({super.key});
@@ -27,29 +28,59 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
               children: [
                 _buildLabHeader(),
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(40),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildWelcomeSection(),
-                        const SizedBox(height: 40),
-                        _buildLabStats(),
-                        const SizedBox(height: 40),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(flex: 3, child: _buildRecentTestsTable()),
-                            const SizedBox(width: 30),
-                            Expanded(flex: 1, child: _buildLabCapacity()),
-                          ],
-                        ),
-                      ],
-                    ),
+                  child: IndexedStack(
+                    index: _selectedIndex,
+                    children: [
+                      _buildDashboardContent(), // Index 0: Lab Analytics
+                      const LabBookingsScreen(), // Index 1: Manage Tests
+                      const LabResultsApprovalScreen(), // Index 2: Results Approval
+                      const LabInventoryScreen(), // Index 3: Equipment & Supplies
+                      const LabTechniciansScreen(), // Index 4: Technicians
+                      const LabSettingsScreen(), // Index 5: Portal Settings
+                    ],
                   ),
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderScreen(String title) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.biotech_rounded, size: 80, color: _primaryColor.withOpacity(0.3)),
+          const SizedBox(height: 20),
+          Text(
+            '$title Screen is under development',
+            style: GoogleFonts.poppins(fontSize: 18, color: const Color(0xFF6B7280)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildWelcomeSection(),
+          const SizedBox(height: 40),
+          _buildLabStats(),
+          const SizedBox(height: 40),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 3, child: _buildRecentTestsTable()),
+              const SizedBox(width: 30),
+              Expanded(flex: 1, child: _buildLabCapacity()),
+            ],
           ),
         ],
       ),

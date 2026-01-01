@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'screens/main_navigation_screen.dart';
 import 'screens/web/doctor_portal/doctor_dashboard.dart';
 import 'screens/web/lab_portal/lab_dashboard.dart';
+import 'screens/web/common/role_login_screen.dart';
+import 'screens/common/splash_screen.dart';
 
 void main() {
   runApp(const LabLumeApp());
@@ -34,7 +36,7 @@ class PlatformSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!kIsWeb) {
-      return const MainNavigationScreen();
+      return const SplashScreen();
     }
 
     return Scaffold(
@@ -106,7 +108,7 @@ class PlatformSelector extends StatelessWidget {
                         details: 'Self-care diagnostic tools, report analysis, and doctor booking.',
                         icon: Icons.person_search_rounded,
                         color: const Color(0xFF12B8A6),
-                        target: const MainNavigationScreen(),
+                        target: const SplashScreen(),
                       ),
                       const SizedBox(width: 32),
                       _premiumPortalCard(
@@ -116,7 +118,7 @@ class PlatformSelector extends StatelessWidget {
                         details: 'Electronic health records, AI-driven insights, and telehealth.',
                         icon: Icons.medical_information_rounded,
                         color: const Color(0xFF3B82F6),
-                        target: const DoctorWebDashboard(),
+                        target: const RoleLoginScreen(role: 'Doctor'),
                       ),
                       const SizedBox(width: 32),
                       _premiumPortalCard(
@@ -126,7 +128,7 @@ class PlatformSelector extends StatelessWidget {
                         details: 'High-throughput tracking, sample analysis, and validation.',
                         icon: Icons.biotech_rounded,
                         color: const Color(0xFFF59E0B),
-                        target: const LabWebDashboard(),
+                        target: const RoleLoginScreen(role: 'Lab'),
                       ),
                     ],
                   ),
