@@ -36,20 +36,20 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF7F6),
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFEFF7F6),
+        backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Book Consultation',
+          'Book Appointment',
           style: GoogleFonts.poppins(
             fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF111827),
           ),
         ),
         centerTitle: true,
@@ -57,40 +57,36 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Doctor Summary Card
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
+                        color: const Color(0xFF111827).withOpacity(0.04),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
                   child: Row(
                     children: [
                       Container(
-                        width: 60,
-                        height: 60,
+                        width: 70,
+                        height: 70,
                         decoration: BoxDecoration(
                           color: const Color(0xFF12B8A6).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(18),
                         ),
-                        child: const Icon(
-                          Icons.person,
-                          size: 30,
-                          color: Color(0xFF12B8A6),
-                        ),
+                        child: const Icon(Icons.person_rounded, size: 36, color: Color(0xFF12B8A6)),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,31 +94,45 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                             Text(
                               widget.doctor.name,
                               style: GoogleFonts.poppins(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF111827),
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Text(
                               widget.doctor.specialty,
                               style: GoogleFonts.poppins(
-                                fontSize: 12,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
                                 color: const Color(0xFF6B7280),
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 8),
                             Row(
                               children: [
-                                const Icon(
-                                  Icons.star,
-                                  size: 14,
-                                  color: Colors.amber,
-                                ),
+                                const Icon(Icons.star_rounded, size: 16, color: Colors.amber),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '${widget.doctor.rating} • ${widget.doctor.experience} yrs',
+                                  '${widget.doctor.rating}',
                                   style: GoogleFonts.poppins(
-                                    fontSize: 11,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF111827),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  width: 4,
+                                  height: 4,
+                                  decoration: const BoxDecoration(color: Color(0xFFE5E7EB), shape: BoxShape.circle),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${widget.doctor.experience} yrs exp',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
                                     color: const Color(0xFF6B7280),
                                   ),
                                 ),
@@ -135,28 +145,28 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
                 // Consultation Type
-                _sectionTitle('Consultation Type'),
-                const SizedBox(height: 12),
+                _sectionTitle('Consultation Mode'),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: _consultationTypeCard(
-                        icon: Icons.video_call,
+                        icon: Icons.videocam_rounded,
                         title: 'Video Call',
-                        subtitle: 'Online',
+                        subtitle: 'Online Session',
                         value: 'online',
                         isAvailable: widget.doctor.isOnline,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: _consultationTypeCard(
-                        icon: Icons.location_on,
-                        title: 'In-Person',
-                        subtitle: 'Clinic Visit',
+                        icon: Icons.location_on_rounded,
+                        title: 'In-Clinic',
+                        subtitle: 'Physical Visit',
                         value: 'offline',
                         isAvailable: true,
                       ),
@@ -164,197 +174,144 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
                 // Date Selection
-                _sectionTitle('Select Date'),
-                const SizedBox(height: 12),
+                _sectionTitle('Schedule Day'),
+                const SizedBox(height: 16),
                 GestureDetector(
                   onTap: () => _selectDate(context),
                   child: Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: _selectedDate != null
-                            ? const Color(0xFF12B8A6)
-                            : const Color(0xFFE5E7EB),
-                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF111827).withOpacity(0.04),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          color: Color(0xFF12B8A6),
-                          size: 20,
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF12B8A6).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.calendar_month_rounded, color: Color(0xFF12B8A6), size: 22),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 16),
                         Text(
                           _selectedDate != null
-                              ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                              : 'Select date',
+                              ? '${_selectedDate!.day} ${_getMonthName(_selectedDate!.month)}, ${_selectedDate!.year}'
+                              : 'Select available date',
                           style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: _selectedDate != null
-                                ? Colors.black
-                                : const Color(0xFF9CA3AF),
+                            fontSize: 15,
+                            fontWeight: _selectedDate != null ? FontWeight.w700 : FontWeight.w500,
+                            color: _selectedDate != null ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
                           ),
                         ),
+                        const Spacer(),
+                        const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF9CA3AF)),
                       ],
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
                 // Time Slot Selection
-                _sectionTitle('Select Time Slot'),
-                const SizedBox(height: 12),
+                _sectionTitle('Time Slots'),
+                const SizedBox(height: 16),
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: 10,
+                  runSpacing: 10,
                   children: _timeSlots.map((slot) => _timeSlotChip(slot)).toList(),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
                 // Symptoms/Reason
-                _sectionTitle('Symptoms / Reason for Visit'),
-                const SizedBox(height: 12),
+                _sectionTitle('Patient Notes'),
+                const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF111827).withOpacity(0.04),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
                   child: TextField(
                     controller: _symptomsController,
                     maxLines: 4,
                     decoration: InputDecoration(
-                      hintText: 'Describe your symptoms or reason for consultation...',
+                      hintText: 'Share current symptoms or health concerns...',
                       hintStyle: GoogleFonts.poppins(
-                        fontSize: 13,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                         color: const Color(0xFF9CA3AF),
                       ),
                       border: InputBorder.none,
                     ),
                     style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF111827),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 24),
-
-                // Clinic Address (if offline)
-                if (_consultationType == 'offline') ...[
-                  _sectionTitle('Clinic Address'),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: Color(0xFF12B8A6),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            widget.doctor.hospital,
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              color: const Color(0xFF6B7280),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+                const SizedBox(height: 32),
 
                 // Fee Summary
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF12B8A6), Color(0xFF0D9488)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0xFF111827),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF111827).withOpacity(0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
                   child: Column(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Consultation Fee',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                          ),
-                          Text(
-                            '₹${widget.doctor.consultationFee}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Platform Fee',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                          ),
-                          Text(
-                            '₹50',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
+                      _paymentRow('Consultation Fee', '₹${widget.doctor.consultationFee}'),
+                      const SizedBox(height: 12),
+                      _paymentRow('Service Fee', '₹50'),
                       const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        child: Divider(color: Colors.white30),
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Divider(color: Colors.white12, height: 1),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Total Amount',
+                            'Total Payment',
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: Colors.white.withOpacity(0.7),
                             ),
                           ),
                           Text(
                             '₹${widget.doctor.consultationFee + 50}',
                             style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
                               color: Colors.white,
                             ),
                           ),
@@ -364,7 +321,7 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 100),
+                const SizedBox(height: 120),
               ],
             ),
           ),
@@ -375,34 +332,38 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
               decoration: BoxDecoration(
                 color: Colors.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(32),
+                  topRight: Radius.circular(32),
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, -5),
+                    color: const Color(0xFF111827).withOpacity(0.08),
+                    blurRadius: 30,
+                    offset: const Offset(0, -10),
                   ),
                 ],
               ),
-              child: SizedBox(
+              child: Container(
                 width: double.infinity,
-                height: 50,
+                height: 56,
                 child: ElevatedButton(
                   onPressed: _confirmBooking,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF12B8A6),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 0,
                   ),
                   child: Text(
-                    'Confirm & Pay',
+                    'Confirm Booking',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
                   ),
@@ -419,10 +380,40 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
     return Text(
       title,
       style: GoogleFonts.poppins(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
+        fontSize: 18,
+        fontWeight: FontWeight.w800,
+        color: const Color(0xFF111827),
       ),
     );
+  }
+
+  Widget _paymentRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.white.withOpacity(0.6),
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getMonthName(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
   }
 
   Widget _consultationTypeCard({
@@ -441,16 +432,23 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
             }
           : null,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected && isAvailable ? Colors.white : (isAvailable ? Colors.white : const Color(0xFFF3F4F6)),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isSelected && isAvailable
                 ? const Color(0xFF12B8A6)
-                : const Color(0xFFE5E7EB),
+                : (isAvailable ? const Color(0xFFE5E7EB) : Colors.transparent),
             width: isSelected && isAvailable ? 2 : 1,
           ),
+          boxShadow: isSelected && isAvailable ? [
+            BoxShadow(
+              color: const Color(0xFF12B8A6).withOpacity(0.1),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ] : null,
         ),
         child: Column(
           children: [
@@ -459,44 +457,27 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
               size: 32,
               color: isSelected && isAvailable
                   ? const Color(0xFF12B8A6)
-                  : const Color(0xFF6B7280),
+                  : const Color(0xFF9CA3AF),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               title,
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: isAvailable ? Colors.black : const Color(0xFF9CA3AF),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: isAvailable ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               subtitle,
               style: GoogleFonts.poppins(
-                fontSize: 11,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
                 color: const Color(0xFF9CA3AF),
               ),
             ),
-            if (!isAvailable) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Unavailable',
-                  style: GoogleFonts.poppins(
-                    fontSize: 10,
-                    color: Colors.red,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),
@@ -510,22 +491,31 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
       onTap: () {
         setState(() => _selectedTimeSlot = slot);
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF12B8A6) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFF12B8A6)
                 : const Color(0xFFE5E7EB),
+            width: isSelected ? 2 : 1,
           ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: const Color(0xFF12B8A6).withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ] : null,
         ),
         child: Text(
           slot,
           style: GoogleFonts.poppins(
             fontSize: 13,
-            fontWeight: FontWeight.w500,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
             color: isSelected ? Colors.white : const Color(0xFF6B7280),
           ),
         ),
@@ -541,9 +531,19 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
       lastDate: DateTime.now().add(const Duration(days: 30)),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
+          data: ThemeData.light().copyWith(
             colorScheme: const ColorScheme.light(
               primary: Color(0xFF12B8A6),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Color(0xFF111827),
+            ),
+            dialogBackgroundColor: Colors.white,
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF12B8A6),
+                textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+              ),
             ),
           ),
           child: child!,
@@ -568,14 +568,12 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
     }
 
     if (_symptomsController.text.trim().isEmpty) {
-      _showSnackBar('Please describe your symptoms');
+      _showSnackBar('Please share your symptoms');
       return;
     }
 
-    // TODO: API call to confirm booking and process payment
-    _showSnackBar('Booking confirmed! Proceeding to payment...');
+    _showSnackBar('Booking successful!');
     
-    // Navigate to payment or confirmation screen
     Navigator.pop(context);
     Navigator.pop(context);
   }
@@ -583,8 +581,10 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: const Color(0xFF12B8A6),
+        content: Text(message, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        backgroundColor: const Color(0xFF111827),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

@@ -47,35 +47,33 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF7F6),
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFEFF7F6),
+        backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Lab Reports',
           style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF111827),
           ),
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list, color: Colors.black),
-            onPressed: () {},
-          ),
+          _iconButton(Icons.tune_rounded),
+          const SizedBox(width: 16),
         ],
       ),
       body: Column(
         children: [
           // Upload Report Button
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             child: GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -86,19 +84,19 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                 );
               },
               child: Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF12B8A6), Color(0xFF0D9488)],
+                    colors: [Color(0xFF111827), Color(0xFF1F2937)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF12B8A6).withOpacity(0.3),
+                      color: const Color(0xFF111827).withOpacity(0.2),
                       blurRadius: 20,
-                      offset: const Offset(0, 8),
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
@@ -107,43 +105,44 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFF12B8A6).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(
-                        Icons.upload_file,
-                        color: Colors.white,
+                        Icons.add_circle_rounded,
+                        color: Color(0xFF12B8A6),
                         size: 28,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 20),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Upload New Report',
+                            'Analyze New Report',
                             style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
                               color: Colors.white,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
                           Text(
-                            'Get AI-powered analysis instantly',
+                            'Get instant AI insights from results',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
-                              color: Colors.white.withOpacity(0.9),
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withOpacity(0.6),
                             ),
                           ),
                         ],
                       ),
                     ),
                     const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white,
-                      size: 20,
+                      Icons.arrow_forward_ios_rounded,
+                      color: Colors.white24,
+                      size: 16,
                     ),
                   ],
                 ),
@@ -160,6 +159,7 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                   return const Center(
                     child: CircularProgressIndicator(
                       color: Color(0xFF12B8A6),
+                      strokeWidth: 3,
                     ),
                   );
                 }
@@ -171,9 +171,9 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                 final reports = snapshot.data!;
 
                 return ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
                   itemCount: reports.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     return _reportCard(reports[index]);
                   },
@@ -182,6 +182,30 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _iconButton(IconData icon) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF111827).withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: IconButton(
+        onPressed: () {},
+        icon: Icon(icon, size: 22, color: const Color(0xFF111827)),
+        padding: EdgeInsets.zero,
       ),
     );
   }
@@ -199,15 +223,15 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
         }
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+              color: const Color(0xFF111827).withOpacity(0.04),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
             ),
           ],
         ),
@@ -217,18 +241,18 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: _getStatusColor(report.status).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
                     _getStatusIcon(report.status),
                     color: _getStatusColor(report.status),
-                    size: 20,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,60 +260,56 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                       Text(
                         report.testName,
                         style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF111827),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         report.labName,
                         style: GoogleFonts.poppins(
-                          fontSize: 12,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
                           color: const Color(0xFF6B7280),
                         ),
                       ),
                     ],
                   ),
                 ),
-                _statusBadge(report.status, report.hasAbnormalities),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFFD1D5DB)),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             Row(
               children: [
-                Icon(
-                  Icons.calendar_today,
-                  size: 14,
-                  color: const Color(0xFF9CA3AF),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  _formatDate(report.date),
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: const Color(0xFF6B7280),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ),
-                const Spacer(),
-                if (report.status == 'analyzed')
-                  Row(
+                  child: Row(
                     children: [
                       const Icon(
-                        Icons.auto_awesome,
+                        Icons.calendar_month_rounded,
                         size: 14,
-                        color: Color(0xFF12B8A6),
+                        color: Color(0xFF6B7280),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       Text(
-                        'AI Analyzed',
+                        _formatDate(report.date),
                         style: GoogleFonts.poppins(
                           fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF12B8A6),
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF6B7280),
                         ),
                       ),
                     ],
                   ),
+                ),
+                const Spacer(),
+                _statusBadgeContainer(report.status, report.hasAbnormalities),
               ],
             ),
           ],
@@ -298,55 +318,43 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
     );
   }
 
-  Widget _statusBadge(String status, bool hasAbnormalities) {
+  Widget _statusBadgeContainer(String status, bool hasAbnormalities) {
     if (status == 'pending') {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.orange.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          'Pending',
-          style: GoogleFonts.poppins(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: Colors.orange,
-          ),
-        ),
+      return _badge(
+        text: 'Processing',
+        color: const Color(0xFFF59E0B),
+        bgColor: const Color(0xFFFEF3C7),
       );
     }
 
     if (hasAbnormalities) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.red.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          'Attention',
-          style: GoogleFonts.poppins(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: Colors.red,
-          ),
-        ),
+      return _badge(
+        text: 'Flagged',
+        color: const Color(0xFFEF4444),
+        bgColor: const Color(0xFFFEE2E2),
       );
     }
 
+    return _badge(
+      text: 'Healthy',
+      color: const Color(0xFF10B981),
+      bgColor: const Color(0xFFD1FAE5),
+    );
+  }
+
+  Widget _badge({required String text, required Color color, required Color bgColor}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
-        'Normal',
+        text,
         style: GoogleFonts.poppins(
           fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: Colors.green,
+          fontWeight: FontWeight.w700,
+          color: color,
         ),
       ),
     );
@@ -357,7 +365,7 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
       case 'analyzed':
         return const Color(0xFF12B8A6);
       case 'pending':
-        return Colors.orange;
+        return const Color(0xFFF59E0B);
       default:
         return const Color(0xFF6B7280);
     }
@@ -366,20 +374,17 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
   IconData _getStatusIcon(String status) {
     switch (status) {
       case 'analyzed':
-        return Icons.check_circle;
+        return Icons.verified_user_rounded;
       case 'pending':
-        return Icons.pending;
+        return Icons.sync_rounded;
       default:
-        return Icons.description;
+        return Icons.description_rounded;
     }
   }
 
   String _formatDate(DateTime date) {
-    final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${date.day} ${months[date.month - 1]}, ${date.year}';
   }
 
   Widget _emptyState() {
@@ -387,26 +392,31 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.description_outlined,
-            size: 64,
-            color: Colors.grey.shade300,
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(32),
+            ),
+            child: Icon(Icons.description_outlined, size: 64, color: Colors.grey.shade400),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Text(
-            'No reports yet',
+            'No Reports Yet',
             style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF6B7280),
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF111827),
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Upload your first lab report',
+            'Keep all your diagnostic records in one place',
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 14,
-              color: const Color(0xFF9CA3AF),
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF6B7280),
             ),
           ),
         ],

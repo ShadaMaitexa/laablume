@@ -34,23 +34,21 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF7F6),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Main content area
-            IndexedStack(
-              index: _currentIndex,
-              children: _screens,
-            ),
-            
-            // Bottom navigation bar
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: _bottomNavigationBar(),
-            ),
-          ],
-        ),
+      backgroundColor: const Color(0xFFF9FAFB),
+      body: Stack(
+        children: [
+          // Main content area
+          IndexedStack(
+            index: _currentIndex,
+            children: _screens,
+          ),
+          
+          // Bottom navigation bar
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: _bottomNavigationBar(),
+          ),
+        ],
       ),
     );
   }
@@ -58,36 +56,28 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   // Bottom navigation bar widget - Updated design
   Widget _bottomNavigationBar() {
     return Container(
-      height: 80,
-      margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+      height: 72,
+      margin: const EdgeInsets.only(left: 24, right: 24, bottom: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
+        color: const Color(0xFF111827),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: const Color(0xFF111827).withOpacity(0.3),
             blurRadius: 20,
-            offset: const Offset(0, 8),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-            spreadRadius: 0,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(_navItems.length, (index) {
-          return Expanded(
-            child: _navItem(
-              _navItems[index]['icon'] as IconData,
-              _navItems[index]['activeIcon'] as IconData,
-              _navItems[index]['label'] as String,
-              index,
-            ),
+          return _navItem(
+            _navItems[index]['icon'] as IconData,
+            _navItems[index]['activeIcon'] as IconData,
+            _navItems[index]['label'] as String,
+            index,
           );
         }),
       ),
@@ -102,61 +92,33 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       onTap: () {
         setState(() => _currentIndex = index);
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        decoration: BoxDecoration(
-          color: isActive 
-              ? const Color(0xFF12B8A6).withOpacity(0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        color: Colors.transparent, // Expand tap area
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isActive ? const Color(0xFF12B8A6) : Colors.transparent,
-                shape: BoxShape.circle,
-                boxShadow: isActive ? [
-                  BoxShadow(
-                    color: const Color(0xFF12B8A6).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ] : null,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isActive ? activeIcon : icon,
+                key: ValueKey(isActive),
+                size: 24,
+                color: isActive ? const Color(0xFF12B8A6) : Colors.white.withOpacity(0.5),
               ),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return ScaleTransition(scale: animation, child: child);
-                },
-                child: Icon(
-                  key: ValueKey(isActive),
-                  isActive ? activeIcon : icon,
-                  size: 24,
-                  color: isActive ? Colors.white : const Color(0xFF6B7280),
+            ),
+            if (isActive) ...[
+              const SizedBox(height: 4),
+              Container(
+                width: 4,
+                height: 4,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF12B8A6),
+                  shape: BoxShape.circle,
                 ),
               ),
-            ),
-            const SizedBox(height: 4),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 300),
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                color: isActive ? const Color(0xFF12B8A6) : const Color(0xFF6B7280),
-              ),
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-              ),
-            ),
+            ]
           ],
         ),
       ),

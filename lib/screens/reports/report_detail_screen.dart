@@ -10,54 +10,50 @@ class ReportDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF7F6),
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFEFF7F6),
+        backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Report Analysis',
+          'Detailed Analysis',
           style: GoogleFonts.poppins(
             fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF111827),
           ),
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.share, color: Colors.black),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.download, color: Colors.black),
-            onPressed: () {},
-          ),
+          _iconButton(Icons.share_rounded),
+          const SizedBox(width: 8),
+          _iconButton(Icons.download_rounded),
+          const SizedBox(width: 16),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Report Header Card
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF12B8A6), Color(0xFF0D9488)],
+                  colors: [Color(0xFF111827), Color(0xFF1F2937)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF12B8A6).withOpacity(0.3),
+                    color: const Color(0xFF111827).withOpacity(0.2),
                     blurRadius: 20,
-                    offset: const Offset(0, 8),
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
@@ -66,77 +62,87 @@ class ReportDetailScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(
-                        Icons.auto_awesome,
-                        color: Colors.white,
-                        size: 24,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF12B8A6).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.auto_awesome_rounded,
+                          color: Color(0xFF12B8A6),
+                          size: 18,
+                        ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       Text(
-                        'AI Analysis',
+                         'AI Powered Analysis',
                         style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF12B8A6),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 20),
                   Text(
                     report.testName,
                     style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    report.labName,
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on_rounded, color: Colors.white38, size: 14),
+                      const SizedBox(width: 6),
+                      Text(
+                        report.labName,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white60,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    _formatDate(report.date),
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(0.8),
-                    ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Divider(color: Colors.white10),
+                  ),
+                  Row(
+                    children: [
+                      _headerStat('Date', _formatDateShort(report.date)),
+                      const Spacer(),
+                      _headerStat('Status', report.hasAbnormalities ? 'Attention' : 'Normal'),
+                    ],
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // Overall Status
-            _sectionTitle('Overall Health Status'),
-            const SizedBox(height: 12),
+            _sectionTitle('Health Recommendation'),
+            const SizedBox(height: 16),
             _statusCard(
-              status: report.hasAbnormalities ? 'Attention Required' : 'Normal',
-              color: report.hasAbnormalities ? Colors.orange : Colors.green,
-              icon: report.hasAbnormalities ? Icons.warning : Icons.check_circle,
+              status: report.hasAbnormalities ? 'Follow-up Suggested' : 'Good Health Condition',
+              color: report.hasAbnormalities ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+              icon: report.hasAbnormalities ? Icons.notifications_active_rounded : Icons.verified_rounded,
               description: report.hasAbnormalities
-                  ? 'Some parameters require attention. Please consult a doctor.'
-                  : 'All parameters are within normal range.',
+                  ? 'We noticed some irregularities in your report parameters. We recommend scheduling a consultation.'
+                  : 'Great! All your diagnostic parameters are within the standard medical reference ranges.',
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
-            // Key Findings
-            _sectionTitle('Key Findings'),
-            const SizedBox(height: 12),
-            _findingsCard(),
-
-            const SizedBox(height: 24),
-
-            // Parameters
-            _sectionTitle('Test Parameters'),
-            const SizedBox(height: 12),
+            // Test Parameters
+            _sectionTitle('Detailed Findings'),
+            const SizedBox(height: 16),
             _parameterCard(
               name: 'Hemoglobin',
               value: '14.2',
@@ -161,19 +167,19 @@ class ReportDetailScreen extends StatelessWidget {
               status: 'normal',
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // AI Recommendations
-            _sectionTitle('AI Recommendations'),
-            const SizedBox(height: 12),
+            _sectionTitle('AI Action Plan'),
+            const SizedBox(height: 16),
             _recommendationsCard(),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // Consult Doctor Button
-            SizedBox(
+            Container(
               width: double.infinity,
-              height: 50,
+              height: 56,
               child: ElevatedButton(
                 onPressed: () {
                   // TODO: Navigate to doctor consultation
@@ -181,20 +187,20 @@ class ReportDetailScreen extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF12B8A6),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 0,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.video_call, size: 20),
-                    const SizedBox(width: 8),
+                    const Icon(Icons.videocam_rounded, size: 22, color: Colors.white),
+                    const SizedBox(width: 12),
                     Text(
-                      'Consult a Doctor',
+                      'Consult a Specialist',
                       style: GoogleFonts.poppins(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
                     ),
@@ -210,12 +216,55 @@ class ReportDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _headerStat(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.white38,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _iconButton(IconData icon) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: IconButton(
+        onPressed: () {},
+        icon: Icon(icon, size: 20, color: const Color(0xFF111827)),
+        padding: EdgeInsets.zero,
+      ),
+    );
+  }
+
   Widget _sectionTitle(String title) {
     return Text(
       title,
       style: GoogleFonts.poppins(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
+        fontSize: 18,
+        fontWeight: FontWeight.w800,
+        color: const Color(0xFF111827),
       ),
     );
   }
@@ -227,113 +276,51 @@ class ReportDetailScreen extends StatelessWidget {
     required String description,
   }) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3), width: 2),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  status,
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: color,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: const Color(0xFF6B7280),
-                  ),
-                ),
-              ],
-            ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF111827).withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _findingsCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
-          _findingItem(
-            '✓',
-            'All blood cell counts are within normal limits',
-            Colors.green,
-          ),
-          _findingItem(
-            '✓',
-            'No signs of anemia or infection detected',
-            Colors.green,
-          ),
-          _findingItem(
-            '✓',
-            'Platelet count is adequate for normal clotting',
-            Colors.green,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _findingItem(String icon, String text, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                icon,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: color,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(icon, color: color, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  status,
+                  style: GoogleFonts.poppins(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF111827),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: const Color(0xFF6B7280),
-                height: 1.5,
-              ),
+          const SizedBox(height: 16),
+          Text(
+            description,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF6B7280),
+              height: 1.6,
             ),
           ),
         ],
@@ -349,57 +336,74 @@ class ReportDetailScreen extends StatelessWidget {
     required String status,
   }) {
     final isNormal = status == 'normal';
-    final statusColor = isNormal ? Colors.green : Colors.orange;
+    final statusColor = isNormal ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: statusColor.withOpacity(0.2),
-        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF111827).withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Text(
-                  name,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+              Text(
+                name,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF111827),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  isNormal ? 'Normal' : 'Attention',
+                  isNormal ? 'NORMAL' : 'FLAGGED',
                   style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
                     color: statusColor,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '$value $unit',
+                value,
                 style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF12B8A6),
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  unit,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF9CA3AF),
+                  ),
                 ),
               ),
               const Spacer(),
@@ -407,17 +411,18 @@ class ReportDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    'Normal Range',
+                    'Reference Range',
                     style: GoogleFonts.poppins(
                       fontSize: 10,
+                      fontWeight: FontWeight.w600,
                       color: const Color(0xFF9CA3AF),
                     ),
                   ),
                   Text(
                     normalRange,
                     style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                       color: const Color(0xFF6B7280),
                     ),
                   ),
@@ -432,12 +437,12 @@ class ReportDetailScreen extends StatelessWidget {
 
   Widget _recommendationsCard() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF12B8A6).withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFF12B8A6).withOpacity(0.08),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFF12B8A6).withOpacity(0.2),
+          color: const Color(0xFF12B8A6).withOpacity(0.1),
         ),
       ),
       child: Column(
@@ -446,54 +451,39 @@ class ReportDetailScreen extends StatelessWidget {
           Row(
             children: [
               const Icon(
-                Icons.lightbulb_outline,
-                color: Color(0xFF12B8A6),
-                size: 20,
+                Icons.tips_and_updates_rounded,
+                color: Color(0xFF0D9488),
+                size: 22,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Text(
-                'Personalized Recommendations',
+                'Health Optimization',
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF12B8A6),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0D9488),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          _recommendationItem('Maintain current health routine'),
-          _recommendationItem('Stay well hydrated (8-10 glasses of water daily)'),
-          _recommendationItem('Regular exercise recommended (30 min/day)'),
-          _recommendationItem('Follow-up test recommended in 6 months'),
-          const SizedBox(height: 12),
-          Text(
-            '⚠️ Note: This is an AI-generated analysis. Please consult with a healthcare professional for detailed interpretation and personalized medical advice.',
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              color: const Color(0xFF6B7280),
-              fontStyle: FontStyle.italic,
-              height: 1.5,
+          const SizedBox(height: 20),
+          _recommendationItem('Maintain your current diet and hydration levels'),
+          _recommendationItem('Stay active with at least 30 minutes of cardio'),
+          _recommendationItem('Schedule a routine checkup in 6 months'),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _recommendationItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('• ', style: TextStyle(fontSize: 16)),
-          Expanded(
             child: Text(
-              text,
+              'DISCLAIMER: This analysis is AI-generated for informative purposes only. Always consult a certified medical professional.',
               style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: const Color(0xFF6B7280),
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF9CA3AF),
+                fontStyle: FontStyle.italic,
                 height: 1.5,
               ),
             ),
@@ -503,11 +493,32 @@ class ReportDetailScreen extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  Widget _recommendationItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.check_circle_rounded, size: 16, color: Color(0xFF12B8A6)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF4B5563),
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDateShort(DateTime date) {
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${date.day} ${months[date.month - 1]}, ${date.year}';
   }
 }
