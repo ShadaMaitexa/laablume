@@ -69,7 +69,14 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.auto_awesome_rounded, color: Color(0xFF12B8A6), size: 80),
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Image.asset('assets/logo.png', width: 80, height: 80),
+                          ),
                           const SizedBox(height: 24),
                           Text(
                             'LabLume Enterprise',

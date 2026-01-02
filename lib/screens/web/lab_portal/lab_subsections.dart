@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class LabBookingsScreen extends StatelessWidget {
+class LabBookingsScreen extends StatefulWidget {
   const LabBookingsScreen({super.key});
+
+  @override
+  State<LabBookingsScreen> createState() => _LabBookingsScreenState();
+}
+
+class _LabBookingsScreenState extends State<LabBookingsScreen> {
+  int _selectedFilter = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -19,12 +26,15 @@ class LabBookingsScreen extends StatelessWidget {
                 style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937)),
               ),
               ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  _showManualBooking(context);
+                },
                 icon: const Icon(Icons.add),
                 label: const Text('Add Offline Booking'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF12B8A6),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ],
@@ -38,10 +48,10 @@ class LabBookingsScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      _statusChip('All Bookings (245)', true),
-                      _statusChip('Pending (18)', false),
-                      _statusChip('In-Progress (12)', false),
-                      _statusChip('Completed (215)', false),
+                      _statusChip('All Bookings (245)', 0),
+                      _statusChip('Pending (18)', 1),
+                      _statusChip('In-Progress (12)', 2),
+                      _statusChip('Completed (215)', 3),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -61,21 +71,25 @@ class LabBookingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _statusChip(String text, bool active) {
-    return Container(
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: active ? const Color(0xFF12B8A6) : Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        border: active ? null : Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.poppins(
-          fontSize: 12,
-          fontWeight: active ? FontWeight.bold : FontWeight.w500,
-          color: active ? Colors.white : const Color(0xFF6B7280),
+  Widget _statusChip(String text, int index) {
+    bool active = _selectedFilter == index;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedFilter = index),
+      child: Container(
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: active ? const Color(0xFF12B8A6) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: active ? null : Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            fontWeight: active ? FontWeight.bold : FontWeight.w500,
+            color: active ? Colors.white : const Color(0xFF6B7280),
+          ),
         ),
       ),
     );
@@ -111,22 +125,56 @@ class LabBookingsScreen extends StatelessWidget {
             child: Text('Full Body Checkup', style: GoogleFonts.poppins(color: const Color(0xFF12B8A6))),
           ),
           const Expanded(child: Text('₹2,499')),
-          _actionButton('Process'),
+          _clickableActionButton('Process', index),
         ],
       ),
     );
   }
 
-  Widget _actionButton(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF12B8A6)),
-        borderRadius: BorderRadius.circular(8),
+  Widget _clickableActionButton(String text, int index) {
+    return InkWell(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Processing sample for Booking #LB-220$index')),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFF12B8A6)),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF12B8A6)),
+        ),
       ),
-      child: Text(
-        text,
-        style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF12B8A6)),
+    );
+  }
+
+  void _showManualBooking(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Offline Booking'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(decoration: InputDecoration(labelText: 'Patient Name')),
+            SizedBox(height: 16),
+            TextField(decoration: InputDecoration(labelText: 'Contact Number')),
+            SizedBox(height: 16),
+            TextField(decoration: InputDecoration(labelText: 'Test Type')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF12B8A6)),
+            child: const Text('Save Booking'),
+          ),
+        ],
       ),
     );
   }
@@ -221,11 +269,21 @@ class LabResultsApprovalScreen extends StatelessWidget {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      TextButton(onPressed: () {}, child: const Text('Review', style: TextStyle(color: Color(0xFF12B8A6)))),
+                      TextButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Opening detailed review...')));
+                        },
+                        child: const Text('Review', style: TextStyle(color: Color(0xFF12B8A6))),
+                      ),
                       const SizedBox(width: 12),
                       ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF12B8A6)),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sample approved and report generated!')));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF12B8A6),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
                         child: const Text('Approve'),
                       ),
                     ],

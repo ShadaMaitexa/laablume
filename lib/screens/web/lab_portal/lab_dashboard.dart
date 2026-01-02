@@ -98,7 +98,14 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Row(
               children: [
-                const Icon(Icons.biotech_rounded, color: Color(0xFF12B8A6), size: 32),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Image.asset('assets/logo.png', width: 24, height: 24),
+                ),
                 const SizedBox(width: 14),
                 Text(
                   'LabLume',
@@ -111,13 +118,20 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
               ],
             ),
           ),
-          const SizedBox(height: 60),
-          _labSidebarItem(Icons.analytics_outlined, 'Lab Analytics', 0),
-          _labSidebarItem(Icons.science_outlined, 'Manage Tests', 1),
-          _labSidebarItem(Icons.assignment_turned_in_outlined, 'Results Approval', 2),
-          _labSidebarItem(Icons.inventory_2_outlined, 'Equipment & Supplies', 3),
-          _labSidebarItem(Icons.people_outline_rounded, 'Technicians', 4),
-          const Spacer(),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 60),
+                  _labSidebarItem(Icons.analytics_outlined, 'Lab Analytics', 0),
+                  _labSidebarItem(Icons.science_outlined, 'Manage Tests', 1),
+                  _labSidebarItem(Icons.assignment_turned_in_outlined, 'Results Approval', 2),
+                  _labSidebarItem(Icons.inventory_2_outlined, 'Equipment & Supplies', 3),
+                  _labSidebarItem(Icons.people_outline_rounded, 'Technicians', 4),
+                ],
+              ),
+            ),
+          ),
           _labSidebarItem(Icons.settings_outlined, 'Portal Settings', 5),
           const SizedBox(height: 20),
         ],

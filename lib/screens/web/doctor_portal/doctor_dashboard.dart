@@ -120,10 +120,16 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _primaryColor,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _primaryColor.withOpacity(0.1),
+                        blurRadius: 10,
+                      )
+                    ],
                   ),
-                  child: const Icon(Icons.auto_awesome, color: Colors.white, size: 24),
+                  child: Image.asset('assets/logo.png', width: 24, height: 24),
                 ),
                 const SizedBox(width: 14),
                 Text(
@@ -138,19 +144,26 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
               ],
             ),
           ),
-          const SizedBox(height: 64),
-          // Menu Items
-          _sidebarSection('MAIN MENU'),
-          _refinedSidebarItem(Icons.grid_view_rounded, 'Dashboard', 0),
-          _refinedSidebarItem(Icons.calendar_today_rounded, 'Appointments', 1),
-          _refinedSidebarItem(Icons.people_alt_rounded, 'My Patients', 2),
-          _refinedSidebarItem(Icons.description_rounded, 'Reports & AI', 3),
-          _refinedSidebarItem(Icons.question_answer_rounded, 'Consultations', 4),
-          const SizedBox(height: 32),
-          _sidebarSection('SYSTEM'),
-          _refinedSidebarItem(Icons.settings_rounded, 'Settings', 5),
-          _refinedSidebarItem(Icons.help_outline_rounded, 'Help Center', 6),
-          const Spacer(),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 64),
+                  // Menu Items
+                  _sidebarSection('MAIN MENU'),
+                  _refinedSidebarItem(Icons.grid_view_rounded, 'Dashboard', 0),
+                  _refinedSidebarItem(Icons.calendar_today_rounded, 'Appointments', 1),
+                  _refinedSidebarItem(Icons.people_alt_rounded, 'My Patients', 2),
+                  _refinedSidebarItem(Icons.description_rounded, 'Reports & AI', 3),
+                  _refinedSidebarItem(Icons.question_answer_rounded, 'Consultations', 4),
+                  const SizedBox(height: 32),
+                  _sidebarSection('SYSTEM'),
+                  _refinedSidebarItem(Icons.settings_rounded, 'Settings', 5),
+                  _refinedSidebarItem(Icons.help_outline_rounded, 'Help Center', 6),
+                ],
+              ),
+            ),
+          ),
           // User Profile at bottom
           _buildSidebarUser(),
           const SizedBox(height: 24),

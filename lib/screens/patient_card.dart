@@ -36,176 +36,152 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
-    final h = MediaQuery.of(context).size.height;
-
     return Scaffold(
       backgroundColor: const Color(0xFFEAF8F6),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: const Color(0xFFEAF8F6),
-        leading:
-            const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
-            title:  Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                      width: 32,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF12B8A6),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: _buildProgressBar(1, 5),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              Text(
+                'Personal data',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Provide your personal data to book visits in just a few clicks.',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  height: 1.5,
+                  color: const Color(0xFF6B7280),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Form Fields
+              _buildModernInputField(
+                label: 'First name',
+                controller: firstNameController,
+                hint: 'Enter your name',
+              ),
+              _buildModernInputField(
+                label: 'Last name',
+                controller: lastNameController,
+                hint: 'Enter your last name',
+              ),
+              _buildModernSelectField(
+                label: 'Date of birth',
+                value: dob,
+                onTap: _showDobDialog,
+                icon: Icons.calendar_today_outlined,
+              ),
+              _buildModernInputField(
+                label: 'Phone number',
+                controller: phoneController,
+                hint: '000 000 0000',
+                prefix: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🇺🇸', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.keyboard_arrow_down, size: 16, color: Color(0xFF6B7280)),
+                    const SizedBox(width: 8),
+                    Text('+1', style: GoogleFonts.poppins(fontSize: 14, color: Colors.black)),
+                    const SizedBox(width: 8),
+                    Container(width: 1, height: 24, color: const Color(0xFFE5E7EB)),
+                    const SizedBox(width: 12),
+                  ],
+                ),
+                keyboardType: TextInputType.phone,
+              ),
+              _buildModernInputField(
+                label: 'Email',
+                controller: emailController,
+                hint: 'your.email@example.com',
+                keyboardType: TextInputType.emailAddress,
+              ),
+              _buildModernSelectField(
+                label: 'City',
+                value: city,
+                onTap: _showCityBottomSheet,
+                icon: Icons.keyboard_arrow_down,
+              ),
+              _buildModernInputField(
+                label: 'Address',
+                controller: addressController,
+                hint: 'Street Name, Building, Apartment',
+                maxLines: 2,
+              ),
+
+              const SizedBox(height: 40),
+
+              // Next Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _validateAndProceed,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF12B8A6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
                     ),
-                ),
-                   Container(
-    width: 32,
-    height: 4,
-    decoration: BoxDecoration(
-      color: const Color.fromARGB(255, 185, 231, 224),
-      borderRadius: BorderRadius.circular(4),
-    ),
-  ), Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Container(
-      width: 32,
-      height: 4,
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 185, 231, 224),
-        borderRadius: BorderRadius.circular(4),
-      ),
-    ),
-  ), Container(
-    width: 32,
-    height: 4,
-    decoration: BoxDecoration(
-      color:  const Color.fromARGB(255, 185, 231, 224),
-      borderRadius: BorderRadius.circular(4),
-    ),
-  ), Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Container(
-      width: 32,
-      height: 4,
-      decoration: BoxDecoration(
-        color:  const Color.fromARGB(255, 185, 231, 224),
-        borderRadius: BorderRadius.circular(4),
-      ),
-    ),
-  ),
-              ],
-            ),centerTitle: true,
-      ),
-      body: Stack(
-        children: [
-        
-          SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 10),
-
-                // Top title
-                Text(
-                  'Personal data',
-                  style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
+                    elevation: 0,
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Provide your personal data to track health status',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: const Color(0xFF6B7280),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // First Name Input Field
-                _buildInputField(
-                  label: 'First name',
-                  controller: firstNameController,
-                  hint: 'Enter your first name',
-                ),
-
-                // Last Name Input Field
-                _buildInputField(
-                  label: 'Last name',
-                  controller: lastNameController,
-                  hint: 'Enter your last name',
-                ),
-
-                // Date of Birth Field (with dialog)
-                _buildDateOfBirthField(),
-
-                // Phone Number Input Field
-                _buildInputField(
-                  label: 'Phone number',
-                  controller: phoneController,
-                  hint: '800 000 0000',
-                  prefix: const Text('🇮🇳 +91'),
-                  keyboardType: TextInputType.phone,
-                ),
-
-                // Email Input Field
-                _buildInputField(
-                  label: 'Email',
-                  controller: emailController,
-                  hint: 'example@email.com',
-                  keyboardType: TextInputType.emailAddress,
-                ),
-
-                // City Field (with bottom sheet)
-                _buildCityField(),
-
-                // Address Input Field
-                _buildInputField(
-                  label: 'Address',
-                  controller: addressController,
-                  hint: 'Street name, building, apartment',
-                  maxLines: 3,
-                ),
-
-                const SizedBox(height: 24),
-
-                // Next Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: ElevatedButton(
-                    onPressed: _validateAndProceed,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B8A6),
-                      shape: const StadiumBorder(),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Next',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),
+                  child: Text(
+                    'Next',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 30),
-              ],
-            ),
+              ),
+              const SizedBox(height: 40),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  // Generic Input Field Widget
-  Widget _buildInputField({
+  Widget _buildProgressBar(int step, int total) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(total, (index) {
+        return Container(
+          width: 36,
+          height: 4,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            color: index < step 
+                ? const Color(0xFF12B8A6) 
+                : const Color(0xFF12B8A6).withOpacity(0.2),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildModernInputField({
     required String label,
     required TextEditingController controller,
     required String hint,
@@ -214,48 +190,37 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     int maxLines = 1,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
             style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: const Color(0xFF6B7280),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1F2937),
             ),
           ),
-          const SizedBox(height: 6),
           Container(
-            height: maxLines > 1 ? null : 48,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
-            child: TextFormField(
+            child: TextField(
               controller: controller,
               keyboardType: keyboardType,
               maxLines: maxLines,
+              style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
-                prefix: prefix != null 
-                    ? Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: prefix,
-                      )
-                    : null,
                 hintText: hint,
-                hintStyle: GoogleFonts.poppins(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 13,
-                ),
+                hintStyle: GoogleFonts.poppins(color: const Color(0xFF9CA3AF), fontSize: 14),
+                prefixIcon: prefix != null ? Padding(padding: const EdgeInsets.only(left: 16), child: prefix) : null,
+                prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: InputBorder.none,
               ),
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: Colors.black,
-              ),
             ),
           ),
         ],
@@ -263,43 +228,49 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     );
   }
 
-  // Date of Birth Field with Dialog
-  Widget _buildDateOfBirthField() {
+  Widget _buildModernSelectField({
+    required String label,
+    required String value,
+    required VoidCallback onTap,
+    required IconData icon,
+  }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Date of birth',
+            label,
             style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: const Color(0xFF6B7280),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1F2937),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           GestureDetector(
-            onTap: _showDobDialog,
+            onTap: onTap,
             child: Container(
-              height: 48,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFE5E7EB)),
               ),
               child: Row(
                 children: [
                   Expanded(
                     child: Text(
-                      dob,
+                      value,
                       style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: dob.contains('DD') ? const Color(0xFF9CA3AF) : Colors.black,
+                        fontSize: 14,
+                        color: value.contains('choose') || value.contains('DD') 
+                            ? const Color(0xFF9CA3AF) 
+                            : Colors.black,
                       ),
                     ),
                   ),
-                  const Icon(Icons.keyboard_arrow_down),
+                  Icon(icon, color: const Color(0xFF6B7280), size: 20),
                 ],
               ),
             ),
@@ -308,188 +279,94 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
       ),
     );
   }
-
-  // City Field with Bottom Sheet
-  Widget _buildCityField() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'City',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: const Color(0xFF6B7280),
-            ),
-          ),
-          const SizedBox(height: 6),
-          GestureDetector(
-            onTap: _showCityBottomSheet,
-            child: Container(
-              height: 48,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      city,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: city.contains('Enter') ? const Color(0xFF9CA3AF) : Colors.black,
-                      ),
-                    ),
-                  ),
-                  const Icon(Icons.keyboard_arrow_down),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Validate form and proceed
-  void _validateAndProceed() {
-    if (firstNameController.text.trim().isEmpty) {
-      _showSnackBar('Please enter your first name');
-      return;
-    }
-    
-    if (lastNameController.text.trim().isEmpty) {
-      _showSnackBar('Please enter your last name');
-      return;
-    }
-
-    if (phoneController.text.trim().isEmpty) {
-      _showSnackBar('Please enter your phone number');
-      return;
-    }
-
-    if (emailController.text.trim().isEmpty) {
-      _showSnackBar('Please enter your email');
-      return;
-    }
-
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(emailController.text.trim())) {
-      _showSnackBar('Please enter a valid email address');
-      return;
-    }
-
-    if (addressController.text.trim().isEmpty) {
-      _showSnackBar('Please enter your address');
-      return;
-    }
-
-    if (dob.contains('DD')) {
-      _showSnackBar('Please select your date of birth');
-      return;
-    }
-
-    if (city.contains('Enter')) {
-      _showSnackBar('Please select your city');
-      return;
-    }
-
-    // All validations passed, proceed to next screen
-    Navigator.push(
-      context, 
-      MaterialPageRoute(
-        builder: (context) => const EmergencyContactScreen(),
-      ),
-    );
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-
   // ---------------- DOB DIALOG WITH PICKER ----------------
   void _showDobDialog() {
     showDialog(
       context: context,
       builder: (_) {
         return Dialog(
-          backgroundColor: const Color(0xFFF4EFF6),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Choose your birth date',
                   style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF111827),
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
+                const SizedBox(height: 12),
+                Text(
+                  'Provide your personal data to book visits in just a few clicks.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: const Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 32),
                 SizedBox(
-                  height: 140,
+                  height: 160,
                   child: Row(
                     children: [
-                      pickerColumn(
+                      _pickerColumn(
                         values: List.generate(31, (i) => i + 1),
+                        initialItem: selectedDay - 1,
                         onSelected: (v) => selectedDay = v,
                       ),
-                      pickerColumn(
-                        values: List.generate(12, (i) => i + 1),
-                        onSelected: (v) => selectedMonth = v,
+                      _pickerColumn(
+                        values: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                        initialItem: selectedMonth - 1,
+                        onSelected: (v) {
+                          final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                          selectedMonth = months.indexOf(v as String) + 1;
+                        },
                       ),
-                      pickerColumn(
-                        values: List.generate(70, (i) => 1955 + i),
+                      _pickerColumn(
+                        values: List.generate(100, (i) => 1925 + i),
+                        initialItem: selectedYear - 1925,
                         onSelected: (v) => selectedYear = v,
                       ),
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
+                const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
-                  height: 44,
+                  height: 52,
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        dob =
-                            '$selectedDay / $selectedMonth / $selectedYear';
+                        final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                        dob = '$selectedDay ${months[selectedMonth - 1]} $selectedYear';
                       });
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF12B8A6),
-                      shape: const StadiumBorder(),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
                       elevation: 0,
                     ),
-                    child: const Text('Save date'),
+                    child: Text(
+                      'Save date',
+                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
                   ),
                 ),
-
-                const SizedBox(height: 10),
-
+                const SizedBox(height: 12),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
                     'Cancel',
                     style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: const Color(0xFF6B5AED),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF12B8A6),
                     ),
                   ),
                 ),
@@ -501,20 +378,26 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     );
   }
 
-  Widget pickerColumn({
-    required List<int> values,
-    required Function(int) onSelected,
+  Widget _pickerColumn({
+    required List<dynamic> values,
+    required int initialItem,
+    required Function(dynamic) onSelected,
   }) {
     return Expanded(
       child: ListWheelScrollView.useDelegate(
-        itemExtent: 32,
+        itemExtent: 40,
         physics: const FixedExtentScrollPhysics(),
+        controller: FixedExtentScrollController(initialItem: initialItem),
         onSelectedItemChanged: (index) => onSelected(values[index]),
         childDelegate: ListWheelChildBuilderDelegate(
           builder: (_, i) => Center(
             child: Text(
               values[i].toString(),
-              style: GoogleFonts.poppins(fontSize: 14),
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF111827),
+              ),
             ),
           ),
           childCount: values.length,
@@ -523,65 +406,103 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     );
   }
 
-  // ---------------- CITY BOTTOM SHEET ----------------
   void _showCityBottomSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 16,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Column(
+          children: [
+            Container(
+              width: 48,
+              height: 5,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(2.5),
               ),
-              TextField(
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'City',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: TextField(
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.search),
-                  hintText: 'Search city',
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+                  icon: const Icon(Icons.search, color: Color(0xFF9CA3AF)),
+                  hintText: 'Search',
+                  hintStyle: GoogleFonts.poppins(color: const Color(0xFF9CA3AF)),
+                  border: InputBorder.none,
                 ),
               ),
-              const SizedBox(height: 12),
-              cityTile('Use current location'),
-              cityTile('Boston, MA'),
-              cityTile('Bloomington, KY'),
-              cityTile('Bozeman, MT'),
-            ],
-          ),
-        );
-      },
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: const Icon(Icons.my_location, color: Color(0xFF12B8A6)),
+              title: Text('Use current location', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+              onTap: () {
+                setState(() => city = 'Boston, MA');
+                Navigator.pop(context);
+              },
+            ),
+            Expanded(
+              child: ListView(
+                children: [
+                  _cityOption('Boston, MA'),
+                  _cityOption('Bowling Green, KY'),
+                  _cityOption('Bozeman, MT'),
+                  _cityOption('Bonita Springs, FL'),
+                  _cityOption('Boise, ID'),
+                  _cityOption('Bossier City, LA'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget cityTile(String name) {
+  Widget _cityOption(String name) {
     return ListTile(
-      title: Text(name, style: GoogleFonts.poppins(fontSize: 14)),
+      title: Text(name, style: GoogleFonts.poppins(fontSize: 15)),
       onTap: () {
         setState(() => city = name);
         Navigator.pop(context);
       },
+    );
+  }
+
+  void _validateAndProceed() {
+    if (firstNameController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your first name');
+      return;
+    }
+    Navigator.push(
+      context, 
+      MaterialPageRoute(builder: (context) => const EmergencyContactScreen()),
+    );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 }

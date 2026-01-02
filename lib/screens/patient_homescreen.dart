@@ -44,12 +44,18 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF12B8A6).withOpacity(0.1),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF12B8A6).withOpacity(0.1),
+                          blurRadius: 10,
+                        )
+                      ],
                     ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Color(0xFF12B8A6),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset('assets/logo.png'),
                     ),
                   ),
                   const SizedBox(width: 12),
