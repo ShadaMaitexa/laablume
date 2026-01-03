@@ -20,23 +20,30 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDesktop = MediaQuery.of(context).size.width >= 1100;
+    
     return Scaffold(
+      key: GlobalKey<ScaffoldState>(),
       backgroundColor: _bgColor,
+      drawer: isDesktop ? null : Drawer(
+        width: 280,
+        child: _buildSidebar(isDrawer: true),
+      ),
       body: Row(
         children: [
-          // Navigation Sidebar
-          _buildSidebar(),
-
+          // Navigation Sidebar (Desktop only)
+          if (isDesktop) _buildSidebar(),
+          
           // Main Content Area
           Expanded(
             child: Column(
               children: [
-                _buildProfessionalHeader(),
+                _buildProfessionalHeader(!isDesktop),
                 Expanded(
                   child: IndexedStack(
                     index: _selectedIndex,
                     children: [
-                      _buildDashboardContent(), // Index 0
+                      _buildDashboardContent(isDesktop), // Index 0
                       const DoctorAppointmentsScreen(), // Index 1
                       const DoctorPatientsScreen(), // Index 2
                       const DoctorReportsScreen(), // Index 3
@@ -70,33 +77,45 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
     );
   }
 
-  Widget _buildDashboardContent() {
+  Widget _buildDashboardContent(bool isDesktop) {
     return SingleChildScrollView(
       controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
+      padding: EdgeInsets.symmetric(
+        horizontal: isDesktop ? 40 : 20,
+        vertical: 30,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildGreetingSection(),
           const SizedBox(height: 32),
-          _buildStatsSummary(),
+          _buildStatsSummary(isDesktop),
           const SizedBox(height: 40),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(flex: 3, child: _buildAppointmentQueue()),
-              const SizedBox(width: 32),
-              Expanded(flex: 2, child: _buildPatientPerformance()),
-            ],
-          ),
+          if (isDesktop)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 3, child: _buildAppointmentQueue()),
+                const SizedBox(width: 32),
+                Expanded(flex: 2, child: _buildPatientPerformance()),
+              ],
+            )
+          else
+            Column(
+              children: [
+                _buildAppointmentQueue(),
+                const SizedBox(height: 32),
+                _buildPatientPerformance(),
+              ],
+            ),
           const SizedBox(height: 40),
-          _buildUpcomingConsultations(),
+          _buildUpcomingConsultations(isDesktop),
         ],
       ),
     );
   }
 
-  Widget _buildSidebar() {
+  Widget _buildSidebar({bool isDrawer = false}) {
     return Container(
       width: 280,
       decoration: BoxDecoration(
@@ -129,7 +148,7 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
                       )
                     ],
                   ),
-                  child: Image.asset('assets/logo.png', width: 24, height: 24),
+                  child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF12B8A6), size: 24),
                 ),
                 const SizedBox(width: 14),
                 Text(
@@ -151,15 +170,15 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
                   const SizedBox(height: 64),
                   // Menu Items
                   _sidebarSection('MAIN MENU'),
-                  _refinedSidebarItem(Icons.grid_view_rounded, 'Dashboard', 0),
-                  _refinedSidebarItem(Icons.calendar_today_rounded, 'Appointments', 1),
-                  _refinedSidebarItem(Icons.people_alt_rounded, 'My Patients', 2),
-                  _refinedSidebarItem(Icons.description_rounded, 'Reports & AI', 3),
-                  _refinedSidebarItem(Icons.question_answer_rounded, 'Consultations', 4),
+                  _refinedSidebarItem(Icons.grid_view_rounded, 'Dashboard', 0, isDrawer),
+                  _refinedSidebarItem(Icons.calendar_today_rounded, 'Appointments', 1, isDrawer),
+                  _refinedSidebarItem(Icons.people_alt_rounded, 'My Patients', 2, isDrawer),
+                  _refinedSidebarItem(Icons.description_rounded, 'Reports & AI', 3, isDrawer),
+                  _refinedSidebarItem(Icons.question_answer_rounded, 'Consultations', 4, isDrawer),
                   const SizedBox(height: 32),
                   _sidebarSection('SYSTEM'),
-                  _refinedSidebarItem(Icons.settings_rounded, 'Settings', 5),
-                  _refinedSidebarItem(Icons.help_outline_rounded, 'Help Center', 6),
+                  _refinedSidebarItem(Icons.settings_rounded, 'Settings', 5, isDrawer),
+                  _refinedSidebarItem(Icons.help_outline_rounded, 'Help Center', 6, isDrawer),
                 ],
               ),
             ),
@@ -190,12 +209,15 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
     );
   }
 
-  Widget _refinedSidebarItem(IconData icon, String title, int index) {
+  Widget _refinedSidebarItem(IconData icon, String title, int index, bool isDrawer) {
     bool isSelected = _selectedIndex == index;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: InkWell(
-        onTap: () => setState(() => _selectedIndex = index),
+        onTap: () {
+          setState(() => _selectedIndex = index);
+          if (isDrawer) Navigator.pop(context);
+        },
         borderRadius: BorderRadius.circular(12),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -271,60 +293,74 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
     );
   }
 
-  Widget _buildProfessionalHeader() {
+  Widget _buildProfessionalHeader(bool showMenu) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+      padding: EdgeInsets.symmetric(horizontal: showMenu ? 20 : 40, vertical: 20),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: Color(0xFFF3F4F6))),
       ),
       child: Row(
         children: [
-          Container(
-            width: 400,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(12),
+          if (showMenu)
+            Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu_rounded, color: Color(0xFF111827)),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                const Icon(Icons.search, color: Color(0xFF9CA3AF), size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search patients, records, or appointments...',
-                      hintStyle: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF9CA3AF)),
-                      border: InputBorder.none,
+          if (!showMenu)
+            Container(
+              width: 350,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  const Icon(Icons.search, color: Color(0xFF9CA3AF), size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search patients...',
+                        hintStyle: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF9CA3AF)),
+                        border: InputBorder.none,
+                      ),
                     ),
                   ),
+                ],
+              ),
+            )
+          else 
+            Text(
+              'Dashboard',
+              style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF111827)),
+            ),
+          const Spacer(),
+          _headerAction(Icons.notifications_none_rounded),
+          const SizedBox(width: 12),
+          if (!showMenu) _headerAction(Icons.chat_bubble_outline_rounded),
+          if (!showMenu) const SizedBox(width: 32),
+          if (!showMenu) Container(width: 1, height: 32, color: const Color(0xFFF3F4F6)),
+          if (!showMenu) const SizedBox(width: 32),
+          if (!showMenu)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '01 January 2026',
+                  style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF1F2937)),
+                ),
+                Text(
+                  '16:35 PM',
+                  style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF6B7280)),
                 ),
               ],
             ),
-          ),
-          const Spacer(),
-          _headerAction(Icons.notifications_none_rounded),
-          const SizedBox(width: 16),
-          _headerAction(Icons.chat_bubble_outline_rounded),
-          const SizedBox(width: 32),
-          Container(width: 1, height: 32, color: const Color(0xFFF3F4F6)),
-          const SizedBox(width: 32),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '01 January 2026',
-                style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF1F2937)),
-              ),
-              Text(
-                '16:35 PM',
-                style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF6B7280)),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -363,18 +399,40 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
     );
   }
 
-  Widget _buildStatsSummary() {
-    return Row(
-      children: [
-        Expanded(child: _refinedStatCard('Total Patients', '1.2k', '+12%', Icons.people_rounded, Colors.blue)),
-        const SizedBox(width: 24),
-        Expanded(child: _refinedStatCard('Today Appointments', '18', '+4%', Icons.calendar_today_rounded, Colors.orange)),
-        const SizedBox(width: 24),
-        Expanded(child: _refinedStatCard('Consultations', '560', '+8%', Icons.medical_services_rounded, Colors.deepPurple)),
-        const SizedBox(width: 24),
-        Expanded(child: _refinedStatCard('Average Rating', '4.9', '0%', Icons.star_rounded, Colors.amber)),
-      ],
-    );
+  Widget _buildStatsSummary(bool isDesktop) {
+    if (isDesktop) {
+      return Row(
+        children: [
+          Expanded(child: _refinedStatCard('Total Patients', '1.2k', '+12%', Icons.people_rounded, Colors.blue)),
+          const SizedBox(width: 24),
+          Expanded(child: _refinedStatCard('Today Appointments', '18', '+4%', Icons.calendar_today_rounded, Colors.orange)),
+          const SizedBox(width: 24),
+          Expanded(child: _refinedStatCard('Consultations', '560', '+8%', Icons.medical_services_rounded, Colors.deepPurple)),
+          const SizedBox(width: 24),
+          Expanded(child: _refinedStatCard('Average Rating', '4.9', '0%', Icons.star_rounded, Colors.amber)),
+        ],
+      );
+    } else {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: _refinedStatCard('Total Patients', '1.2k', '+12%', Icons.people_rounded, Colors.blue)),
+              const SizedBox(width: 16),
+              Expanded(child: _refinedStatCard('Today Appointments', '18', '+4%', Icons.calendar_today_rounded, Colors.orange)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _refinedStatCard('Consultations', '560', '+8%', Icons.medical_services_rounded, Colors.deepPurple)),
+              const SizedBox(width: 16),
+              Expanded(child: _refinedStatCard('Average Rating', '4.9', '0%', Icons.star_rounded, Colors.amber)),
+            ],
+          ),
+        ],
+      );
+    }
   }
 
   Widget _refinedStatCard(String title, String value, String growth, IconData icon, Color color) {
@@ -571,48 +629,80 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
     );
   }
 
-  Widget _buildUpcomingConsultations() {
+  Widget _buildUpcomingConsultations(bool isDesktop) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2937), // Signature dark section
+        color: const Color(0xFF1F2937),
         borderRadius: BorderRadius.circular(24),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Upcoming Multi-Specialty Webinar',
-                  style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+      child: isDesktop 
+        ? Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Upcoming Multi-Specialty Webinar',
+                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Join other 1,200 specialists to discuss advancements in AI-driven cardiology.',
+                      style: GoogleFonts.poppins(fontSize: 14, color: Colors.white60),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Join other 1,200 specialists to discuss advancements in AI-driven cardiology.',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.white60),
+              ),
+              const SizedBox(width: 40),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _primaryColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
                 ),
-              ],
-            ),
+                child: Text(
+                  'Register Now',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+            ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Upcoming Multi-Specialty Webinar',
+                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Join other 1,200 specialists to discuss advancements in AI-driven cardiology.',
+                style: GoogleFonts.poppins(fontSize: 13, color: Colors.white60),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _primaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Register Now',
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 40),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _primaryColor,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 0,
-            ),
-            child: Text(
-              'Register Now',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

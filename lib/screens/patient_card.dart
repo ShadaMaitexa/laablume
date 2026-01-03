@@ -49,113 +49,118 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              Text(
-                'Personal data',
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111827),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Provide your personal data to book visits in just a few clicks.',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  height: 1.5,
-                  color: const Color(0xFF6B7280),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Form Fields
-              _buildModernInputField(
-                label: 'First name',
-                controller: firstNameController,
-                hint: 'Enter your name',
-              ),
-              _buildModernInputField(
-                label: 'Last name',
-                controller: lastNameController,
-                hint: 'Enter your last name',
-              ),
-              _buildModernSelectField(
-                label: 'Date of birth',
-                value: dob,
-                onTap: _showDobDialog,
-                icon: Icons.calendar_today_outlined,
-              ),
-              _buildModernInputField(
-                label: 'Phone number',
-                controller: phoneController,
-                hint: '000 000 0000',
-                prefix: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('🇺🇸', style: TextStyle(fontSize: 18)),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.keyboard_arrow_down, size: 16, color: Color(0xFF6B7280)),
-                    const SizedBox(width: 8),
-                    Text('+1', style: GoogleFonts.poppins(fontSize: 14, color: Colors.black)),
-                    const SizedBox(width: 8),
-                    Container(width: 1, height: 24, color: const Color(0xFFE5E7EB)),
-                    const SizedBox(width: 12),
-                  ],
-                ),
-                keyboardType: TextInputType.phone,
-              ),
-              _buildModernInputField(
-                label: 'Email',
-                controller: emailController,
-                hint: 'your.email@example.com',
-                keyboardType: TextInputType.emailAddress,
-              ),
-              _buildModernSelectField(
-                label: 'City',
-                value: city,
-                onTap: _showCityBottomSheet,
-                icon: Icons.keyboard_arrow_down,
-              ),
-              _buildModernInputField(
-                label: 'Address',
-                controller: addressController,
-                hint: 'Street Name, Building, Apartment',
-                maxLines: 2,
-              ),
-
-              const SizedBox(height: 40),
-
-              // Next Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _validateAndProceed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF12B8A6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'Next',
+        child: Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  Text(
+                    'Personal data',
                     style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF111827),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Provide your personal data to book visits in just a few clicks.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      height: 1.5,
+                      color: const Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Form Fields
+                  _buildModernInputField(
+                    label: 'First name',
+                    controller: firstNameController,
+                    hint: 'Enter your name',
+                  ),
+                  _buildModernInputField(
+                    label: 'Last name',
+                    controller: lastNameController,
+                    hint: 'Enter your last name',
+                  ),
+                  _buildModernSelectField(
+                    label: 'Date of birth',
+                    value: dob,
+                    onTap: _showDobDialog,
+                    icon: Icons.calendar_today_outlined,
+                  ),
+                  _buildModernInputField(
+                    label: 'Phone number',
+                    controller: phoneController,
+                    hint: '000 000 0000',
+                    prefix: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🇺🇸', style: TextStyle(fontSize: 18)),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.keyboard_arrow_down, size: 16, color: Color(0xFF6B7280)),
+                        const SizedBox(width: 8),
+                        Text('+1', style: GoogleFonts.poppins(fontSize: 14, color: Colors.black)),
+                        const SizedBox(width: 8),
+                        Container(width: 1, height: 24, color: const Color(0xFFE5E7EB)),
+                        const SizedBox(width: 12),
+                      ],
+                    ),
+                    keyboardType: TextInputType.phone,
+                  ),
+                  _buildModernInputField(
+                    label: 'Email',
+                    controller: emailController,
+                    hint: 'your.email@example.com',
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  _buildModernSelectField(
+                    label: 'City',
+                    value: city,
+                    onTap: _showCityBottomSheet,
+                    icon: Icons.keyboard_arrow_down,
+                  ),
+                  _buildModernInputField(
+                    label: 'Address',
+                    controller: addressController,
+                    hint: 'Street Name, Building, Apartment',
+                    maxLines: 2,
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Next Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _validateAndProceed,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF12B8A6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Next',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
               ),
-              const SizedBox(height: 40),
-            ],
+            ),
           ),
         ),
       ),

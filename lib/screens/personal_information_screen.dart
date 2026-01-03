@@ -152,57 +152,62 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            // Avatar with camera icon
-            Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                // Avatar with camera icon
+                Center(
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: const CircleAvatar(
-                      backgroundColor: Color(0xFFEAF8F6),
-                      child: Icon(Icons.person_rounded, size: 50, color: Color(0xFF12B8A6)),
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFDC2626),
-                        shape: BoxShape.circle,
+                        child: const CircleAvatar(
+                          backgroundColor: Color(0xFFEAF8F6),
+                          child: Icon(Icons.person_rounded, size: 50, color: Color(0xFF12B8A6)),
+                        ),
                       ),
-                      child: const Icon(Icons.camera_alt_rounded, size: 16, color: Colors.white),
-                    ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFDC2626),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.camera_alt_rounded, size: 16, color: Colors.white),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
+                ),
+                const SizedBox(height: 32),
 
-            _buildField('First name', firstNameController),
-            _buildField('Last name', lastNameController),
-            _buildField('Birth date', birthDateController, icon: Icons.calendar_today_rounded),
-            _buildField('Phone number', phoneController, isPhone: true),
-            _buildField('City', cityController),
-            _buildField('Address', addressController, maxLines: 3),
-          ],
+                _buildField('First name', firstNameController),
+                _buildField('Last name', lastNameController),
+                _buildField('Birth date', birthDateController, icon: Icons.calendar_today_rounded),
+                _buildField('Phone number', phoneController, isPhone: true),
+                _buildField('City', cityController),
+                _buildField('Address', addressController, maxLines: 3),
+              ],
+            ),
+          ),
         ),
       ),
     );

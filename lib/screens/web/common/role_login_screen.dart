@@ -47,62 +47,65 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDesktop = MediaQuery.of(context).size.width >= 900;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F9F8),
       body: Row(
         children: [
-          // Left Side: Branding/Illustration
-          Expanded(
-            flex: 1,
-            child: Container(
-              color: const Color(0xFF1F2937),
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: -100,
-                    left: -100,
-                    child: CircleAvatar(radius: 200, backgroundColor: _primaryColor.withOpacity(0.1)),
-                  ),
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(40),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
+          // Left Side: Branding/Illustration (Desktop only)
+          if (isDesktop)
+            Expanded(
+              flex: 1,
+              child: Container(
+                color: const Color(0xFF1F2937),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      top: -100,
+                      left: -100,
+                      child: CircleAvatar(radius: 200, backgroundColor: _primaryColor.withOpacity(0.1)),
+                    ),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(40),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF12B8A6), size: 60),
                             ),
-                            child: Image.asset('assets/logo.png', width: 80, height: 80),
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'LabLume Enterprise',
-                            style: GoogleFonts.poppins(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                            const SizedBox(height: 24),
+                            Text(
+                              'LabLume Enterprise',
+                              style: GoogleFonts.poppins(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Accessing ${widget.role} Secure Terminal',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              color: Colors.white60,
+                            const SizedBox(height: 16),
+                            Text(
+                              'Accessing ${widget.role} Secure Terminal',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                color: Colors.white60,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
           
           // Right Side: Login Form
           Expanded(
@@ -126,10 +129,23 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (!isDesktop) ...[
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _primaryColor.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.auto_awesome_rounded, color: _primaryColor, size: 40),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                     Text(
                       'Welcome Back',
                       style: GoogleFonts.poppins(
-                        fontSize: 28,
+                        fontSize: isDesktop ? 28 : 24,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF1F2937),
                       ),

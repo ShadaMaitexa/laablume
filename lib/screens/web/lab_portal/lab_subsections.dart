@@ -345,40 +345,211 @@ class LabTechniciansScreen extends StatelessWidget {
   }
 }
 
-class LabSettingsScreen extends StatelessWidget {
+class LabSettingsScreen extends StatefulWidget {
   const LabSettingsScreen({super.key});
+
+  @override
+  State<LabSettingsScreen> createState() => _LabSettingsScreenState();
+}
+
+class _LabSettingsScreenState extends State<LabSettingsScreen> {
+  int _currentView = 0; // 0 for list, 1 for Equipment, 2 for Templates, 3 for Export
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(40),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.settings_outlined, size: 80, color: Color(0xFF12B8A6)),
+          Row(
+            children: [
+              if (_currentView != 0)
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => setState(() => _currentView = 0),
+                ),
+              Text(
+                _currentView == 0 
+                  ? 'Lab Configuration' 
+                  : _currentView == 1 
+                    ? 'Diagnostic Equipment'
+                    : _currentView == 2
+                      ? 'Report Templates'
+                      : 'Data Export Preferences',
+                style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
           const SizedBox(height: 24),
-          Text('Lab Configuration', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 48),
-          _labSettingItem('Diagnostic Equipment Setup'),
-          _labSettingItem('Report Templates'),
-          _labSettingItem('Data Export Preferences'),
+          Expanded(
+            child: _buildMainContent(),
+          ),
         ],
       ),
     );
   }
 
-  Widget _labSettingItem(String title) {
+  Widget _buildMainContent() {
+    switch (_currentView) {
+      case 1:
+        return _buildEquipmentSetup();
+      case 2:
+        return _buildTemplateEditor();
+      case 3:
+        return _buildExportSettings();
+      default:
+        return _buildSettingsList();
+    }
+  }
+
+  Widget _buildSettingsList() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.settings_outlined, size: 80, color: Color(0xFF12B8A6)),
+        const SizedBox(height: 48),
+        _labSettingItem('Diagnostic Equipment Setup', Icons.biotech_outlined, () => setState(() => _currentView = 1)),
+        _labSettingItem('Report Templates', Icons.description_outlined, () => setState(() => _currentView = 2)),
+        _labSettingItem('Data Export Preferences', Icons.ios_share_rounded, () => setState(() => _currentView = 3)),
+      ],
+    );
+  }
+
+  Widget _buildExportSettings() {
     return Container(
-      width: 500,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Format Preferences', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          _radioOption('PDF (Standard Human Readable)'),
+          _radioOption('JSON (Digital Integration)'),
+          _radioOption('CSV (Bulk Data Processing)'),
+          const SizedBox(height: 32),
+          Text('Automation Frequency', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          _radioOption('Real-time (on validation)'),
+          _radioOption('Daily Batch (at 11:59 PM)'),
+          _radioOption('Manual Export only'),
+           const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => setState(() => _currentView = 0),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF12B8A6),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+              ),
+              child: const Text('Save Export Config'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _radioOption(String text) {
+    return Row(
+      children: [
+        Radio(value: text, groupValue: 'PDF (Standard Human Readable)', onChanged: (v) {}),
+        Text(text, style: GoogleFonts.poppins(fontSize: 14)),
+      ],
+    );
+  }
+
+  Widget _buildEquipmentSetup() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: ListView(
+        children: [
+          _equipmentItem('Chemical Analyzer A1', 'Online', true),
+          _equipmentItem('Hematology Auto-Sys', 'Online', true),
+          _equipmentItem('Centrifuge Unit 4', 'Offline', false),
+          _equipmentItem('Microscope Digital X1', 'Online', true),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF12B8A6),
+              padding: const EdgeInsets.symmetric(vertical: 20),
+            ),
+            child: const Text('Add New Equipment'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _equipmentItem(String name, String status, bool isActive) {
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFFF3F4F6)),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-          const Icon(Icons.chevron_right, color: Color(0xFFE5E7EB)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              Text(status, style: GoogleFonts.poppins(fontSize: 12, color: isActive ? Colors.green : Colors.red)),
+            ],
+          ),
+          Switch(value: isActive, onChanged: (v) {}),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTemplateEditor() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        children: [
+          _templateTile('Standard Blood Report', 'Last edited 2 days ago'),
+          _templateTile('Full Body Checkup Summary', 'Last edited 1 week ago'),
+          _templateTile('COVID-19 Result Certificate', 'Last edited 1 month ago'),
+        ],
+      ),
+    );
+  }
+
+  Widget _templateTile(String title, String subtitle) {
+    return ListTile(
+      leading: const Icon(Icons.article_outlined, color: Color(0xFF12B8A6)),
+      title: Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle, style: GoogleFonts.poppins(fontSize: 12)),
+      trailing: const Icon(Icons.edit_outlined),
+      onTap: () {},
+    );
+  }
+
+  Widget _labSettingItem(String title, IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 500,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+        child: Row(
+          children: [
+            Icon(icon, color: const Color(0xFF12B8A6), size: 20),
+            const SizedBox(width: 16),
+            Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+            const Spacer(),
+            const Icon(Icons.chevron_right, color: Color(0xFFE5E7EB)),
+          ],
+        ),
       ),
     );
   }

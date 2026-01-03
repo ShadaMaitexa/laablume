@@ -426,7 +426,7 @@ class DoctorSettingsScreen extends StatefulWidget {
 }
 
 class _DoctorSettingsScreenState extends State<DoctorSettingsScreen> {
-  int _currentView = 0; // 0 for list, 1 for profile info, 2 for security
+  int _currentView = 0; // 0 for list, 1 for profile info, 2 for security, 3 for credentials, 4 for fees, 5 for availability, 6 for notifications
 
   @override
   Widget build(BuildContext context) {
@@ -447,7 +447,15 @@ class _DoctorSettingsScreenState extends State<DoctorSettingsScreen> {
                   ? 'Account Settings' 
                   : _currentView == 1 
                     ? 'Profile Information'
-                    : 'Security & Password',
+                    : _currentView == 2
+                      ? 'Security & Password'
+                      : _currentView == 3
+                        ? 'Professional Credentials'
+                        : _currentView == 4
+                          ? 'Consultation Fees'
+                          : _currentView == 5
+                            ? 'Availability & Hours'
+                            : 'Notifications',
                 style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold),
               ),
             ],
@@ -467,6 +475,14 @@ class _DoctorSettingsScreenState extends State<DoctorSettingsScreen> {
         return _buildProfileEditor();
       case 2:
         return _buildSecuritySettings();
+      case 3:
+        return _buildCredentialsSettings();
+      case 4:
+        return _buildFeesSettings();
+      case 5:
+        return _buildAvailabilitySettings();
+      case 6:
+        return _buildNotificationSettings();
       default:
         return _buildSettingsList();
     }
@@ -480,11 +496,167 @@ class _DoctorSettingsScreenState extends State<DoctorSettingsScreen> {
         child: Column(
           children: [
             _settingRow('Profile Information', Icons.person_outline, () => setState(() => _currentView = 1)),
-            _settingRow('Professional Credentials', Icons.badge_outlined, () => _showComingSoon('Credentials')),
-            _settingRow('Consultation Fees', Icons.payments_outlined, () => _showComingSoon('Fees')),
-            _settingRow('Availability & Hours', Icons.schedule_outlined, () => _showComingSoon('Availability')),
+            _settingRow('Professional Credentials', Icons.badge_outlined, () => setState(() => _currentView = 3)),
+            _settingRow('Consultation Fees', Icons.payments_outlined, () => setState(() => _currentView = 4)),
+            _settingRow('Availability & Hours', Icons.schedule_outlined, () => setState(() => _currentView = 5)),
             _settingRow('Security & Password', Icons.security_outlined, () => setState(() => _currentView = 2)),
-            _settingRow('Notification Preferences', Icons.notifications_none, () => _showComingSoon('Notifications')),
+            _settingRow('Notification Preferences', Icons.notifications_none, () => setState(() => _currentView = 6)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationSettings() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        children: [
+          _notificationToggle('Appointment Reminders', 'Get notified about upcoming visits', true),
+          _notificationToggle('New Patient Message', 'Direct messages from patients', true),
+          _notificationToggle('Report Ready Alert', 'AI Analysis completion alerts', false),
+          _notificationToggle('Portal Security', 'Login alerts from new devices', true),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => setState(() => _currentView = 0),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF12B8A6),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Save Preferences'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _notificationToggle(String title, String sub, bool val) {
+    return SwitchListTile(
+      title: Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14)),
+      subtitle: Text(sub, style: GoogleFonts.poppins(fontSize: 12)),
+      value: val,
+      onChanged: (v) {},
+      activeColor: const Color(0xFF12B8A6),
+    );
+  }
+
+  Widget _buildCredentialsSettings() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildField('Medical License ID', 'MED-12345678'),
+            const SizedBox(height: 20),
+            _buildField('Board Certifications', 'American Board of Internal Medicine'),
+            const SizedBox(height: 20),
+            _buildField('Medical School', 'Harvard Medical School'),
+            const SizedBox(height: 20),
+            _buildField('Residency', 'Mayo Clinic, Cardiology'),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => setState(() => _currentView = 0),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF12B8A6),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Save Credentials'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeesSettings() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildField('Online Consultation Fee (₹)', '1500'),
+          const SizedBox(height: 20),
+          _buildField('In-Clinic Consultation Fee (₹)', '1000'),
+          const SizedBox(height: 20),
+          _buildField('Follow-up Fee (₹)', '500'),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => setState(() => _currentView = 0),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF12B8A6),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Update Fees'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvailabilitySettings() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Select Working Days', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) {
+                bool active = day != 'Sun';
+                return FilterChip(
+                  label: Text(day),
+                  selected: active,
+                  onSelected: (val) {},
+                  selectedColor: const Color(0xFF12B8A6).withOpacity(0.2),
+                  checkmarkColor: const Color(0xFF12B8A6),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 32),
+            Text('Working Hours', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(child: _buildField('Start Time', '09:00 AM')),
+                const SizedBox(width: 20),
+                Expanded(child: _buildField('End Time', '05:00 PM')),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildField('Break Time', '01:00 PM - 02:00 PM'),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => setState(() => _currentView = 0),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF12B8A6),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Save Availability'),
+              ),
+            ),
           ],
         ),
       ),
