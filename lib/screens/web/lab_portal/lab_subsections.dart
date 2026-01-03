@@ -180,8 +180,75 @@ class _LabBookingsScreenState extends State<LabBookingsScreen> {
   }
 }
 
-class LabInventoryScreen extends StatelessWidget {
+class LabInventoryScreen extends StatefulWidget {
   const LabInventoryScreen({super.key});
+
+  @override
+  State<LabInventoryScreen> createState() => _LabInventoryScreenState();
+}
+
+class _LabInventoryScreenState extends State<LabInventoryScreen> {
+  final List<Map<String, dynamic>> _inventoryItems = [
+    {'name': 'Test Tubes', 'count': 85, 'isLow': false},
+    {'name': 'Contact Lenses', 'count': 42, 'isLow': false},
+    {'name': 'Chemical Reagent A', 'count': 12, 'isLow': true},
+    {'name': 'Gloves (L)', 'count': 95, 'isLow': false},
+    {'name': 'Gloves (M)', 'count': 110, 'isLow': false},
+    {'name': 'Syringes', 'count': 15, 'isLow': true},
+  ];
+
+  void _addItem(String name, int count) {
+    setState(() {
+      _inventoryItems.add({'name': name, 'count': count, 'isLow': count < 20});
+    });
+  }
+
+  void _editItem(int index, String name, int count) {
+    setState(() {
+      _inventoryItems[index] = {'name': name, 'count': count, 'isLow': count < 20};
+    });
+  }
+
+  void _removeItem(int index) {
+    setState(() {
+      _inventoryItems.removeAt(index);
+    });
+  }
+
+  void _showItemDialog({int? index}) {
+    final nameController = TextEditingController(text: index != null ? _inventoryItems[index]['name'] : '');
+    final countController = TextEditingController(text: index != null ? _inventoryItems[index]['count'].toString() : '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(index == null ? 'Add New Item' : 'Edit Item'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Item Name')),
+            const SizedBox(height: 16),
+            TextField(controller: countController, decoration: const InputDecoration(labelText: 'Stock Count'), keyboardType: TextInputType.number),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (index == null) {
+                _addItem(nameController.text, int.tryParse(countController.text) ?? 0);
+              } else {
+                _editItem(index, nameController.text, int.tryParse(countController.text) ?? 0);
+              }
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF12B8A6)),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,9 +257,24 @@ class LabInventoryScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Inventory & Supplies',
-            style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Inventory & Supplies',
+                style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937)),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => _showItemDialog(),
+                icon: const Icon(Icons.add),
+                label: const Text('Add Supply'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF12B8A6),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
           Expanded(
@@ -201,9 +283,9 @@ class LabInventoryScreen extends StatelessWidget {
                 crossAxisCount: 4,
                 crossAxisSpacing: 24,
                 mainAxisSpacing: 24,
-                childAspectRatio: 1.5,
+                childAspectRatio: 1.2,
               ),
-              itemCount: 8,
+              itemCount: _inventoryItems.length,
               itemBuilder: (context, index) => _inventoryCard(index),
             ),
           ),
@@ -213,24 +295,42 @@ class LabInventoryScreen extends StatelessWidget {
   }
 
   Widget _inventoryCard(int index) {
-    bool isLow = index == 2 || index == 5;
+    final item = _inventoryItems[index];
+    bool isLow = item['isLow'];
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: isLow ? Border.all(color: Colors.red.withOpacity(0.3)) : null,
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Item Name ${index + 1}', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: Text(item['name'], style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF9CA3AF)),
+                    onPressed: () => _showItemDialog(index: index),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
+                    onPressed: () => _removeItem(index),
+                  ),
+                ],
+              ),
+            ],
+          ),
           const SizedBox(height: 8),
-          Text('In Stock: ${100 - (index * 10)} units', style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF6B7280))),
-          const SizedBox(height: 12),
+          Text('In Stock: ${item['count']} units', style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF6B7280))),
+          const Spacer(),
           LinearProgressIndicator(
-            value: (100 - (index * 10)) / 100,
+            value: (item['count'] as int) / 100,
             backgroundColor: const Color(0xFFF3F4F6),
             valueColor: AlwaysStoppedAnimation<Color>(isLow ? Colors.red : const Color(0xFF12B8A6)),
           ),
@@ -298,8 +398,57 @@ class LabResultsApprovalScreen extends StatelessWidget {
   }
 }
 
-class LabTechniciansScreen extends StatelessWidget {
+class LabTechniciansScreen extends StatefulWidget {
   const LabTechniciansScreen({super.key});
+
+  @override
+  State<LabTechniciansScreen> createState() => _LabTechniciansScreenState();
+}
+
+class _LabTechniciansScreenState extends State<LabTechniciansScreen> {
+  final List<Map<String, dynamic>> _staff = [
+    {'name': 'Robert Fox', 'role': 'Senior Pathologist', 'status': 'Active'},
+    {'name': 'Jane Cooper', 'role': 'Lab Technician', 'status': 'On Break'},
+    {'name': 'Guy Hawkins', 'role': 'Assistant Technician', 'status': 'Active'},
+    {'name': 'Eleanor Pena', 'role': 'Bio-analyst', 'status': 'Active'},
+  ];
+
+  void _showStaffDialog({int? index}) {
+    final nameController = TextEditingController(text: index != null ? _staff[index]['name'] : '');
+    final roleController = TextEditingController(text: index != null ? _staff[index]['role'] : '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(index == null ? 'Add Staff Member' : 'Edit Staff'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Full Name')),
+            const SizedBox(height: 16),
+            TextField(controller: roleController, decoration: const InputDecoration(labelText: 'Role/Position')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                if (index == null) {
+                  _staff.add({'name': nameController.text, 'role': roleController.text, 'status': 'Active'});
+                } else {
+                  _staff[index] = {'name': nameController.text, 'role': roleController.text, 'status': _staff[index]['status']};
+                }
+              });
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF12B8A6)),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +457,22 @@ class LabTechniciansScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Lab Staff', style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Lab Staff', style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold)),
+              ElevatedButton.icon(
+                onPressed: () => _showStaffDialog(),
+                icon: const Icon(Icons.person_add_alt_1_rounded),
+                label: const Text('Add Technician'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF12B8A6),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 24),
           Expanded(
             child: GridView.builder(
@@ -318,25 +482,44 @@ class LabTechniciansScreen extends StatelessWidget {
                 mainAxisSpacing: 24,
                 childAspectRatio: 3,
               ),
-              itemCount: 6,
-              itemBuilder: (context, index) => Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                child: Row(
-                  children: [
-                    const CircleAvatar(backgroundColor: Color(0xFF12B8A6), child: Icon(Icons.person, color: Colors.white)),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Technician ${index + 1}', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                        Text('Active on Line B', style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280))),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              itemCount: _staff.length,
+              itemBuilder: (context, index) {
+                final member = _staff[index];
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+                  ),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(backgroundColor: Color(0xFF12B8A6), child: Icon(Icons.person, color: Colors.white)),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(member['name'], style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                            Text(member['role'], style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280))),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF9CA3AF)),
+                        onPressed: () => _showStaffDialog(index: index),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
+                        onPressed: () {
+                          setState(() => _staff.removeAt(index));
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -353,7 +536,13 @@ class LabSettingsScreen extends StatefulWidget {
 }
 
 class _LabSettingsScreenState extends State<LabSettingsScreen> {
-  int _currentView = 0; // 0 for list, 1 for Equipment, 2 for Templates, 3 for Export
+  int _currentView = 0; 
+  final List<Map<String, dynamic>> _equipment = [
+    {'name': 'Chemical Analyzer A1', 'status': 'Online', 'isActive': true},
+    {'name': 'Hematology Auto-Sys', 'status': 'Online', 'isActive': true},
+    {'name': 'Centrifuge Unit 4', 'status': 'Offline', 'isActive': false},
+    {'name': 'Microscope Digital X1', 'status': 'Online', 'isActive': true},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -382,9 +571,7 @@ class _LabSettingsScreenState extends State<LabSettingsScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          Expanded(
-            child: _buildMainContent(),
-          ),
+          Expanded(child: _buildMainContent()),
         ],
       ),
     );
@@ -404,15 +591,104 @@ class _LabSettingsScreenState extends State<LabSettingsScreen> {
   }
 
   Widget _buildSettingsList() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.settings_outlined, size: 80, color: Color(0xFF12B8A6)),
-        const SizedBox(height: 48),
-        _labSettingItem('Diagnostic Equipment Setup', Icons.biotech_outlined, () => setState(() => _currentView = 1)),
-        _labSettingItem('Report Templates', Icons.description_outlined, () => setState(() => _currentView = 2)),
-        _labSettingItem('Data Export Preferences', Icons.ios_share_rounded, () => setState(() => _currentView = 3)),
-      ],
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.settings_outlined, size: 80, color: Color(0xFF12B8A6)),
+          const SizedBox(height: 48),
+          _labSettingItem('Diagnostic Equipment Setup', Icons.biotech_outlined, () => setState(() => _currentView = 1)),
+          _labSettingItem('Report Templates', Icons.description_outlined, () => setState(() => _currentView = 2)),
+          _labSettingItem('Data Export Preferences', Icons.ios_share_rounded, () => setState(() => _currentView = 3)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEquipmentSetup() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _equipment.length,
+              itemBuilder: (context, index) {
+                final item = _equipment[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: const Color(0xFFF3F4F6)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(item['name'], style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                            Text(item['status'], style: GoogleFonts.poppins(fontSize: 12, color: item['isActive'] ? Colors.green : Colors.red)),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: item['isActive'],
+                        onChanged: (v) {
+                          setState(() {
+                            _equipment[index]['isActive'] = v;
+                            _equipment[index]['status'] = v ? 'Online' : 'Offline';
+                          });
+                        },
+                        activeColor: const Color(0xFF12B8A6),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                        onPressed: () => setState(() => _equipment.removeAt(index)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () {
+              final controller = TextEditingController();
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Add New Equipment'),
+                  content: TextField(controller: controller, decoration: const InputDecoration(labelText: 'Equipment Name')),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _equipment.add({'name': controller.text, 'status': 'Online', 'isActive': true});
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF12B8A6)),
+                      child: const Text('Add'),
+                    ),
+                  ],
+                ),
+              );
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('Add New Equipment'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF12B8A6),
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -434,7 +710,7 @@ class _LabSettingsScreenState extends State<LabSettingsScreen> {
           _radioOption('Real-time (on validation)'),
           _radioOption('Daily Batch (at 11:59 PM)'),
           _radioOption('Manual Export only'),
-           const SizedBox(height: 32),
+          const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -442,67 +718,11 @@ class _LabSettingsScreenState extends State<LabSettingsScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF12B8A6),
                 padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: const Text('Save Export Config'),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _radioOption(String text) {
-    return Row(
-      children: [
-        Radio(value: text, groupValue: 'PDF (Standard Human Readable)', onChanged: (v) {}),
-        Text(text, style: GoogleFonts.poppins(fontSize: 14)),
-      ],
-    );
-  }
-
-  Widget _buildEquipmentSetup() {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-      child: ListView(
-        children: [
-          _equipmentItem('Chemical Analyzer A1', 'Online', true),
-          _equipmentItem('Hematology Auto-Sys', 'Online', true),
-          _equipmentItem('Centrifuge Unit 4', 'Offline', false),
-          _equipmentItem('Microscope Digital X1', 'Online', true),
-          const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B8A6),
-              padding: const EdgeInsets.symmetric(vertical: 20),
-            ),
-            child: const Text('Add New Equipment'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _equipmentItem(String name, String status, bool isActive) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFFF3F4F6)),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(name, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-              Text(status, style: GoogleFonts.poppins(fontSize: 12, color: isActive ? Colors.green : Colors.red)),
-            ],
-          ),
-          Switch(value: isActive, onChanged: (v) {}),
         ],
       ),
     );
@@ -532,6 +752,15 @@ class _LabSettingsScreenState extends State<LabSettingsScreen> {
     );
   }
 
+  Widget _radioOption(String text) {
+    return Row(
+      children: [
+        Radio(value: text, groupValue: 'PDF (Standard Human Readable)', onChanged: (v) {}),
+        Text(text, style: GoogleFonts.poppins(fontSize: 14)),
+      ],
+    );
+  }
+
   Widget _labSettingItem(String title, IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
@@ -540,7 +769,7 @@ class _LabSettingsScreenState extends State<LabSettingsScreen> {
         width: 500,
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 5)]),
         child: Row(
           children: [
             Icon(icon, color: const Color(0xFF12B8A6), size: 20),

@@ -11,6 +11,7 @@ class LabWebDashboard extends StatefulWidget {
 
 class _LabWebDashboardState extends State<LabWebDashboard> {
   int _selectedIndex = 0;
+  bool _showNotifications = false;
 
   final Color _primaryColor = const Color(0xFF12B8A6);
   final Color _darkBg = const Color(0xFF111827); // Very dark for a modern lab feel
@@ -28,29 +29,39 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
         backgroundColor: _darkBg,
         child: _buildLabSidebar(isDrawer: true),
       ),
-      body: Row(
+      body: Stack(
         children: [
-          if (isDesktop) _buildLabSidebar(),
-          Expanded(
-            child: Column(
-              children: [
-                _buildLabHeader(!isDesktop),
-                Expanded(
-                  child: IndexedStack(
-                    index: _selectedIndex,
-                    children: [
-                      _buildDashboardContent(isDesktop), // Index 0: Lab Analytics
-                      const LabBookingsScreen(), // Index 1: Manage Tests
-                      const LabResultsApprovalScreen(), // Index 2: Results Approval
-                      const LabInventoryScreen(), // Index 3: Equipment & Supplies
-                      const LabTechniciansScreen(), // Index 4: Technicians
-                      const LabSettingsScreen(), // Index 5: Portal Settings
-                    ],
-                  ),
+          Row(
+            children: [
+              if (isDesktop) _buildLabSidebar(),
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildLabHeader(!isDesktop),
+                    Expanded(
+                      child: IndexedStack(
+                        index: _selectedIndex,
+                        children: [
+                          _buildDashboardContent(isDesktop), // Index 0: Lab Analytics
+                          const LabBookingsScreen(), // Index 1: Manage Tests
+                          const LabResultsApprovalScreen(), // Index 2: Results Approval
+                          const LabInventoryScreen(), // Index 3: Equipment & Supplies
+                          const LabTechniciansScreen(), // Index 4: Technicians
+                          const LabSettingsScreen(), // Index 5: Portal Settings
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+          if (_showNotifications)
+            Positioned(
+              top: 80,
+              right: isDesktop ? 60 : 20,
+              child: _buildNotificationsPanel(),
+            ),
         ],
       ),
     );
@@ -121,7 +132,7 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF12B8A6), size: 24),
+                  child: Image.asset('assets/logo.png', width: 24, height: 24),
                 ),
                 const SizedBox(width: 14),
                 Text(
@@ -218,13 +229,113 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
             ),
           const Spacer(),
           if (!showMenu) _statusIndicator('Lab Status: ACTIVE', Colors.green),
-          const SizedBox(width: 20),
+          const SizedBox(width: 24),
+          _headerAction(
+            Icons.notifications_none_rounded, 
+            badgeCount: 2,
+            onTap: () => setState(() => _showNotifications = !_showNotifications),
+          ),
+          const SizedBox(width: 12),
+          _headerAction(Icons.bolt_rounded), // System status
+          const SizedBox(width: 24),
           const CircleAvatar(
             backgroundColor: Color(0xFFF3F4F6),
             child: Icon(Icons.science, color: Color(0xFF1F2937)),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _headerAction(IconData icon, {VoidCallback? onTap, int badgeCount = 0}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0xFFF3F4F6)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: const Color(0xFF6B7280), size: 18),
+          ),
+          if (badgeCount > 0)
+            Positioned(
+              top: -4,
+              right: -4,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(color: Color(0xFF12B8A6), shape: BoxShape.circle),
+                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                child: Text(
+                  badgeCount.toString(),
+                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationsPanel() {
+    return Container(
+      width: 320,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('System Alerts', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
+                const Icon(Icons.settings_outlined, size: 18, color: Color(0xFF9CA3AF)),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          _notificationItem('Critical Reagent Low', 'Analyzer-1 requires immediate refill.', Icons.warning_amber_rounded, Colors.red),
+          _notificationItem('Calibration Required', 'Immunoassay system calibration due.', Icons.build_outlined, Colors.orange),
+          _notificationItem('Sample Batch Uploaded', '32 new samples registered for analysis.', Icons.cloud_done_outlined, _primaryColor),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextButton(
+              onPressed: () => setState(() => _showNotifications = false),
+              child: Text('Close Diagnostics', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: const Color(0xFF6B7280))),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _notificationItem(String title, String sub, IconData icon, Color color) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+        child: Icon(icon, color: color, size: 18),
+      ),
+      title: Text(title, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
+      subtitle: Text(sub, style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF6B7280))),
+      onTap: () {},
     );
   }
 

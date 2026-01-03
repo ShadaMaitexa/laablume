@@ -311,7 +311,12 @@ class _ChatScreenState extends State<ChatScreen> {
             _selectedMessage = conversation;
           });
         } else {
-          // Navigate to mobile chat detail (not implemented yet)
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatDetailScreen(message: conversation),
+            ),
+          );
         }
       },
       child: Container(
@@ -412,6 +417,155 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
+class ChatDetailScreen extends StatelessWidget {
+  final MessageModel message;
+  const ChatDetailScreen({super.key, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFB),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111827), size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: const Color(0xFF12B8A6).withOpacity(0.1),
+              child: const Icon(Icons.person_rounded, color: Color(0xFF12B8A6), size: 20),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              message.name,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF111827),
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                _buildMessageBubble(
+                  message: message.lastMessage,
+                  isMe: false,
+                  time: message.time,
+                ),
+                _buildMessageBubble(
+                  message: 'Hello! How can I help you today?',
+                  isMe: true,
+                  time: 'Just now',
+                ),
+              ],
+            ),
+          ),
+          _buildChatInput(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble({required String message, required bool isMe, required String time}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            constraints: const BoxConstraints(maxWidth: 280),
+            decoration: BoxDecoration(
+              color: isMe ? const Color(0xFF12B8A6) : Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(20),
+                topRight: const Radius.circular(20),
+                bottomLeft: Radius.circular(isMe ? 20 : 0),
+                bottomRight: Radius.circular(isMe ? 0 : 20),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Text(
+              message,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: isMe ? Colors.white : const Color(0xFF1F2937),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            time,
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              color: const Color(0xFF9CA3AF),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatInput() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TextField(
+                style: GoogleFonts.poppins(fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Type a message...',
+                  hintStyle: GoogleFonts.poppins(color: const Color(0xFF9CA3AF)),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF12B8A6),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              onPressed: () {},
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // =================================================
 // MODEL (API READY)
 // =================================================
@@ -443,4 +597,3 @@ class MessageModel {
     );
   }
 }
-```

@@ -346,50 +346,136 @@ class DoctorReportsScreen extends StatelessWidget {
   }
 }
 
-class DoctorConsultationsScreen extends StatelessWidget {
+class DoctorConsultationsScreen extends StatefulWidget {
   const DoctorConsultationsScreen({super.key});
+
+  @override
+  State<DoctorConsultationsScreen> createState() => _DoctorConsultationsScreenState();
+}
+
+class _DoctorConsultationsScreenState extends State<DoctorConsultationsScreen> {
+  int _activeChatIndex = 0;
+  final List<Map<String, dynamic>> _mockChats = [
+    {
+      'name': 'Alice Brown',
+      'lastMessage': 'Doctor, I have a question about my last prescription.',
+      'time': '10:45 AM',
+      'unread': true,
+      'status': 'Online',
+    },
+    {
+      'name': 'Mark Wilson',
+      'lastMessage': 'Thank you for the consultation, feeling better.',
+      'time': 'Yesterday',
+      'unread': false,
+      'status': 'Offline',
+    },
+    {
+      'name': 'Sophia Garcia',
+      'lastMessage': 'When should I come for the follow-up?',
+      'time': 'Yesterday',
+      'unread': false,
+      'status': 'Online',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(40),
+      padding: const EdgeInsets.all(32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Live Consultations', style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Communication Hub',
+                style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937)),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF12B8A6).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.videocam_rounded, color: Color(0xFF12B8A6), size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Start Instant Meeting',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF12B8A6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
           Expanded(
             child: Row(
               children: [
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.video_camera_front, size: 80, color: Color(0xFF12B8A6)),
-                          const SizedBox(height: 20),
-                          Text('No Active Call', style: GoogleFonts.poppins(fontSize: 18, color: const Color(0xFF6B7280))),
-                        ],
+                // Chat List
+                Container(
+                  width: 350,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Search patients...',
+                            prefixIcon: const Icon(Icons.search, size: 20),
+                            filled: true,
+                            fillColor: const Color(0xFFF9FAFB),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: _mockChats.length,
+                          itemBuilder: (context, index) {
+                            final chat = _mockChats[index];
+                            bool isSelected = _activeChatIndex == index;
+                            return _buildChatListItem(chat, index, isSelected);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 24),
+                // Main Chat View
                 Expanded(
-                  flex: 1,
                   child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20),
+                      ],
+                    ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Upcoming Queue', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 20),
-                        _queueItem('Mark Wilson', '11:15 AM'),
-                        _queueItem('Saira Banu', '11:45 AM'),
+                        _buildChatHeader(_mockChats[_activeChatIndex]),
+                        Expanded(child: _buildMessageList()),
+                        _buildChatInput(),
                       ],
                     ),
                   ),
@@ -402,16 +488,208 @@ class DoctorConsultationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _queueItem(String name, String time) {
+  Widget _buildChatListItem(Map<String, dynamic> chat, int index, bool isSelected) {
+    return InkWell(
+      onTap: () => setState(() => _activeChatIndex = index),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF12B8A6).withOpacity(0.05) : Colors.transparent,
+          border: Border(
+            left: BorderSide(
+              color: isSelected ? const Color(0xFF12B8A6) : Colors.transparent,
+              width: 4,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: const Color(0xFFF3F4F6),
+              child: Text(chat['name'][0], style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF111827))),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        chat['name'],
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: chat['unread'] ? FontWeight.bold : FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        chat['time'],
+                        style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF9CA3AF)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    chat['lastMessage'],
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: const Color(0xFF6B7280),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatHeader(Map<String, dynamic> chat) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(12)),
+      padding: const EdgeInsets.all(20),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFF3F4F6))),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(name, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500)),
-          Text(time, style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF12B8A6))),
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: const Color(0xFFF3F4F6),
+            child: Text(chat['name'][0]),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  chat['name'],
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: chat['status'] == 'Online' ? Colors.green : Colors.grey,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      chat['status'],
+                      style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.videocam_outlined, color: Color(0xFF12B8A6)),
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.info_outline, color: Color(0xFF6B7280)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageList() {
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        _buildMessageBubble("Hello Doctor, I've been experiencing some chest pain since morning.", "10:30 AM", false),
+        _buildMessageBubble("Can you describe the pain? Is it sharp or a dull ache?", "10:32 AM", true),
+        _buildMessageBubble("It's more like a heavy pressure, especially when I walk.", "10:35 AM", false),
+        _buildMessageBubble("I see. Have you taken your prescribed medicine today?", "10:36 AM", true),
+      ],
+    );
+  }
+
+  Widget _buildMessageBubble(String content, String time, bool isMe) {
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        constraints: const BoxConstraints(maxWidth: 500),
+        decoration: BoxDecoration(
+          color: isMe ? const Color(0xFF12B8A6) : const Color(0xFFF3F4F6),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: Radius.circular(isMe ? 20 : 0),
+            bottomRight: Radius.circular(isMe ? 0 : 20),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Text(
+              content,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: isMe ? Colors.white : const Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              time,
+              style: GoogleFonts.poppins(
+                fontSize: 10,
+                color: isMe ? Colors.white70 : const Color(0xFF9CA3AF),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatInput() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFFF3F4F6))),
+      ),
+      child: Row(
+        children: [
+          IconButton(icon: const Icon(Icons.attach_file, color: Color(0xFF6B7280)), onPressed: () {}),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Type your message...',
+                filled: true,
+                fillColor: const Color(0xFFF9FAFB),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF12B8A6),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.send_rounded, color: Colors.white),
+              onPressed: () {},
+            ),
+          ),
         ],
       ),
     );

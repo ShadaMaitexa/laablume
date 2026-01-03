@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'dart:async';
 import 'doctor_subsections.dart';
 
 class DoctorWebDashboard extends StatefulWidget {
@@ -11,7 +13,35 @@ class DoctorWebDashboard extends StatefulWidget {
 
 class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
   int _selectedIndex = 0;
+  bool _showNotifications = false;
   final ScrollController _scrollController = ScrollController();
+  late Timer _timer;
+  late String _currentTime;
+  late String _currentDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateTime();
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      _updateTime();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _updateTime() {
+    final now = DateTime.now();
+    setState(() {
+      _currentTime = DateFormat('hh:mm a').format(now);
+      _currentDate = DateFormat('dd MMMM yyyy').format(now);
+    });
+  }
 
   final Color _primaryColor = const Color(0xFF12B8A6);
   final Color _darkAccent = const Color(0xFF0D9488);
@@ -29,33 +59,43 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
         width: 280,
         child: _buildSidebar(isDrawer: true),
       ),
-      body: Row(
+      body: Stack(
         children: [
-          // Navigation Sidebar (Desktop only)
-          if (isDesktop) _buildSidebar(),
-          
-          // Main Content Area
-          Expanded(
-            child: Column(
-              children: [
-                _buildProfessionalHeader(!isDesktop),
-                Expanded(
-                  child: IndexedStack(
-                    index: _selectedIndex,
-                    children: [
-                      _buildDashboardContent(isDesktop), // Index 0
-                      const DoctorAppointmentsScreen(), // Index 1
-                      const DoctorPatientsScreen(), // Index 2
-                      const DoctorReportsScreen(), // Index 3
-                      const DoctorConsultationsScreen(), // Index 4
-                      const DoctorSettingsScreen(), // Index 5
-                      const DoctorHelpScreen(), // Index 6
-                    ],
-                  ),
+          Row(
+            children: [
+              // Navigation Sidebar (Desktop only)
+              if (isDesktop) _buildSidebar(),
+              
+              // Main Content Area
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildProfessionalHeader(!isDesktop),
+                    Expanded(
+                      child: IndexedStack(
+                        index: _selectedIndex,
+                        children: [
+                          _buildDashboardContent(isDesktop), // Index 0
+                          const DoctorAppointmentsScreen(), // Index 1
+                          const DoctorPatientsScreen(), // Index 2
+                          const DoctorReportsScreen(), // Index 3
+                          const DoctorConsultationsScreen(), // Index 4
+                          const DoctorSettingsScreen(), // Index 5
+                          const DoctorHelpScreen(), // Index 6
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+          if (_showNotifications)
+            Positioned(
+              top: 80,
+              right: isDesktop ? 160 : 20,
+              child: _buildNotificationsPanel(),
+            ),
         ],
       ),
     );
@@ -148,7 +188,7 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
                       )
                     ],
                   ),
-                  child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF12B8A6), size: 24),
+                  child: Image.asset('assets/logo.png', width: 24, height: 24),
                 ),
                 const SizedBox(width: 14),
                 Text(
@@ -340,9 +380,20 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
               style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF111827)),
             ),
           const Spacer(),
-          _headerAction(Icons.notifications_none_rounded),
+          _headerAction(
+            Icons.notifications_none_rounded,
+            badgeCount: 3,
+            onTap: () => setState(() => _showNotifications = !_showNotifications),
+          ),
           const SizedBox(width: 12),
-          if (!showMenu) _headerAction(Icons.chat_bubble_outline_rounded),
+          if (!showMenu) 
+            _headerAction(
+              Icons.chat_bubble_outline_rounded,
+              onTap: () => setState(() {
+                _selectedIndex = 4;
+                _showNotifications = false;
+              }),
+            ),
           if (!showMenu) const SizedBox(width: 32),
           if (!showMenu) Container(width: 1, height: 32, color: const Color(0xFFF3F4F6)),
           if (!showMenu) const SizedBox(width: 32),
@@ -352,11 +403,11 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '01 January 2026',
+                  _currentDate,
                   style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF1F2937)),
                 ),
                 Text(
-                  '16:35 PM',
+                  _currentTime,
                   style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF6B7280)),
                 ),
               ],
@@ -366,14 +417,98 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
     );
   }
 
-  Widget _headerAction(IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFFF3F4F6)),
-        borderRadius: BorderRadius.circular(12),
+  Widget _headerAction(IconData icon, {VoidCallback? onTap, int badgeCount = 0}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0xFFF3F4F6)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: const Color(0xFF6B7280), size: 22),
+          ),
+          if (badgeCount > 0)
+            Positioned(
+              top: -4,
+              right: -4,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(color: Color(0xFFDC2626), shape: BoxShape.circle),
+                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                child: Text(
+                  badgeCount.toString(),
+                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
       ),
-      child: Icon(icon, color: const Color(0xFF6B7280), size: 22),
+    );
+  }
+
+  Widget _buildNotificationsPanel() {
+    return Container(
+      width: 320,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Notifications', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
+                TextButton(
+                  onPressed: () {},
+                  child: Text('Mark all read', style: GoogleFonts.poppins(fontSize: 12, color: _primaryColor)),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          _notificationItem('New Appointment', 'Alice Brown confirmed for 10:30 AM', Icons.calendar_today_rounded, Colors.blue),
+          _notificationItem('Lab Report Ready', 'The results for Patient #9011 are ready.', Icons.description_rounded, Colors.orange),
+          _notificationItem('System Update', 'New AI analysis models version 2.4 deployed.', Icons.auto_awesome_rounded, Colors.teal),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextButton(
+              onPressed: () => setState(() => _showNotifications = false),
+              child: Text('View All Activity', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: const Color(0xFF6B7280))),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _notificationItem(String title, String sub, IconData icon, Color color) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+        child: Icon(icon, color: color, size: 18),
+      ),
+      title: Text(title, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
+      subtitle: Text(sub, style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF6B7280))),
+      onTap: () {},
     );
   }
 

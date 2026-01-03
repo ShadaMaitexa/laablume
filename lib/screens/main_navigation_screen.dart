@@ -85,7 +85,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 color: const Color(0xFF12B8A6).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF12B8A6), size: 28),
+              child: Image.asset('assets/logo.png', width: 28, height: 28),
             ),
             const SizedBox(height: 48),
           ],

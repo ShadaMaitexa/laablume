@@ -78,7 +78,7 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF12B8A6), size: 60),
+                              child: Image.asset('assets/logo.png', width: 60, height: 60),
                             ),
                             const SizedBox(height: 24),
                             Text(
@@ -137,7 +137,7 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                             color: _primaryColor.withOpacity(0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(Icons.auto_awesome_rounded, color: _primaryColor, size: 40),
+                          child: Image.asset('assets/logo.png', width: 40, height: 40),
                         ),
                       ),
                       const SizedBox(height: 24),

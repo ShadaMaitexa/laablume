@@ -335,6 +335,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 }
 
 // =================================================
+// API SERVICES (MOCK)
+// =================================================
+Future<UserProfile> fetchProfile() async {
+  await Future.delayed(const Duration(milliseconds: 800));
+  return UserProfile(
+    name: 'John Maitexa',
+    age: 38,
+    weightKg: 82,
+    avatarUrl: null,
+  );
+}
+
+// =================================================
 // MODEL (API READY)
 // =================================================
 class UserProfile {
