@@ -5,6 +5,9 @@ import 'emergency_contact.dart';
 import 'insurance_information_screen.dart';
 import 'health_assesment.dart';
 import 'placeholder_screens.dart';
+import 'payment_methods_screen.dart';
+import 'change_email_screen.dart';
+import 'security_privacy_screen.dart';
 import '../utils/responsive_layout.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -237,17 +240,17 @@ class ProfileScreen extends StatefulWidget {
                       _menuItem(
                         Icons.payments_outlined, 
                         'Payment Methods',
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PlaceholderScreen(title: 'Payment Methods'))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentMethodsScreen())),
                       ),
                       _menuItem(
                         Icons.mail_outline_rounded, 
                         'Change Email',
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PlaceholderScreen(title: 'Change Email'))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangeEmailScreen())),
                       ),
                       _menuItem(
                         Icons.lock_outline_rounded, 
                         'Security & Privacy',
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PlaceholderScreen(title: 'Security & Privacy'))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SecurityPrivacyScreen())),
                       ),
                       
                       const SizedBox(height: 8),
