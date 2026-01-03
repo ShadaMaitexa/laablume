@@ -104,6 +104,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF12B8A6),
+                  side: BorderSide.none,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(27),
                   ),
@@ -169,6 +170,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF12B8A6),
+                side: BorderSide.none,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(27),
                 ),
@@ -209,39 +211,41 @@ class OnboardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(40.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(),
-          Image.asset(
-            data.image,
-            height: MediaQuery.of(context).size.height * 0.35,
-            fit: BoxFit.contain,
-          ),
-          const Spacer(),
-          Text(
-            data.title,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 26,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF12B8A6),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 40),
+            Image.asset(
+              data.image,
+              height: MediaQuery.of(context).size.height * 0.3,
+              fit: BoxFit.contain,
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            data.description,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 15,
-              height: 1.6,
-              color: const Color(0xFF4B5563),
+            const SizedBox(height: 40),
+            Text(
+              data.title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF12B8A6),
+              ),
             ),
-          ),
-          const SizedBox(height: 40),
-        ],
+            const SizedBox(height: 16),
+            Text(
+              data.description,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                height: 1.6,
+                color: const Color(0xFF4B5563),
+              ),
+            ),
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
