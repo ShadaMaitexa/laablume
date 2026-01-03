@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'model/message_model.dart';
+import '../utils/responsive_layout.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -42,111 +44,215 @@ class _ChatScreenState extends State<ChatScreen> {
     ];
   }
 
+  MessageModel? _selectedMessage;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 24),
-            // -------- Header --------
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Messages',
-                    style: GoogleFonts.poppins(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFF111827),
-                    ),
-                  ),
-                  _iconButton(Icons.edit_note_rounded),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // -------- Search --------
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Container(
-                height: 56,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF111827).withOpacity(0.04),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.search_rounded, color: Color(0xFF9CA3AF), size: 22),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search conversations...',
-                          hintStyle: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: const Color(0xFF9CA3AF),
-                          ),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // -------- Conversations List --------
-            Expanded(
-              child: FutureBuilder<List<MessageModel>>(
-                future: fetchConversations(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF12B8A6),
-                      ),
-                    );
-                  }
-
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return _emptyState('No conversations yet');
-                  }
-
-                  final conversations = snapshot.data!;
-                  
-                  return ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    itemCount: conversations.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      final conversation = conversations[index];
-                      return _conversationItem(conversation);
-                    },
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 100), // Space for floating bottom nav
-          ],
+        child: ResponsiveLayout(
+          mobile: _buildList(context),
+          tablet: _buildSplitView(context),
+          desktop: _buildSplitView(context),
         ),
       ),
+    );
+  }
+
+  Widget _buildSplitView(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 400,
+          child: _buildList(context),
+        ),
+        const VerticalDivider(width: 1, color: Color(0xFFE5E7EB)),
+        Expanded(
+          child: _selectedMessage == null
+              ? _emptyState('Select a conversation to start chatting')
+              : _buildChatDetail(_selectedMessage!),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildList(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 24),
+        // -------- Header --------
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Messages',
+                style: GoogleFonts.poppins(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF111827),
+                ),
+              ),
+              _iconButton(Icons.edit_note_rounded),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // -------- Search --------
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF111827).withOpacity(0.04),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.search_rounded, color: Color(0xFF9CA3AF), size: 22),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search conversations...',
+                      hintStyle: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 32),
+
+        // -------- Conversations List --------
+        Expanded(
+          child: FutureBuilder<List<MessageModel>>(
+            future: fetchConversations(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF12B8A6),
+                  ),
+                );
+              }
+
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return _emptyState('No conversations yet');
+              }
+
+              final conversations = snapshot.data!;
+              
+              return ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                itemCount: conversations.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  final conversation = conversations[index];
+                  return _conversationItem(conversation);
+                },
+              );
+            },
+          ),
+        ),
+        if (!ResponsiveLayout.isDesktop(context)) const SizedBox(height: 100),
+      ],
+    );
+  }
+
+  Widget _buildChatDetail(MessageModel message) {
+    return Column(
+      children: [
+        // Chat Header
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: const Color(0xFF12B8A6).withOpacity(0.1),
+                child: const Icon(Icons.person_rounded, color: Color(0xFF12B8A6)),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                message.name,
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF111827),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Chat Body Placeholder
+        Expanded(
+          child: Center(
+            child: Text(
+              'Chat with ${message.name}\n(Messages integration ready)',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(color: Colors.grey),
+            ),
+          ),
+        ),
+        // Chat Input
+        Container(
+          padding: const EdgeInsets.all(24),
+          color: Colors.white,
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Type a message...',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xFF12B8A6),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.send_rounded, color: Colors.white),
+                  onPressed: () {},
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -197,15 +303,23 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // ---------- CONVERSATION ITEM ----------
   Widget _conversationItem(MessageModel conversation) {
+    bool isSelected = _selectedMessage?.id == conversation.id;
     return GestureDetector(
       onTap: () {
-        // Navigate to chat detail
+        if (ResponsiveLayout.isDesktop(context)) {
+          setState(() {
+            _selectedMessage = conversation;
+          });
+        } else {
+          // Navigate to mobile chat detail (not implemented yet)
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isSelected ? const Color(0xFF12B8A6).withOpacity(0.05) : Colors.white,
           borderRadius: BorderRadius.circular(20),
+          border: isSelected ? Border.all(color: const Color(0xFF12B8A6), width: 1.5) : null,
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF111827).withOpacity(0.02),
@@ -329,3 +443,4 @@ class MessageModel {
     );
   }
 }
+```

@@ -81,9 +81,9 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
       backgroundColor: const Color(0xFFEAF8F6),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFFEAF8F6),
+        backgroundColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         title: _buildProgressBar(2, 5),

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:provider/provider.dart';
 import 'screens/main_navigation_screen.dart';
 import 'screens/web/doctor_portal/doctor_dashboard.dart';
 import 'screens/web/lab_portal/lab_dashboard.dart';
 import 'screens/web/common/role_login_screen.dart';
 import 'screens/common/splash_screen.dart';
+import 'providers/patient_provider.dart';
 
 void main() {
   runApp(const LabLumeApp());
@@ -16,16 +18,22 @@ class LabLumeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'LabLume',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFEFF7F6),
-        primaryColor: const Color(0xFF12B8A6),
-        textTheme: GoogleFonts.poppinsTextTheme(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => PatientProvider()),
+      ],
+      child: MaterialApp(
+        title: 'LabLume',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          scaffoldBackgroundColor: const Color(0xFFEFF7F6),
+          primaryColor: const Color(0xFF12B8A6),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF12B8A6)),
+          textTheme: GoogleFonts.poppinsTextTheme(),
+        ),
+        // Automatically detect platform or show selector for development
+        home: const PlatformSelector(),
       ),
-      // Automatically detect platform or show selector for development
-      home: const PlatformSelector(),
     );
   }
 }
@@ -57,6 +65,7 @@ class PlatformSelector extends StatelessWidget {
           
           Center(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -81,8 +90,9 @@ class PlatformSelector extends StatelessWidget {
                   const SizedBox(height: 32),
                   Text(
                     'LabLume Enterprise',
+                    textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
-                      fontSize: 36,
+                      fontSize: MediaQuery.of(context).size.width < 600 ? 28 : 36,
                       fontWeight: FontWeight.w800,
                       color: const Color(0xFF1F2937),
                       letterSpacing: -1,
@@ -91,6 +101,7 @@ class PlatformSelector extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     'Precision Diagnostics & Integrated Care Delivery',
+                    textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -98,8 +109,10 @@ class PlatformSelector extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 64),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                    spacing: 32,
+                    runSpacing: 32,
+                    alignment: WrapAlignment.center,
                     children: [
                       _premiumPortalCard(
                         context,
@@ -110,7 +123,6 @@ class PlatformSelector extends StatelessWidget {
                         color: const Color(0xFF12B8A6),
                         target: const SplashScreen(),
                       ),
-                      const SizedBox(width: 32),
                       _premiumPortalCard(
                         context,
                         title: 'Doctor Portal',
@@ -120,7 +132,6 @@ class PlatformSelector extends StatelessWidget {
                         color: const Color(0xFF3B82F6),
                         target: const RoleLoginScreen(role: 'Doctor'),
                       ),
-                      const SizedBox(width: 32),
                       _premiumPortalCard(
                         context,
                         title: 'Lab Portal',

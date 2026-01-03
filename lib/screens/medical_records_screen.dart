@@ -5,6 +5,8 @@ import 'reports/lab_reports_screen.dart';
 import 'health_metrics/health_metrics_screen.dart';
 import 'visit_summaries/visit_summaries_screen.dart';
 
+import '../utils/responsive_layout.dart';
+
 class MedicalRecordsScreen extends StatefulWidget {
   const MedicalRecordsScreen({super.key});
 
@@ -16,80 +18,88 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF7F6), // Light mint background from image
+      backgroundColor: const Color(0xFFEFF7F6),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 48),
-              
-              Text(
-                'Medical records',
-                style: GoogleFonts.poppins(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1F2937),
-                  letterSpacing: -0.5,
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                mainAxisSpacing: 32,
-                crossAxisSpacing: 20,
-                childAspectRatio: 0.85,
+          padding: EdgeInsets.symmetric(
+            horizontal: ResponsiveLayout.isDesktop(context) ? 80 : 24,
+            vertical: 24,
+          ),
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _MedicalRecordCard(
-                    icon: Icons.medication_outlined,
-                    title: 'Prescriptions',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const PrescriptionsScreen()),
-                      );
-                    },
+                  const SizedBox(height: 24),
+                  
+                  Text(
+                    'Medical records',
+                    style: GoogleFonts.poppins(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1F2937),
+                      letterSpacing: -0.5,
+                    ),
                   ),
-                  _MedicalRecordCard(
-                    icon: Icons.biotech_outlined,
-                    title: 'Lab reports',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LabReportsScreen()),
-                      );
-                    },
+                  
+                  const SizedBox(height: 32),
+                  
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: ResponsiveLayout.isMobile(context) ? 2 : 4,
+                    mainAxisSpacing: 32,
+                    crossAxisSpacing: 20,
+                    childAspectRatio: 0.85,
+                    children: [
+                      _MedicalRecordCard(
+                        icon: Icons.medication_outlined,
+                        title: 'Prescriptions',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const PrescriptionsScreen()),
+                          );
+                        },
+                      ),
+                      _MedicalRecordCard(
+                        icon: Icons.biotech_outlined,
+                        title: 'Lab reports',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LabReportsScreen()),
+                          );
+                        },
+                      ),
+                      _MedicalRecordCard(
+                        icon: Icons.show_chart_rounded,
+                        title: 'Health metrics',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const HealthMetricsScreen()),
+                          );
+                        },
+                      ),
+                      _MedicalRecordCard(
+                        icon: Icons.assignment_outlined,
+                        title: 'Visit summaries',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const VisitSummariesScreen()),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  _MedicalRecordCard(
-                    icon: Icons.show_chart_rounded,
-                    title: 'Health metrics',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const HealthMetricsScreen()),
-                      );
-                    },
-                  ),
-                  _MedicalRecordCard(
-                    icon: Icons.assignment_outlined,
-                    title: 'Visit summaries',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const VisitSummariesScreen()),
-                      );
-                    },
-                  ),
+                  
+                  const SizedBox(height: 120),
                 ],
               ),
-              
-              const SizedBox(height: 120),
-            ],
+            ),
           ),
         ),
       ),

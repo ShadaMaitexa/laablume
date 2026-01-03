@@ -34,11 +34,70 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isWide = MediaQuery.of(context).size.width >= 1024;
+
     return Scaffold(
-      extendBody: true, // Allows body to extend behind the bottom app bar
+      extendBody: true,
       backgroundColor: const Color(0xFFF9FAFB),
-      body: _screens[_currentIndex],
-      bottomNavigationBar: _bottomNavigationBar(),
+      body: Row(
+        children: [
+          if (isWide) _sideNavigationRail(),
+          Expanded(child: _screens[_currentIndex]),
+        ],
+      ),
+      bottomNavigationBar: isWide ? null : _bottomNavigationBar(),
+    );
+  }
+
+  Widget _sideNavigationRail() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF111827),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+          ),
+        ],
+      ),
+      child: NavigationRail(
+        backgroundColor: Colors.transparent,
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (int index) {
+          setState(() => _currentIndex = index);
+        },
+        labelType: NavigationRailLabelType.all,
+        selectedLabelTextStyle: GoogleFonts.poppins(
+          color: const Color(0xFF12B8A6),
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
+        unselectedLabelTextStyle: GoogleFonts.poppins(
+          color: Colors.white.withOpacity(0.5),
+          fontSize: 12,
+        ),
+        leading: Column(
+          children: [
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF12B8A6).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF12B8A6), size: 28),
+            ),
+            const SizedBox(height: 48),
+          ],
+        ),
+        destinations: _navItems.map((item) {
+          return NavigationRailDestination(
+            icon: Icon(item['icon'], color: Colors.white.withOpacity(0.5)),
+            selectedIcon: Icon(item['activeIcon'], color: const Color(0xFF12B8A6)),
+            label: Text(item['label']),
+          );
+        }).toList(),
+      ),
     );
   }
 
