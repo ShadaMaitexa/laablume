@@ -47,7 +47,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       image: const DecorationImage(
-                         // Placeholder for user image if available, else logo
                          image: AssetImage('assets/logo.png'),
                          fit: BoxFit.contain, 
                       ),
@@ -230,7 +229,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 crossAxisCount: 2,
                 mainAxisSpacing: 20,
                 crossAxisSpacing: 20,
-                childAspectRatio: 1.05,
+                childAspectRatio: 0.85, // Made taller to avoid overflow
                 children: [
                   _serviceCard(
                     icon: Icons.science_outlined,
@@ -306,6 +305,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF111827),
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -315,6 +316,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                               color: const Color(0xFF6B7280),
                               height: 1.5,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -410,6 +413,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             fontWeight: FontWeight.w500,
             color: Colors.white.withOpacity(0.8),
           ),
+           maxLines: 1,
+           overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -456,6 +461,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF111827),
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
             Text(
@@ -465,6 +472,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 color: const Color(0xFF6B7280),
                 fontWeight: FontWeight.w500,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -508,6 +517,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF111827),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -517,6 +528,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     color: const Color(0xFF6B7280),
                     height: 1.4,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
