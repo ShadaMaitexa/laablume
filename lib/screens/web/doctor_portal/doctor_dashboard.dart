@@ -45,8 +45,23 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
 
   final Color _primaryColor = const Color(0xFF12B8A6);
   final Color _darkAccent = const Color(0xFF0D9488);
-  final Color _bgColor = const Color(0xFFF0F9F8); // Refined background
+  final Color _bgColor = const Color(0xFFF9FAFB); // Matches Patient Screen
   final Color _cardColor = Colors.white;
+
+  // Mock Data for API Integration Readiness
+  final List<Map<String, dynamic>> _statsData = [
+    {'title': 'Total Patients', 'value': '1.2k', 'growth': '+12%', 'icon': Icons.people_rounded, 'color': Colors.blue},
+    {'title': 'Today Appointments', 'value': '18', 'growth': '+4%', 'icon': Icons.calendar_today_rounded, 'color': Colors.orange},
+    {'title': 'Consultations', 'value': '560', 'growth': '+8%', 'icon': Icons.medical_services_rounded, 'color': Colors.deepPurple},
+    {'title': 'Average Rating', 'value': '4.9', 'growth': '0%', 'icon': Icons.star_rounded, 'color': Colors.amber},
+  ];
+
+  final List<Map<String, dynamic>> _appointmentQueue = [
+    {'name': 'Alice Brown', 'type': 'Video Consultation', 'time': '10:30 AM', 'status': 'In Progress', 'color': Colors.teal},
+    {'name': 'Mark Wilson', 'type': 'In-Person Visit', 'time': '11:15 AM', 'status': 'Upcoming', 'color': Colors.blue},
+    {'name': 'James Lee', 'type': 'Follow-up', 'time': '12:00 PM', 'status': 'Waiting', 'color': Colors.orange},
+    {'name': 'Sarah Parker', 'type': 'New Patient', 'time': '13:30 PM', 'status': 'Confirmed', 'color': Colors.green},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -537,32 +552,33 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
   Widget _buildStatsSummary(bool isDesktop) {
     if (isDesktop) {
       return Row(
-        children: [
-          Expanded(child: _refinedStatCard('Total Patients', '1.2k', '+12%', Icons.people_rounded, Colors.blue)),
-          const SizedBox(width: 24),
-          Expanded(child: _refinedStatCard('Today Appointments', '18', '+4%', Icons.calendar_today_rounded, Colors.orange)),
-          const SizedBox(width: 24),
-          Expanded(child: _refinedStatCard('Consultations', '560', '+8%', Icons.medical_services_rounded, Colors.deepPurple)),
-          const SizedBox(width: 24),
-          Expanded(child: _refinedStatCard('Average Rating', '4.9', '0%', Icons.star_rounded, Colors.amber)),
-        ],
+        children: _statsData.asMap().entries.map((entry) {
+          final index = entry.key;
+          final data = entry.value;
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: index < _statsData.length - 1 ? 24.0 : 0),
+              child: _refinedStatCard(data['title'], data['value'], data['growth'], data['icon'], data['color']),
+            ),
+          );
+        }).toList(),
       );
     } else {
       return Column(
         children: [
           Row(
             children: [
-              Expanded(child: _refinedStatCard('Total Patients', '1.2k', '+12%', Icons.people_rounded, Colors.blue)),
+              Expanded(child: _refinedStatCard(_statsData[0]['title'], _statsData[0]['value'], _statsData[0]['growth'], _statsData[0]['icon'], _statsData[0]['color'])),
               const SizedBox(width: 16),
-              Expanded(child: _refinedStatCard('Today Appointments', '18', '+4%', Icons.calendar_today_rounded, Colors.orange)),
+              Expanded(child: _refinedStatCard(_statsData[1]['title'], _statsData[1]['value'], _statsData[1]['growth'], _statsData[1]['icon'], _statsData[1]['color'])),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _refinedStatCard('Consultations', '560', '+8%', Icons.medical_services_rounded, Colors.deepPurple)),
+              Expanded(child: _refinedStatCard(_statsData[2]['title'], _statsData[2]['value'], _statsData[2]['growth'], _statsData[2]['icon'], _statsData[2]['color'])),
               const SizedBox(width: 16),
-              Expanded(child: _refinedStatCard('Average Rating', '4.9', '0%', Icons.star_rounded, Colors.amber)),
+              Expanded(child: _refinedStatCard(_statsData[3]['title'], _statsData[3]['value'], _statsData[3]['growth'], _statsData[3]['icon'], _statsData[3]['color'])),
             ],
           ),
         ],
@@ -650,10 +666,9 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
             ],
           ),
           const SizedBox(height: 32),
-          _appointmentItem('Alice Brown', 'Video Consultation', '10:30 AM', 'In Progress', Colors.teal),
-          _appointmentItem('Mark Wilson', 'In-Person Visit', '11:15 AM', 'Upcoming', Colors.blue),
-          _appointmentItem('James Lee', 'Follow-up', '12:00 PM', 'Waiting', Colors.orange),
-          _appointmentItem('Sarah Parker', 'New Patient', '13:30 PM', 'Confirmed', Colors.green),
+          ..._appointmentQueue.map((apt) => 
+            _appointmentItem(apt['name'], apt['type'], apt['time'], apt['status'], apt['color'])
+          ),
         ],
       ),
     );

@@ -14,8 +14,23 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
   bool _showNotifications = false;
 
   final Color _primaryColor = const Color(0xFF12B8A6);
-  final Color _darkBg = const Color(0xFF111827); // Very dark for a modern lab feel
-  final Color _lightBg = const Color(0xFFF9FAFB);
+  final Color _darkBg = const Color(0xFF111827); // Kept for accents/text
+  final Color _lightBg = const Color(0xFFF9FAFB); // Matches Patient Screen
+  final Color _sidebarBg = Colors.white; // Changed to Light theme
+
+  // Mock Data for API Integration
+  final List<Map<String, dynamic>> _labStats = [
+    {'title': 'Tests Processed', 'value': '14,204', 'icon': Icons.copy_rounded, 'color': Colors.blue},
+    {'title': 'Pending Samples', 'value': '42', 'icon': Icons.hourglass_top_rounded, 'color': Colors.orange},
+    {'title': 'Ready for Approval', 'value': '18', 'icon': Icons.check_circle_rounded, 'color': Colors.green},
+    {'title': 'System Uptime', 'value': '99.9%', 'icon': Icons.cloud_done_rounded, 'color': Color(0xFF12B8A6)},
+  ];
+
+  final List<Map<String, dynamic>> _recentTests = [
+    {'id': 'SAM-9011', 'patient': 'Liam Henderson', 'test': 'Blood Glucose', 'status': 'Processing', 'progress': 0.65},
+    {'id': 'SAM-9012', 'patient': 'Sophia Garcia', 'test': 'Lipid Panel', 'status': 'In Queue', 'progress': 0.1},
+    {'id': 'SAM-9013', 'patient': 'Noah Smith', 'test': 'CBC Analysis', 'status': 'Scanning', 'progress': 0.9},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +133,7 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
   Widget _buildLabSidebar({bool isDrawer = false}) {
     return Container(
       width: 280,
-      color: _darkBg,
+      color: _sidebarBg, // Updated to light
       child: Column(
         children: [
           const SizedBox(height: 50),
@@ -129,7 +144,7 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: _primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Image.asset('assets/logo.png', width: 24, height: 24),
@@ -140,7 +155,7 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
                   style: GoogleFonts.poppins(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: const Color(0xFF1F2937),
                   ),
                 ),
               ],
@@ -182,18 +197,17 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
           decoration: BoxDecoration(
             color: isSelected ? _primaryColor.withOpacity(0.1) : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
-            border: isSelected ? Border.all(color: _primaryColor.withOpacity(0.3)) : null,
           ),
           child: Row(
             children: [
-              Icon(icon, color: isSelected ? _primaryColor : Colors.white60, size: 22),
+              Icon(icon, color: isSelected ? _primaryColor : const Color(0xFF6B7280), size: 22),
               const SizedBox(width: 16),
               Text(
                 title,
                 style: GoogleFonts.poppins(
-                  color: isSelected ? Colors.white : Colors.white60,
+                  color: isSelected ? _primaryColor : const Color(0xFF6B7280),
                   fontSize: 14,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
             ],
@@ -379,32 +393,33 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
   Widget _buildLabStats(bool isDesktop) {
     if (isDesktop) {
       return Row(
-        children: [
-          Expanded(child: _labStatCard('Tests Processed', '14,204', Icons.copy_rounded, Colors.blue)),
-          const SizedBox(width: 24),
-          Expanded(child: _labStatCard('Pending Samples', '42', Icons.hourglass_top_rounded, Colors.orange)),
-          const SizedBox(width: 24),
-          Expanded(child: _labStatCard('Ready for Approval', '18', Icons.check_circle_rounded, Colors.green)),
-          const SizedBox(width: 24),
-          Expanded(child: _labStatCard('System Uptime', '99.9%', Icons.cloud_done_rounded, _primaryColor)),
-        ],
+        children: _labStats.asMap().entries.map((entry) {
+          final index = entry.key;
+          final data = entry.value;
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: index < _labStats.length - 1 ? 24.0 : 0),
+              child: _labStatCard(data['title'], data['value'], data['icon'], data['color']),
+            ),
+          );
+        }).toList(),
       );
     } else {
       return Column(
         children: [
           Row(
             children: [
-              Expanded(child: _labStatCard('Tests', '14.2k', Icons.copy_rounded, Colors.blue)),
+              Expanded(child: _labStatCard(_labStats[0]['title'], _labStats[0]['value'], _labStats[0]['icon'], _labStats[0]['color'])),
               const SizedBox(width: 16),
-              Expanded(child: _labStatCard('Pending', '42', Icons.hourglass_top_rounded, Colors.orange)),
+              Expanded(child: _labStatCard(_labStats[1]['title'], _labStats[1]['value'], _labStats[1]['icon'], _labStats[1]['color'])),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _labStatCard('Ready', '18', Icons.check_circle_rounded, Colors.green)),
+              Expanded(child: _labStatCard(_labStats[2]['title'], _labStats[2]['value'], _labStats[2]['icon'], _labStats[2]['color'])),
               const SizedBox(width: 16),
-              Expanded(child: _labStatCard('Uptime', '99.9%', Icons.cloud_done_rounded, _primaryColor)),
+              Expanded(child: _labStatCard(_labStats[3]['title'], _labStats[3]['value'], _labStats[3]['icon'], _labStats[3]['color'])),
             ],
           ),
         ],
@@ -458,9 +473,9 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
           const SizedBox(height: 32),
           _tableHeaderRow(isDesktop),
           const Divider(),
-          _testDataRow('SAM-9011', 'Liam Henderson', 'Blood Glucose', 'Processing', 0.65, isDesktop),
-          _testDataRow('SAM-9012', 'Sophia Garcia', 'Lipid Panel', 'In Queue', 0.1, isDesktop),
-          _testDataRow('SAM-9013', 'Noah Smith', 'CBC Analysis', 'Scanning', 0.9, isDesktop),
+          ..._recentTests.map((test) => 
+            _testDataRow(test['id'], test['patient'], test['test'], test['status'], test['progress'], isDesktop)
+          ),
         ],
       ),
     );

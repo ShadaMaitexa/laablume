@@ -7,6 +7,9 @@ import 'lab_tests/lab_tests_screen.dart';
 import 'reports/lab_reports_screen.dart';
 import 'reports/upload_report_screen.dart';
 import 'doctors/find_doctors_screen.dart';
+import 'chat_screen.dart';
+import 'my_appointments_screen.dart';
+import 'health_metrics/health_metrics_screen.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -118,7 +121,12 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           ],
         ),
         const Spacer(),
-        _iconButton(Icons.notifications_none_rounded),
+        _iconButton(
+          Icons.chat_bubble_outline_rounded,
+          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen())),
+        ),
+        const SizedBox(width: 12),
+        _iconButton(Icons.notifications_none_rounded, () {}),
       ],
     );
   }
@@ -153,46 +161,46 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   }
 
   Widget _buildSearch() {
-    return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF111827).withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search_rounded, color: Color(0xFF9CA3AF), size: 24),
-          const SizedBox(width: 16),
-          Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search tests, doctors...',
-                hintStyle: GoogleFonts.poppins(
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FindDoctorsScreen())),
+      child: Container(
+        height: 60,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF111827).withOpacity(0.04),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.search_rounded, color: Color(0xFF9CA3AF), size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'Search tests, doctors...',
+                style: GoogleFonts.poppins(
                   fontSize: 15,
                   color: const Color(0xFF9CA3AF),
                 ),
-                border: InputBorder.none,
               ),
             ),
-          ),
-          Container(
-            height: 40,
-            width: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFF12B8A6),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
-          )
-        ],
+            Container(
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFF12B8A6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -219,11 +227,20 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _statItem('Appointments', '${data?.upcomingAppointments ?? 0}', Icons.calendar_today_rounded),
+          GestureDetector(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MyAppointmentsScreen())),
+            child: _statItem('Appointments', '${data?.upcomingAppointments ?? 0}', Icons.calendar_today_rounded),
+          ),
           Container(width: 1, height: 40, color: Colors.white.withOpacity(0.2)),
-          _statItem('Pending', '${data?.pendingReports ?? 0}', Icons.description_outlined),
+          GestureDetector(
+             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LabReportsScreen())),
+             child: _statItem('Pending', '${data?.pendingReports ?? 0}', Icons.description_outlined),
+          ),
           Container(width: 1, height: 40, color: Colors.white.withOpacity(0.2)),
-          _statItem('Health Score', '${data?.healthScore ?? 0}%', Icons.favorite_border_rounded),
+          GestureDetector(
+             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HealthMetricsScreen())),
+             child: _statItem('Health Score', '${data?.healthScore ?? 0}%', Icons.favorite_border_rounded),
+          ),
         ],
       ),
     );
@@ -364,6 +381,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         _sectionHeader('Health Insights'),
         const SizedBox(height: 20),
         _healthInsightCard(
+          context,
           'Daily Hydration',
           'You reached 80% of your goal today.',
           Icons.water_drop_rounded,
@@ -371,6 +389,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         ),
         const SizedBox(height: 16),
         _healthInsightCard(
+          context,
           'Activity Level',
           'Your step count is up by 15% this week.',
           Icons.bolt_rounded,
@@ -380,7 +399,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     );
   }
 
-  Widget _iconButton(IconData icon) {
+  Widget _iconButton(IconData icon, VoidCallback onTap) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -394,7 +413,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         ],
       ),
       child: IconButton(
-        onPressed: () {},
+        onPressed: onTap,
         icon: Icon(icon, size: 24, color: const Color(0xFF111827)),
       ),
     );
@@ -508,60 +527,63 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     );
   }
 
-  Widget _healthInsightCard(String title, String description, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF111827).withOpacity(0.03),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
+  Widget _healthInsightCard(BuildContext context, String title, String description, IconData icon, Color color) {
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HealthMetricsScreen())),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF111827).withOpacity(0.03),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF111827),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: const Color(0xFF6B7280),
-                    height: 1.4,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: color, size: 24),
             ),
-          ),
-        ],
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF111827),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: const Color(0xFF6B7280),
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

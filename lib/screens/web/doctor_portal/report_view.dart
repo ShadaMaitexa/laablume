@@ -148,9 +148,9 @@ class PatientReportView extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Report saved and transmitted to patient successfully!')),
-                );
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   const SnackBar(content: Text('Report saved and transmitted to patient successfully!')),
+                // );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF12B8A6),
