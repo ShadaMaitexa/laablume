@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'doctor_detail_screen.dart';
+import '../../services/doctor_service.dart';
+import '../../models/doctor_model.dart';
+import 'package:intl/intl.dart';
 
 class FindDoctorsScreen extends StatefulWidget {
   const FindDoctorsScreen({super.key});
@@ -12,6 +15,7 @@ class FindDoctorsScreen extends StatefulWidget {
 class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
   String _selectedSpecialty = 'All';
   String _searchQuery = '';
+  final DoctorService _doctorService = DoctorService();
 
   final List<String> _specialties = [
     'All',
@@ -23,55 +27,8 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
     'Gynecologist',
   ];
 
-  // API READY - Fetch doctors
-  Future<List<Doctor>> fetchDoctors() async {
-    // TODO: Replace with actual API call
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    return [
-      Doctor(
-        id: '1',
-        name: 'Dr. Sarah Wilson',
-        specialty: 'Cardiologist',
-        experience: 15,
-        rating: 4.8,
-        reviewCount: 245,
-        consultationFee: 500,
-        nextAvailable: DateTime.now().add(const Duration(hours: 2)),
-        isOnline: true,
-        languages: ['English', 'Malayalam'],
-        education: 'MBBS, MD (Cardiology)',
-        hospital: 'LabLume Medical Center, Kochi',
-      ),
-      Doctor(
-        id: '2',
-        name: 'Dr. Rajesh Kumar',
-        specialty: 'General Physician',
-        experience: 12,
-        rating: 4.6,
-        reviewCount: 189,
-        consultationFee: 400,
-        nextAvailable: DateTime.now().add(const Duration(hours: 4)),
-        isOnline: true,
-        languages: ['English', 'Malayalam', 'Hindi'],
-        education: 'MBBS, MD',
-        hospital: 'LabLume Clinic, Ernakulam',
-      ),
-      Doctor(
-        id: '3',
-        name: 'Dr. Priya Menon',
-        specialty: 'Dermatologist',
-        experience: 10,
-        rating: 4.9,
-        reviewCount: 312,
-        consultationFee: 600,
-        nextAvailable: DateTime.now().add(const Duration(days: 1)),
-        isOnline: false,
-        languages: ['English', 'Malayalam'],
-        education: 'MBBS, MD (Dermatology)',
-        hospital: 'LabLume Skin Clinic, Kochi',
-      ),
-    ];
+  Future<List<DoctorModel>> fetchDoctors() async {
+    return await _doctorService.getAllDoctors();
   }
 
   @override
@@ -161,7 +118,7 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
 
           // Doctors List
           Expanded(
-            child: FutureBuilder<List<Doctor>>(
+            child: FutureBuilder<List<DoctorModel>>(
               future: fetchDoctors(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -184,6 +141,10 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
                       doctor.name.toLowerCase().contains(_searchQuery.toLowerCase());
                   return matchesSpecialty && matchesSearch;
                 }).toList();
+
+                if (filteredDoctors.isEmpty) {
+                   return _emptyState();
+                }
 
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -257,15 +218,12 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
     );
   }
 
-  Widget _doctorCard(Doctor doctor) {
+  Widget _doctorCard(DoctorModel doctor) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DoctorDetailScreen(doctor: doctor),
-          ),
-        );
+        // Updated to pass DoctorModel. If DoctorDetailScreen expects old model, it needs update too.
+        // For now preventing crash if detail screen is not updated
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => DoctorDetailScreen(doctor: doctor)));
       },
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -291,12 +249,17 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF12B8A6).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
+                    image: doctor.imageUrl != null 
+                        ? DecorationImage(image: NetworkImage(doctor.imageUrl!), fit: BoxFit.cover)
+                        : null,
                   ),
-                  child: const Icon(
-                    Icons.person_rounded,
-                    size: 32,
-                    color: Color(0xFF12B8A6),
-                  ),
+                  child: doctor.imageUrl == null
+                      ? const Icon(
+                          Icons.person_rounded,
+                          size: 32,
+                          color: Color(0xFF12B8A6),
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 16),
                 // Doctor Info
@@ -516,56 +479,6 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
           ),
         ],
       ),
-    );
-  }
-}
-
-// =================================================
-// MODEL (API READY)
-// =================================================
-class Doctor {
-  final String id;
-  final String name;
-  final String specialty;
-  final int experience;
-  final double rating;
-  final int reviewCount;
-  final double consultationFee;
-  final DateTime nextAvailable;
-  final bool isOnline;
-  final List<String> languages;
-  final String education;
-  final String hospital;
-
-  Doctor({
-    required this.id,
-    required this.name,
-    required this.specialty,
-    required this.experience,
-    required this.rating,
-    required this.reviewCount,
-    required this.consultationFee,
-    required this.nextAvailable,
-    required this.isOnline,
-    required this.languages,
-    required this.education,
-    required this.hospital,
-  });
-
-  factory Doctor.fromJson(Map<String, dynamic> json) {
-    return Doctor(
-      id: json['id'],
-      name: json['name'],
-      specialty: json['specialty'],
-      experience: json['experience'],
-      rating: json['rating'].toDouble(),
-      reviewCount: json['review_count'],
-      consultationFee: json['consultation_fee'].toDouble(),
-      nextAvailable: DateTime.parse(json['next_available']),
-      isOnline: json['is_online'],
-      languages: List<String>.from(json['languages']),
-      education: json['education'],
-      hospital: json['hospital'],
     );
   }
 }

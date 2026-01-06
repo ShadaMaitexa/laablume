@@ -2,11 +2,27 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiBaseService {
-  final String baseUrl = "https://api.lablume.com/v1"; // Placeholder URL
+  final String baseUrl = "https://lablume-malabar-college-dc8eylpjx-acadeno360s-projects.vercel.app";
+  static String? _token;
+
+  void setToken(String token) {
+    _token = token;
+  }
+
+  Map<String, String> get _headers {
+    final headers = {'Content-Type': 'application/json'};
+    if (_token != null) {
+      headers['Authorization'] = 'Bearer $_token';
+    }
+    return headers;
+  }
 
   Future<dynamic> get(String endpoint) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl$endpoint'));
+      final response = await http.get(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: _headers,
+      );
       return _processResponse(response);
     } catch (e) {
       throw Exception('Failed to connect to the server: $e');
@@ -17,7 +33,7 @@ class ApiBaseService {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl$endpoint'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _headers,
         body: jsonEncode(data),
       );
       return _processResponse(response);
@@ -26,11 +42,25 @@ class ApiBaseService {
     }
   }
 
+  Future<dynamic> patch(String endpoint, Map<String, dynamic> data) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: _headers,
+        body: jsonEncode(data),
+      );
+      return _processResponse(response);
+    } catch (e) {
+      throw Exception('Failed to patch data: $e');
+    }
+  }
+
   dynamic _processResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) return {};
       return jsonDecode(response.body);
     } else {
-      throw Exception('Error: ${response.statusCode} ${response.reasonPhrase}');
+      throw Exception('Error: ${response.statusCode} ${response.reasonPhrase} - ${response.body}');
     }
   }
 }

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:laablume/screens/patient_card.dart';
 import 'package:pinput/pinput.dart';
+import '../../services/auth_service.dart';
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+  final String mobileNumber;
+  const OtpScreen({super.key, required this.mobileNumber});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -52,7 +54,7 @@ class _OtpScreenState extends State<OtpScreen> {
     });
   }
 
-  void _verifyOtp() {
+  void _verifyOtp() async {
     if (otpController.text.length != 4) {
       setState(() {
         _otpError = 'Please enter 4-digit OTP';
@@ -65,14 +67,18 @@ class _OtpScreenState extends State<OtpScreen> {
       _otpError = null;
     });
 
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      final success = await AuthService().verifyOtp(
+        widget.mobileNumber, 
+        otpController.text
+      );
+      
       if (mounted) {
         setState(() {
           _isVerifying = false;
         });
         
-        if (otpController.text == '1234') {
+        if (success) {
           // Success - navigate to next screen
           Navigator.push(
             context,
@@ -81,28 +87,50 @@ class _OtpScreenState extends State<OtpScreen> {
             ),
           );
         } else {
-          // Show error
+           // Show error
           setState(() {
             _otpError = 'Invalid OTP. Please try again.';
           });
           otpController.clear();
         }
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+           _isVerifying = false;
+           _otpError = e.toString().replaceAll('Exception: ', '');
+        });
+        otpController.clear();
+      }
+    }
   }
 
-  void _resendOtp() {
+  void _resendOtp() async {
     if (!_canResend) return;
     
-    // Simulate sending new OTP
-    _startResendTimer();
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('New OTP sent to your phone'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    try {
+      await AuthService().requestOtp(widget.mobileNumber);
+      
+      _startResendTimer();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('New OTP sent to your phone'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override

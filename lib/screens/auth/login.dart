@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:laablume/screens/auth/otp_screen.dart';
 import 'package:laablume/screens/auth/register.dart';
+import '../../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _validateAndProceed() {
+  void _validateAndProceed() async {
     if (phoneController.text.trim().isEmpty) {
       _showSnackBar('Please enter your phone number');
       return;
@@ -37,8 +38,11 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
-    // Simulate API call for sending OTP
-    Future.delayed(const Duration(seconds: 2), () {
+    final mobileNumber = '$selectedCountryCode${phoneController.text.trim()}';
+
+    try {
+      await AuthService().requestOtp(mobileNumber);
+      
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -48,11 +52,18 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.push(
           context, 
           MaterialPageRoute(
-            builder: (context) => const OtpScreen(),
+            builder: (context) => OtpScreen(mobileNumber: mobileNumber),
           ),
         );
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        _showSnackBar(e.toString().replaceAll('Exception: ', '')); // Simple error handling
+      }
+    }
   }
 
   void _showSnackBar(String message) {

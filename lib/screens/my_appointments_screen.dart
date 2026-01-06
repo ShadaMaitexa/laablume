@@ -1,8 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import '../services/appointment_service.dart';
+import '../models/appointment_model.dart';
+import '../services/doctor_service.dart';
+import '../models/doctor_model.dart';
 
-class MyAppointmentsScreen extends StatelessWidget {
+class MyAppointmentsScreen extends StatefulWidget {
   const MyAppointmentsScreen({super.key});
+
+  @override
+  State<MyAppointmentsScreen> createState() => _MyAppointmentsScreenState();
+}
+
+class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
+  final AppointmentService _appointmentService = AppointmentService();
+  final DoctorService _doctorService = DoctorService();
+  
+  late Future<List<AppointmentModel>> _appointmentsFuture;
+  Map<String, DoctorModel> _doctorsCache = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _appointmentsFuture = _loadData();
+  }
+
+  Future<List<AppointmentModel>> _loadData() async {
+    final appointments = await _appointmentService.getMyAppointments();
+    
+    // Fetch details for all unique doctors
+    final doctorIds = appointments.map((e) => e.doctorID).toSet();
+    for (final id in doctorIds) {
+      if (!_doctorsCache.containsKey(id)) {
+        final doctor = await _doctorService.getDoctorById(id);
+        if (doctor != null) {
+          _doctorsCache[id] = doctor;
+        }
+      }
+    }
+    
+    return appointments;
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('MMM d, h:mm a').format(date.toLocal());
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'scheduled':
+      case 'confirmed':
+        return Colors.green;
+      case 'upcoming':
+        return Colors.blue;
+      case 'completed':
+        return Colors.grey;
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return Colors.blue;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,50 +84,45 @@ class MyAppointmentsScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(24),
-        itemCount: 3, // Mock data
-        separatorBuilder: (context, index) => const SizedBox(height: 16),
-        itemBuilder: (context, index) {
-          // Mock Data
-          final appointments = [
-            {
-              'doctor': 'Dr. Sarah Wilson',
-              'specialty': 'Cardiologist',
-              'date': 'Today, 2:30 PM',
-              'type': 'Video Consultation',
-              'status': 'Upcoming',
-              'color': Colors.blue,
-              'image': null
-            },
-            {
-              'doctor': 'Dr. Michael Chen',
-              'specialty': 'General Physician',
-              'date': 'Jan 15, 10:00 AM',
-              'type': 'Clinic Visit',
-              'status': 'Confirmed',
-              'color': Colors.green,
-              'image': null
-            },
-            {
-              'doctor': 'Dr. Emily Davis',
-              'specialty': 'Dermatologist',
-              'date': 'Dec 28, 09:15 AM',
-              'type': 'Follow-up',
-              'status': 'Completed',
-              'color': Colors.grey,
-              'image': null
-            },
-          ];
-          final apt = appointments[index];
+      body: FutureBuilder<List<AppointmentModel>>(
+        future: _appointmentsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error loading appointments',
+                style: GoogleFonts.poppins(color: Colors.red),
+              ),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(
+              child: Text(
+                'No appointments found',
+                style: GoogleFonts.poppins(color: const Color(0xFF6B7280)),
+              ),
+            );
+          }
 
-          return _buildAppointmentCard(
-            doctorName: apt['doctor'] as String,
-            specialty: apt['specialty'] as String,
-            dateTime: apt['date'] as String,
-            type: apt['type'] as String,
-            status: apt['status'] as String,
-            statusColor: apt['color'] as Color,
+          final appointments = snapshot.data!;
+          return ListView.separated(
+            padding: const EdgeInsets.all(24),
+            itemCount: appointments.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final apt = appointments[index];
+              final doctor = _doctorsCache[apt.doctorID];
+              
+              return _buildAppointmentCard(
+                doctorName: doctor?.name ?? "Unknown Doctor", 
+                specialty: doctor?.specialty ?? "General",
+                dateTime: _formatDate(apt.appointmentDateTime),
+                type: apt.reasonForVisit, 
+                status: apt.status,
+                statusColor: _getStatusColor(apt.status),
+              );
+            },
           );
         },
       ),
@@ -174,23 +228,25 @@ class MyAppointmentsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    Icon(
-                      type.contains('Video') ? Icons.videocam_rounded : Icons.location_on_rounded, 
-                      size: 18, 
-                      color: const Color(0xFF6B7280)
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      type,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF374151),
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.info_outline_rounded, size: 18, color: Color(0xFF6B7280)),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          type,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF374151),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -207,7 +263,7 @@ class MyAppointmentsScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: Text(
-                    'Reschedule', 
+                    'Details', 
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600, 
                       color: const Color(0xFF374151)
@@ -226,7 +282,7 @@ class MyAppointmentsScreen extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: Text(
-                    'Join Call', // Dynamic based on type
+                    'Chat', 
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600, 
                       color: Colors.white
