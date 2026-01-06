@@ -162,7 +162,7 @@ class MyAppointmentsScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.calendar_event_rounded, size: 18, color: Color(0xFF6B7280)),
+                    const Icon(Icons.calendar_today_rounded, size: 18, color: Color(0xFF6B7280)),
                     const SizedBox(width: 8),
                     Text(
                       dateTime,
