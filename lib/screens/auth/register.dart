@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'package:laablume/screens/patient_card.dart';
 import 'package:laablume/screens/auth/login.dart';
+import '../../services/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -13,6 +12,90 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   bool _agreedToPolicy = false;
+  bool _isLoading = false;
+  
+  final TextEditingController _userNameController = TextEditingController();
+  final TextEditingController _mobileController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+
+  @override
+  void dispose() {
+    _userNameController.dispose();
+    _mobileController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  void _handleSignup() async {
+    // Validate inputs
+    if (_userNameController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your name', isError: true);
+      return;
+    }
+
+    if (_mobileController.text.trim().isEmpty || _mobileController.text.trim().length < 10) {
+      _showSnackBar('Please enter a valid mobile number', isError: true);
+      return;
+    }
+
+    if (_emailController.text.trim().isEmpty || !_emailController.text.contains('@')) {
+      _showSnackBar('Please enter a valid email address', isError: true);
+      return;
+    }
+
+    if (!_agreedToPolicy) {
+      _showSnackBar('Please accept the Privacy Policy', isError: true);
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Call signup API
+      await AuthService().signup(
+        _userNameController.text.trim(),
+        '+91${_mobileController.text.trim()}', // Add country code
+        _emailController.text.trim(),
+      );
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Show success message
+        _showSnackBar('Account created successfully! Please login.', isError: false);
+
+        // Redirect to login screen after a short delay
+        await Future.delayed(const Duration(seconds: 1));
+        
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        _showSnackBar(e.toString().replaceAll('Exception: ', ''), isError: true);
+      }
+    }
+  }
+
+  void _showSnackBar(String message, {required bool isError}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +153,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   _premiumInputField(
                     icon: Icons.person_outline,
                     hint: 'User Name',
+                    controller: _userNameController,
                   ),
 
                   const SizedBox(height: 16),
@@ -83,15 +167,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   _premiumInputField(
                     icon: Icons.email_outlined,
                     hint: 'Email Address',
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Password
-                  _premiumInputField(
-                    icon: Icons.lock_outline,
-                    hint: 'Password',
-                    obscure: true,
+                    controller: _emailController,
                   ),
 
                   const SizedBox(height: 20),
@@ -138,18 +214,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     width: double.infinity,
                     height: 54,
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (!_agreedToPolicy) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Please accept the Privacy Policy')),
-                          );
-                          return;
-                        }
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const PersonalDataScreen()),
-                        );
-                      },
+                      onPressed: _isLoading ? null : _handleSignup,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF12B8A6),
                         shape: RoundedRectangleBorder(
@@ -157,14 +222,23 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         elevation: 0,
                       ),
-                      child: Text(
-                        'Sign Up',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Sign Up',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
 
@@ -210,6 +284,7 @@ class _SignupScreenState extends State<SignupScreen> {
     required IconData icon,
     required String hint,
     bool obscure = false,
+    TextEditingController? controller,
   }) {
     return Container(
       height: 52,
@@ -225,6 +300,7 @@ class _SignupScreenState extends State<SignupScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: TextField(
+              controller: controller,
               obscureText: obscure,
               style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
@@ -256,6 +332,7 @@ class _SignupScreenState extends State<SignupScreen> {
           const VerticalDivider(indent: 12, endIndent: 12, width: 24),
           Expanded(
             child: TextField(
+              controller: _mobileController,
               keyboardType: TextInputType.phone,
               style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
