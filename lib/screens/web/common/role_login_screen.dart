@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../doctor_portal/doctor_dashboard.dart';
-import '../lab_portal/lab_dashboard.dart';
+import 'role_otp_screen.dart';
+import 'role_signup_screen.dart';
+import '../../../services/auth_service.dart';
 
 class RoleLoginScreen extends StatefulWidget {
   final String role; // 'Doctor' or 'Lab'
@@ -12,37 +13,65 @@ class RoleLoginScreen extends StatefulWidget {
 }
 
 class _RoleLoginScreenState extends State<RoleLoginScreen> {
-  final TextEditingController _idController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _isPasswordVisible = false;
+  final TextEditingController _phoneController = TextEditingController();
+  String _selectedCountryCode = '+91';
   bool _isLoading = false;
 
   final Color _primaryColor = const Color(0xFF12B8A6);
 
-  void _handleLogin() async {
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  void _handleSendOTP() async {
+    if (_phoneController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your phone number', isError: true);
+      return;
+    }
+
+    if (_phoneController.text.trim().length < 10) {
+      _showSnackBar('Please enter a valid phone number', isError: true);
+      return;
+    }
+
     setState(() => _isLoading = true);
-    
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (mounted) {
-      setState(() => _isLoading = false);
-      
-      // Role-based navigation
-      if (widget.role == 'Doctor') {
-        Navigator.pushAndRemoveUntil(
+
+    final mobileNumber = '$_selectedCountryCode${_phoneController.text.trim()}';
+
+    try {
+      await AuthService().requestOtp(mobileNumber);
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+
+        // Navigate to OTP screen
+        Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const DoctorWebDashboard()),
-          (route) => false,
-        );
-      } else {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const LabWebDashboard()),
-          (route) => false,
+          MaterialPageRoute(
+            builder: (context) => RoleOtpScreen(
+              mobileNumber: mobileNumber,
+              role: widget.role,
+            ),
+          ),
         );
       }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showSnackBar(e.toString().replaceAll('Exception: ', ''), isError: true);
+      }
     }
+  }
+
+  void _showSnackBar(String message, {required bool isError}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
   }
 
   @override
@@ -152,7 +181,7 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Provide your credentials to access the ${widget.role.toLowerCase()} portal.',
+                      'Enter your mobile number to access the ${widget.role.toLowerCase()} portal.',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: const Color(0xFF6B7280),
@@ -160,9 +189,9 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                     ),
                     const SizedBox(height: 48),
                     
-                    // ID Field
+                    // Mobile Number Field
                     Text(
-                      'Terminal ID / Email',
+                      'Mobile Number',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -170,76 +199,70 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    TextField(
-                      controller: _idController,
-                      decoration: InputDecoration(
-                        hintText: widget.role == 'Doctor' ? 'e.g. DR-SarahWilson' : 'e.g. LAB-KochiCentral',
-                        prefixIcon: const Icon(Icons.person_outline, size: 20),
-                        filled: true,
-                        fillColor: const Color(0xFFF9FAFB),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Password Field
-                    Text(
-                      'Access Password',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: !_isPasswordVisible,
-                      decoration: InputDecoration(
-                        hintText: '••••••••',
-                        prefixIcon: const Icon(Icons.lock_outline, size: 20),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                            size: 20,
+                      child: Row(
+                        children: [
+                          // Country Code Dropdown
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: DropdownButton<String>(
+                              value: _selectedCountryCode,
+                              underline: const SizedBox(),
+                              items: const [
+                                DropdownMenuItem(value: '+91', child: Text('🇮🇳 +91')),
+                                DropdownMenuItem(value: '+1', child: Text('🇺🇸 +1')),
+                                DropdownMenuItem(value: '+44', child: Text('🇬🇧 +44')),
+                                DropdownMenuItem(value: '+86', child: Text('🇨🇳 +86')),
+                                DropdownMenuItem(value: '+81', child: Text('🇯🇵 +81')),
+                              ],
+                              onChanged: (value) {
+                                setState(() => _selectedCountryCode = value!);
+                              },
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
                           ),
-                          onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF9FAFB),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
+                          Container(
+                            width: 1,
+                            height: 30,
+                            color: const Color(0xFFE5E7EB),
+                          ),
+                          const SizedBox(width: 12),
+                          // Phone Number Input
+                          Expanded(
+                            child: TextField(
+                              controller: _phoneController,
+                              keyboardType: TextInputType.phone,
+                              decoration: InputDecoration(
+                                hintText: 'Enter your phone number',
+                                hintStyle: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: const Color(0xFF9CA3AF),
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              style: GoogleFonts.poppins(fontSize: 14),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          'Forgot Password?',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: _primaryColor,
-                          ),
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: 40),
                     
-                    // Login Button
+                    // Send OTP Button
                     SizedBox(
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : _handleLogin,
+                        onPressed: _isLoading ? null : _handleSendOTP,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _primaryColor,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -252,7 +275,7 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                               child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                             )
                           : Text(
-                              'Sign In to Terminal',
+                              'Send OTP',
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -270,6 +293,38 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 13,
                             color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Signup Link
+                    Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RoleSignupScreen(role: widget.role),
+                            ),
+                          );
+                        },
+                        child: RichText(
+                          text: TextSpan(
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              color: const Color(0xFF6B7280),
+                            ),
+                            children: [
+                              const TextSpan(text: 'New User? '),
+                              TextSpan(
+                                text: 'Register Now',
+                                style: GoogleFonts.poppins(
+                                  color: _primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
