@@ -221,9 +221,12 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
   Widget _doctorCard(DoctorModel doctor) {
     return GestureDetector(
       onTap: () {
-        // Updated to pass DoctorModel. If DoctorDetailScreen expects old model, it needs update too.
-        // For now preventing crash if detail screen is not updated
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => DoctorDetailScreen(doctor: doctor)));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DoctorDetailScreen(doctor: doctor),
+          ),
+        );
       },
       child: Container(
         padding: const EdgeInsets.all(20),

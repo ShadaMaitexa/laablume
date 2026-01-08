@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'find_doctors_screen.dart';
+import '../../models/doctor_model.dart';
 
 class BookConsultationScreen extends StatefulWidget {
-  final Doctor doctor;
+  final DoctorModel doctor;
 
   const BookConsultationScreen({super.key, required this.doctor});
 

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'find_doctors_screen.dart';
+import '../../models/doctor_model.dart';
 import 'book_consultation_screen.dart';
 
 class DoctorDetailScreen extends StatelessWidget {
-  final Doctor doctor;
+  final DoctorModel doctor;
 
   const DoctorDetailScreen({super.key, required this.doctor});
 
