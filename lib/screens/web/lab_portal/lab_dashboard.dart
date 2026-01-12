@@ -60,7 +60,7 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
                           _buildDashboardContent(isDesktop), // Index 0: Lab Analytics
                           const LabBookingsScreen(), // Index 1: Manage Tests
                           const LabResultsApprovalScreen(), // Index 2: Results Approval
-                          const LabInventoryScreen(), // Index 3: Equipment & Supplies
+                          const LabReportUploadScreen(), // Index 3: Upload Reports
                           const LabTechniciansScreen(), // Index 4: Technicians
                           const LabSettingsScreen(), // Index 5: Portal Settings
                         ],
@@ -167,9 +167,9 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
                 children: [
                   const SizedBox(height: 60),
                   _labSidebarItem(Icons.analytics_outlined, 'Lab Analytics', 0, isDrawer),
-                  _labSidebarItem(Icons.science_outlined, 'Manage Tests', 1, isDrawer),
+                   _labSidebarItem(Icons.science_outlined, 'Manage Tests', 1, isDrawer),
                   _labSidebarItem(Icons.assignment_turned_in_outlined, 'Results Approval', 2, isDrawer),
-                  _labSidebarItem(Icons.inventory_2_outlined, 'Equipment & Supplies', 3, isDrawer),
+                  _labSidebarItem(Icons.cloud_upload_outlined, 'Upload Reports', 3, isDrawer),
                   _labSidebarItem(Icons.people_outline_rounded, 'Technicians', 4, isDrawer),
                 ],
               ),

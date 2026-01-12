@@ -440,16 +440,37 @@ class ChatDetailScreen extends StatelessWidget {
               child: const Icon(Icons.person_rounded, color: Color(0xFF12B8A6), size: 20),
             ),
             const SizedBox(width: 12),
-            Text(
-              message.name,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF111827),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                   Text(
+                    message.name,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF111827),
+                    ),
+                  ),
+                   Text(
+                    'Appointment Completed',
+                    style: GoogleFonts.poppins(fontSize: 10, color: const Color(0xFF12B8A6), fontWeight: FontWeight.w600),
+                  ),
+                ],
               ),
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.videocam_rounded, color: Color(0xFF12B8A6)),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Starting video consultation...')));
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Column(
         children: [
@@ -532,6 +553,13 @@ class ChatDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
+          IconButton(
+            icon: const Icon(Icons.description_outlined, color: Color(0xFF12B8A6)),
+            onPressed: () {
+               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Opening prescription shared by doctor...')));
+            },
+            tooltip: 'View Prescription',
+          ),
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),

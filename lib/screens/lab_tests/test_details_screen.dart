@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'lab_tests_screen.dart';
 import 'book_test_screen.dart';
+import '../common/reviews_list_screen.dart';
 
 class TestDetailsScreen extends StatelessWidget {
   final LabTest test;
@@ -250,9 +251,71 @@ class TestDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ],
+                const SizedBox(height: 32),
+
+                // Reviews Section
+                Row(
+                  children: [
+                    _sectionTitle('Laboratory Reviews'),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReviewsListScreen(
+                              title: 'Laboratory',
+                              reviews: const [
+                                {
+                                  'name': 'Sarah Miller',
+                                  'rating': 5.0,
+                                  'date': 'Today',
+                                  'comment': 'Very professional staff and the home collection was right on time. Highly recommended!',
+                                },
+                                {
+                                  'name': 'James Wilson',
+                                  'rating': 4.8,
+                                  'date': '3 days ago',
+                                  'comment': 'Clean laboratory and quick results. The AI analysis helped me understand the values better.',
+                                },
+                                {
+                                  'name': 'Robert Brown',
+                                  'rating': 4.5,
+                                  'date': '1 week ago',
+                                  'comment': 'Smooth process, phlebotomist was very gentle. Results came on time.',
+                                },
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'See all',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF12B8A6),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _reviewCard(
+                  name: 'Sarah Miller',
+                  rating: 5.0,
+                  date: 'Today',
+                  comment: 'Very professional staff and the home collection was right on time. Highly recommended!',
+                ),
+                const SizedBox(height: 12),
+                _reviewCard(
+                  name: 'James Wilson',
+                  rating: 4.8,
+                  date: '3 days ago',
+                  comment: 'Clean laboratory and quick results. The AI analysis helped me understand the values better.',
                 ),
 
-                const SizedBox(height: 120),
+                const SizedBox(height: 140),
               ],
             ),
           ),
@@ -433,6 +496,102 @@ class TestDetailsScreen extends StatelessWidget {
               fontSize: 10,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF9CA3AF),
+            ),
+          ),
+        ],
+      ),
+    );
+  Widget _reviewCard({
+    required String name,
+    required double rating,
+    required String date,
+    required String comment,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF111827).withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF12B8A6).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    name[0],
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF12B8A6),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        ...List.generate(
+                          5,
+                          (index) => Icon(
+                            index < rating.floor()
+                                ? Icons.star_rounded
+                                : Icons.star_border_rounded,
+                            size: 14,
+                            color: Colors.amber,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          date,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF9CA3AF),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            comment,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: const Color(0xFF6B7280),
+              height: 1.6,
             ),
           ),
         ],

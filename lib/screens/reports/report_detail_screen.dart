@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'lab_reports_screen.dart';
+import '../doctors/find_doctors_screen.dart';
 
 class ReportDetailScreen extends StatelessWidget {
   final LabReport report;
@@ -28,9 +29,13 @@ class ReportDetailScreen extends StatelessWidget {
         ),
         centerTitle: true,
         actions: [
-          _iconButton(Icons.share_rounded),
+          _iconButton(Icons.share_rounded, () {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sharing report...')));
+          }),
           const SizedBox(width: 8),
-          _iconButton(Icons.download_rounded),
+          _iconButton(Icons.download_rounded, () {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report downloading to your device...')));
+          }),
           const SizedBox(width: 16),
         ],
       ),
@@ -182,7 +187,12 @@ class ReportDetailScreen extends StatelessWidget {
               height: 56,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Navigate to doctor consultation
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FindDoctorsScreen(),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF12B8A6),
@@ -241,7 +251,7 @@ class ReportDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _iconButton(IconData icon) {
+  Widget _iconButton(IconData icon, VoidCallback onTap) {
     return Container(
       width: 40,
       height: 40,
@@ -251,7 +261,7 @@ class ReportDetailScreen extends StatelessWidget {
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: IconButton(
-        onPressed: () {},
+        onPressed: onTap,
         icon: Icon(icon, size: 20, color: const Color(0xFF111827)),
         padding: EdgeInsets.zero,
       ),

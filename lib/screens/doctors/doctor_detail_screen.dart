@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/doctor_model.dart';
 import 'book_consultation_screen.dart';
+import '../common/reviews_list_screen.dart';
 
 class DoctorDetailScreen extends StatelessWidget {
   final DoctorModel doctor;
@@ -226,7 +227,36 @@ class DoctorDetailScreen extends StatelessWidget {
                           _sectionTitle('Patient Reviews'),
                           const Spacer(),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ReviewsListScreen(
+                                    title: doctor.name,
+                                    reviews: const [
+                                      {
+                                        'name': 'Emily Thompson',
+                                        'rating': 5.0,
+                                        'date': '2 days ago',
+                                        'comment': 'One of the best experiences I\'ve had with a specialist. Very thorough and patient.',
+                                      },
+                                      {
+                                        'name': 'Marcus Chen',
+                                        'rating': 4.5,
+                                        'date': '1 week ago',
+                                        'comment': 'Very professional and the AI integration to my reports was seamless during the session.',
+                                      },
+                                      {
+                                        'name': 'Sophia Rodriguez',
+                                        'rating': 5.0,
+                                        'date': '2 weeks ago',
+                                        'comment': 'Dr. ${doctor.name} explained everything in great detail. I felt very comfortable.',
+                                      },
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                             child: Text(
                               'See all',
                               style: GoogleFonts.poppins(

@@ -183,6 +183,12 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
           ),
         ],
       ),
+  }
+
+  void _showReviewDialog(BuildContext context, String targetName, String type) {
+    showDialog(
+      context: context,
+      builder: (context) => ReviewDialog(targetName: targetName, type: type),
     );
   }
 
@@ -309,6 +315,33 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                   ),
                 ),
                 const Spacer(),
+                if (report.status == 'analyzed') ...[
+                  GestureDetector(
+                    onTap: () => _showReviewDialog(context, report.labName, 'lab'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.star_rounded, size: 14, color: Color(0xFF10B981)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Rate Lab',
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF10B981),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
                 _statusBadgeContainer(report.status, report.hasAbnormalities),
               ],
             ),
@@ -420,6 +453,104 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class ReviewDialog extends StatefulWidget {
+  final String targetName;
+  final String type;
+
+  const ReviewDialog({super.key, required this.targetName, required this.type});
+
+  @override
+  State<ReviewDialog> createState() => _ReviewDialogState();
+}
+
+class _ReviewDialogState extends State<ReviewDialog> {
+  double _rating = 0;
+  final TextEditingController _feedbackController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Rate your experience',
+              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'How was your session with ${widget.targetName}?',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(color: const Color(0xFF6B7280)),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) {
+                return IconButton(
+                  onPressed: () => setState(() => _rating = index + 1.0),
+                  icon: Icon(
+                    index < _rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                    color: index < _rating ? Colors.amber : const Color(0xFFD1D5DB),
+                    size: 32,
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _feedbackController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: 'Tell us more about your experience...',
+                hintStyle: GoogleFonts.poppins(fontSize: 13),
+                filled: true,
+                fillColor: const Color(0xFFF3F4F6),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF6B7280), fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _rating == 0 ? null : () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Thank you for your feedback!')),
+                      );
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF12B8A6),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: Text('Submit', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: Colors.white)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

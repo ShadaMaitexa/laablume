@@ -127,17 +127,42 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
             ),
           ),
           const SizedBox(width: 20),
+          if (_activeTab == 0) 
+            ElevatedButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Appointment #PT-880$index marked as Completed')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF12B8A6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Update Status', style: TextStyle(fontSize: 11)),
+            ),
+          const SizedBox(width: 12),
           PopupMenuButton(
             icon: const Icon(Icons.more_vert),
             itemBuilder: (context) => [
               const PopupMenuItem(value: 'view', child: Text('View Details')),
-              const PopupMenuItem(value: 'reschedule', child: Text('Reschedule')),
-              const PopupMenuItem(value: 'cancel', child: Text('Cancel Appointment', style: TextStyle(color: Colors.red))),
+              if (_activeTab == 0) ...[
+                const PopupMenuItem(value: 'reschedule', child: Text('Reschedule')),
+                const PopupMenuItem(value: 'cancel', child: Text('Cancel Appointment', style: TextStyle(color: Colors.red))),
+              ],
+              if (_activeTab == 1) const PopupMenuItem(value: 'chat', child: Text('Message Patient')),
+              const PopupMenuItem(value: 'video', child: Text('Start Video Call', style: TextStyle(color: Color(0xFF12B8A6)))),
             ],
             onSelected: (value) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Action "$value" selected for Patient ${index + 1}')),
-              );
+              if (value == 'video') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Redirecting to secure video consultation room...')),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Action "$value" selected for Patient ${index + 1}')),
+                );
+              }
             },
           ),
         ],
@@ -592,7 +617,11 @@ class _DoctorConsultationsScreenState extends State<DoctorConsultationsScreen> {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Connecting to video consultation...')),
+              );
+            },
             icon: const Icon(Icons.videocam_outlined, color: Color(0xFF12B8A6)),
           ),
           IconButton(
@@ -657,38 +686,67 @@ class _DoctorConsultationsScreenState extends State<DoctorConsultationsScreen> {
   }
 
   Widget _buildChatInput() {
+    bool isAppointmentCompleted = _activeChatIndex != 0; // Simulation logic
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: Color(0xFFF3F4F6))),
       ),
-      child: Row(
+      child: Column(
         children: [
-          IconButton(icon: const Icon(Icons.attach_file, color: Color(0xFF6B7280)), onPressed: () {}),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Type your message...',
-                filled: true,
-                fillColor: const Color(0xFFF9FAFB),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+          if (!isAppointmentCompleted)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 16),
+                  const SizedBox(width: 8),
+                  Text('Chat is restricted until appointment is completed.', style: GoogleFonts.poppins(fontSize: 11, color: Colors.orange[800])),
+                ],
               ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF12B8A6),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.send_rounded, color: Colors.white),
-              onPressed: () {},
-            ),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.description_outlined, color: Color(0xFF12B8A6)),
+                onPressed: !isAppointmentCompleted ? null : () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Uploading prescription to chat...')),
+                  );
+                },
+                tooltip: 'Upload Prescription',
+              ),
+              IconButton(icon: const Icon(Icons.attach_file, color: Color(0xFF6B7280)), onPressed: !isAppointmentCompleted ? null : () {}),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  enabled: isAppointmentCompleted,
+                  decoration: InputDecoration(
+                    hintText: isAppointmentCompleted ? 'Type your message...' : 'Waiting for completion...',
+                    filled: true,
+                    fillColor: const Color(0xFFF9FAFB),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: isAppointmentCompleted ? const Color(0xFF12B8A6) : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.send_rounded, color: Colors.white),
+                  onPressed: !isAppointmentCompleted ? null : () {},
+                ),
+              ),
+            ],
           ),
         ],
       ),

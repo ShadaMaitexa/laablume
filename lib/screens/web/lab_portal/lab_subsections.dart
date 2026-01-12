@@ -180,169 +180,7 @@ class _LabBookingsScreenState extends State<LabBookingsScreen> {
   }
 }
 
-class LabInventoryScreen extends StatefulWidget {
-  const LabInventoryScreen({super.key});
-
-  @override
-  State<LabInventoryScreen> createState() => _LabInventoryScreenState();
-}
-
-class _LabInventoryScreenState extends State<LabInventoryScreen> {
-  final List<Map<String, dynamic>> _inventoryItems = [
-    {'name': 'Test Tubes', 'count': 85, 'isLow': false},
-    {'name': 'Contact Lenses', 'count': 42, 'isLow': false},
-    {'name': 'Chemical Reagent A', 'count': 12, 'isLow': true},
-    {'name': 'Gloves (L)', 'count': 95, 'isLow': false},
-    {'name': 'Gloves (M)', 'count': 110, 'isLow': false},
-    {'name': 'Syringes', 'count': 15, 'isLow': true},
-  ];
-
-  void _addItem(String name, int count) {
-    setState(() {
-      _inventoryItems.add({'name': name, 'count': count, 'isLow': count < 20});
-    });
-  }
-
-  void _editItem(int index, String name, int count) {
-    setState(() {
-      _inventoryItems[index] = {'name': name, 'count': count, 'isLow': count < 20};
-    });
-  }
-
-  void _removeItem(int index) {
-    setState(() {
-      _inventoryItems.removeAt(index);
-    });
-  }
-
-  void _showItemDialog({int? index}) {
-    final nameController = TextEditingController(text: index != null ? _inventoryItems[index]['name'] : '');
-    final countController = TextEditingController(text: index != null ? _inventoryItems[index]['count'].toString() : '');
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(index == null ? 'Add New Item' : 'Edit Item'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Item Name')),
-            const SizedBox(height: 16),
-            TextField(controller: countController, decoration: const InputDecoration(labelText: 'Stock Count'), keyboardType: TextInputType.number),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              if (index == null) {
-                _addItem(nameController.text, int.tryParse(countController.text) ?? 0);
-              } else {
-                _editItem(index, nameController.text, int.tryParse(countController.text) ?? 0);
-              }
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF12B8A6)),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Inventory & Supplies',
-                style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937)),
-              ),
-              ElevatedButton.icon(
-                onPressed: () => _showItemDialog(),
-                icon: const Icon(Icons.add),
-                label: const Text('Add Supply'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF12B8A6),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 24,
-                mainAxisSpacing: 24,
-                childAspectRatio: 1.2,
-              ),
-              itemCount: _inventoryItems.length,
-              itemBuilder: (context, index) => _inventoryCard(index),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _inventoryCard(int index) {
-    final item = _inventoryItems[index];
-    bool isLow = item['isLow'];
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: isLow ? Border.all(color: Colors.red.withOpacity(0.3)) : null,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(child: Text(item['name'], style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF9CA3AF)),
-                    onPressed: () => _showItemDialog(index: index),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
-                    onPressed: () => _removeItem(index),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text('In Stock: ${item['count']} units', style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF6B7280))),
-          const Spacer(),
-          LinearProgressIndicator(
-            value: (item['count'] as int) / 100,
-            backgroundColor: const Color(0xFFF3F4F6),
-            valueColor: AlwaysStoppedAnimation<Color>(isLow ? Colors.red : const Color(0xFF12B8A6)),
-          ),
-          if (isLow) ...[
-            const SizedBox(height: 8),
-            Text('Low Stock!', style: GoogleFonts.poppins(fontSize: 11, color: Colors.red, fontWeight: FontWeight.bold)),
-          ],
-        ],
-      ),
-    );
-  }
-}
+// LabInventoryScreen removed as per requirement: "no need an inventory management and reagent add area"
 
 class LabResultsApprovalScreen extends StatelessWidget {
   const LabResultsApprovalScreen({super.key});
@@ -407,27 +245,63 @@ class LabTechniciansScreen extends StatefulWidget {
 
 class _LabTechniciansScreenState extends State<LabTechniciansScreen> {
   final List<Map<String, dynamic>> _staff = [
-    {'name': 'Robert Fox', 'role': 'Senior Pathologist', 'status': 'Active'},
-    {'name': 'Jane Cooper', 'role': 'Lab Technician', 'status': 'On Break'},
-    {'name': 'Guy Hawkins', 'role': 'Assistant Technician', 'status': 'Active'},
-    {'name': 'Eleanor Pena', 'role': 'Bio-analyst', 'status': 'Active'},
+    {
+      'name': 'Robert Fox',
+      'role': 'Senior Pathologist',
+      'status': 'Active',
+      'experience': '12 years',
+      'specialization': 'Clinical Pathology',
+      'photo': 'https://i.pravatar.cc/150?u=robert'
+    },
+    {
+      'name': 'Jane Cooper',
+      'role': 'Lab Technician',
+      'status': 'On Break',
+      'experience': '5 years',
+      'specialization': 'Hematology',
+      'photo': 'https://i.pravatar.cc/150?u=jane'
+    },
+    {
+      'name': 'Guy Hawkins',
+      'role': 'Assistant Technician',
+      'status': 'Active',
+      'experience': '2 years',
+      'specialization': 'Sample Collection',
+      'photo': 'https://i.pravatar.cc/150?u=guy'
+    },
+    {
+      'name': 'Eleanor Pena',
+      'role': 'Bio-analyst',
+      'status': 'Active',
+      'experience': '8 years',
+      'specialization': 'Biochemistry',
+      'photo': 'https://i.pravatar.cc/150?u=eleanor'
+    },
   ];
 
   void _showStaffDialog({int? index}) {
     final nameController = TextEditingController(text: index != null ? _staff[index]['name'] : '');
     final roleController = TextEditingController(text: index != null ? _staff[index]['role'] : '');
+    final expController = TextEditingController(text: index != null ? _staff[index]['experience'] : '');
+    final specController = TextEditingController(text: index != null ? _staff[index]['specialization'] : '');
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(index == null ? 'Add Staff Member' : 'Edit Staff'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Full Name')),
-            const SizedBox(height: 16),
-            TextField(controller: roleController, decoration: const InputDecoration(labelText: 'Role/Position')),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Full Name')),
+              const SizedBox(height: 16),
+              TextField(controller: roleController, decoration: const InputDecoration(labelText: 'Role/Position')),
+              const SizedBox(height: 16),
+              TextField(controller: expController, decoration: const InputDecoration(labelText: 'Years of Experience')),
+              const SizedBox(height: 16),
+              TextField(controller: specController, decoration: const InputDecoration(labelText: 'Specialization Details')),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
@@ -435,9 +309,23 @@ class _LabTechniciansScreenState extends State<LabTechniciansScreen> {
             onPressed: () {
               setState(() {
                 if (index == null) {
-                  _staff.add({'name': nameController.text, 'role': roleController.text, 'status': 'Active'});
+                  _staff.add({
+                    'name': nameController.text,
+                    'role': roleController.text,
+                    'status': 'Active',
+                    'experience': expController.text,
+                    'specialization': specController.text,
+                    'photo': 'https://i.pravatar.cc/150?u=${nameController.text.length}'
+                  });
                 } else {
-                  _staff[index] = {'name': nameController.text, 'role': roleController.text, 'status': _staff[index]['status']};
+                  _staff[index] = {
+                    'name': nameController.text,
+                    'role': roleController.text,
+                    'status': _staff[index]['status'],
+                    'experience': expController.text,
+                    'specialization': specController.text,
+                    'photo': _staff[index]['photo']
+                  };
                 }
               });
               Navigator.pop(context);
@@ -486,35 +374,56 @@ class _LabTechniciansScreenState extends State<LabTechniciansScreen> {
               itemBuilder: (context, index) {
                 final member = _staff[index];
                 return Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
                   ),
-                  child: Row(
+                  child: Column(
                     children: [
-                      const CircleAvatar(backgroundColor: Color(0xFF12B8A6), child: Icon(Icons.person, color: Colors.white)),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(member['name'], style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                            Text(member['role'], style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280))),
-                          ],
-                        ),
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 30,
+                            backgroundImage: NetworkImage(member['photo']),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(member['name'], style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
+                                Text(member['role'], style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF12B8A6), fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF9CA3AF)),
+                                onPressed: () => _showStaffDialog(index: index),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
+                                onPressed: () {
+                                  setState(() => _staff.removeAt(index));
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF9CA3AF)),
-                        onPressed: () => _showStaffDialog(index: index),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
-                        onPressed: () {
-                          setState(() => _staff.removeAt(index));
-                        },
+                      const SizedBox(height: 16),
+                      const Divider(),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _staffDetail('Experience', member['experience']),
+                          _staffDetail('Specialization', member['specialization']),
+                        ],
                       ),
                     ],
                   ),
@@ -779,6 +688,156 @@ class _LabSettingsScreenState extends State<LabSettingsScreen> {
             const Icon(Icons.chevron_right, color: Color(0xFFE5E7EB)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class LabReportUploadScreen extends StatefulWidget {
+  const LabReportUploadScreen({super.key});
+
+  @override
+  State<LabReportUploadScreen> createState() => _LabReportUploadScreenState();
+}
+
+class _LabReportUploadScreenState extends State<LabReportUploadScreen> {
+  final List<Map<String, String>> _patients = [
+    {'name': 'Alice Brown', 'id': 'PT-8801', 'lastTest': 'Blood Glucose'},
+    {'name': 'Liam Henderson', 'id': 'PT-8802', 'lastTest': 'Full Body Checkup'},
+    {'name': 'Sophia Garcia', 'id': 'PT-8803', 'lastTest': 'Lipid Panel'},
+    {'name': 'Noah Smith', 'id': 'PT-8804', 'lastTest': 'CBC Analysis'},
+  ];
+
+  String? _selectedPatientId;
+  String? _selectedFileName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Upload Lab Reports', style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text('Select a patient and upload their completed test results.', style: GoogleFonts.poppins(color: const Color(0xFF6B7280))),
+          const SizedBox(height: 32),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left: Patient Selection
+              Expanded(
+                flex: 2,
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Select Patient', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
+                      const SizedBox(height: 20),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: _patients.length,
+                        separatorBuilder: (context, index) => const Divider(),
+                        itemBuilder: (context, index) {
+                          final patient = _patients[index];
+                          bool isSelected = _selectedPatientId == patient['id'];
+                          return ListTile(
+                            onTap: () => setState(() => _selectedPatientId = patient['id']),
+                            leading: CircleAvatar(
+                              backgroundColor: isSelected ? const Color(0xFF12B8A6) : const Color(0xFFF3F4F6),
+                              child: Text(patient['name'][0], style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF1F2937))),
+                            ),
+                            title: Text(patient['name'], style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                            subtitle: Text('ID: ${patient['id']} • Last: ${patient['lastTest']}', style: GoogleFonts.poppins(fontSize: 12)),
+                            trailing: isSelected ? const Icon(Icons.check_circle, color: Color(0xFF12B8A6)) : null,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 32),
+              // Right: Upload Area
+              Expanded(
+                flex: 3,
+                child: Container(
+                  padding: const EdgeInsets.all(40),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: 250,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE5E7EB), style: BorderStyle.none), // Using none to avoid double border
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.cloud_upload_outlined, size: 64, color: Color(0xFF12B8A6)),
+                              const SizedBox(height: 20),
+                              Text(
+                                _selectedFileName ?? 'Drag & drop report files here',
+                                style: GoogleFonts.poppins(fontWeight: FontWeight.w500, color: const Color(0xFF4B5563)),
+                              ),
+                              Text('Supported formats: PDF, JPG, PNG', style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF9CA3AF))),
+                              const SizedBox(height: 24),
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() => _selectedFileName = 'test_results_final.pdf');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF12B8A6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: const Text('Browse Files'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _selectedPatientId == null || _selectedFileName == null
+                              ? null
+                              : () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Report uploaded successfully and notified to patient!')),
+                                  );
+                                  setState(() {
+                                    _selectedPatientId = null;
+                                    _selectedFileName = null;
+                                  });
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF12B8A6),
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            disabledBackgroundColor: Colors.grey[200],
+                          ),
+                          child: Text(
+                            'Finalize & Upload Report',
+                            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
