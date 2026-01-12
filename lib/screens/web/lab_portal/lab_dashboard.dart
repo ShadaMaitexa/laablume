@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'lab_subsections.dart';
 
 class LabWebDashboard extends StatefulWidget {
   const LabWebDashboard({super.key});
@@ -11,129 +10,50 @@ class LabWebDashboard extends StatefulWidget {
 
 class _LabWebDashboardState extends State<LabWebDashboard> {
   int _selectedIndex = 0;
-  bool _showNotifications = false;
-
   final Color _primaryColor = const Color(0xFF12B8A6);
-  final Color _darkBg = const Color(0xFF111827); // Kept for accents/text
-  final Color _lightBg = const Color(0xFFF9FAFB); // Matches Patient Screen
-  final Color _sidebarBg = Colors.white; // Changed to Light theme
-
-  // Mock Data for API Integration
-  final List<Map<String, dynamic>> _labStats = [
-    {'title': 'Tests Processed', 'value': '14,204', 'icon': Icons.copy_rounded, 'color': Colors.blue},
-    {'title': 'Pending Samples', 'value': '42', 'icon': Icons.hourglass_top_rounded, 'color': Colors.orange},
-    {'title': 'Ready for Approval', 'value': '18', 'icon': Icons.check_circle_rounded, 'color': Colors.green},
-    {'title': 'System Uptime', 'value': '99.9%', 'icon': Icons.cloud_done_rounded, 'color': Color(0xFF12B8A6)},
-  ];
-
-  final List<Map<String, dynamic>> _recentTests = [
-    {'id': 'SAM-9011', 'patient': 'Liam Henderson', 'test': 'Blood Glucose', 'status': 'Processing', 'progress': 0.65},
-    {'id': 'SAM-9012', 'patient': 'Sophia Garcia', 'test': 'Lipid Panel', 'status': 'In Queue', 'progress': 0.1},
-    {'id': 'SAM-9013', 'patient': 'Noah Smith', 'test': 'CBC Analysis', 'status': 'Scanning', 'progress': 0.9},
-  ];
+  final Color _sidebarBg = Colors.white;
+  final Color _bgColor = const Color(0xFFF9FAFB);
 
   @override
   Widget build(BuildContext context) {
     bool isDesktop = MediaQuery.of(context).size.width >= 1100;
-
+    
     return Scaffold(
+      backgroundColor: _bgColor,
       key: GlobalKey<ScaffoldState>(),
-      backgroundColor: _lightBg,
       drawer: isDesktop ? null : Drawer(
         width: 280,
-        backgroundColor: _darkBg,
-        child: _buildLabSidebar(isDrawer: true),
+        backgroundColor: Colors.white,
+        child: _buildSidebar(isDrawer: true),
       ),
-      body: Stack(
+      body: Row(
         children: [
-          Row(
-            children: [
-              if (isDesktop) _buildLabSidebar(),
-              Expanded(
-                child: Column(
-                  children: [
-                    _buildLabHeader(!isDesktop),
-                    Expanded(
-                      child: IndexedStack(
-                        index: _selectedIndex,
-                        children: [
-                          _buildDashboardContent(isDesktop), // Index 0: Lab Analytics
-                          const LabBookingsScreen(), // Index 1: Manage Tests
-                          const LabResultsApprovalScreen(), // Index 2: Results Approval
-                          const LabReportUploadScreen(), // Index 3: Upload Reports
-                          const LabTechniciansScreen(), // Index 4: Technicians
-                          const LabSettingsScreen(), // Index 5: Portal Settings
-                        ],
-                      ),
-                    ),
-                  ],
+          if (isDesktop) _buildSidebar(),
+          Expanded(
+            child: Column(
+              children: [
+                _buildHeader(!isDesktop),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.all(isDesktop ? 40 : 20),
+                    child: _buildContent(isDesktop),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          if (_showNotifications)
-            Positioned(
-              top: 80,
-              right: isDesktop ? 60 : 20,
-              child: _buildNotificationsPanel(),
+              ],
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPlaceholderScreen(String title) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.biotech_rounded, size: 80, color: _primaryColor.withOpacity(0.3)),
-          const SizedBox(height: 20),
-          Text(
-            '$title Screen is under development',
-            style: GoogleFonts.poppins(fontSize: 18, color: const Color(0xFF6B7280)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDashboardContent(bool isDesktop) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(isDesktop ? 40 : 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildWelcomeSection(),
-          const SizedBox(height: 40),
-          _buildLabStats(isDesktop),
-          const SizedBox(height: 40),
-          if (isDesktop)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(flex: 3, child: _buildRecentTestsTable(isDesktop)),
-                const SizedBox(width: 30),
-                Expanded(flex: 1, child: _buildLabCapacity()),
-              ],
-            )
-          else
-            Column(
-              children: [
-                _buildRecentTestsTable(isDesktop),
-                const SizedBox(height: 32),
-                _buildLabCapacity(),
-              ],
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLabSidebar({bool isDrawer = false}) {
+  Widget _buildSidebar({bool isDrawer = false}) {
     return Container(
       width: 280,
-      color: _sidebarBg, // Updated to light
+      decoration: BoxDecoration(
+        color: _sidebarBg,
+        border: const Border(right: BorderSide(color: Color(0xFFF3F4F6))),
+      ),
       child: Column(
         children: [
           const SizedBox(height: 50),
@@ -161,63 +81,48 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
               ],
             ),
           ),
+          const SizedBox(height: 60),
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 60),
-                  _labSidebarItem(Icons.analytics_outlined, 'Lab Analytics', 0, isDrawer),
-                   _labSidebarItem(Icons.science_outlined, 'Manage Tests', 1, isDrawer),
-                  _labSidebarItem(Icons.assignment_turned_in_outlined, 'Results Approval', 2, isDrawer),
-                  _labSidebarItem(Icons.cloud_upload_outlined, 'Upload Reports', 3, isDrawer),
-                  _labSidebarItem(Icons.people_outline_rounded, 'Technicians', 4, isDrawer),
-                ],
-              ),
+            child: ListView(
+              children: [
+                _sidebarItem(0, Icons.analytics_outlined, 'Laboratory Analytics'),
+                _sidebarItem(1, Icons.biotech_rounded, 'Manage Samples'),
+                _sidebarItem(2, Icons.fact_check_rounded, 'Results Validation'),
+                _sidebarItem(3, Icons.cloud_upload_rounded, 'Report Publishing'),
+                _sidebarItem(4, Icons.settings_rounded, 'Station Configuration'),
+              ],
             ),
           ),
-          _labSidebarItem(Icons.settings_outlined, 'Portal Settings', 5, isDrawer),
-          const SizedBox(height: 20),
+          _sidebarItem(5, Icons.logout_rounded, 'Secure Sign Out'),
+          const SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  Widget _labSidebarItem(IconData icon, String title, int index, bool isDrawer) {
+  Widget _sidebarItem(int index, IconData icon, String title) {
     bool isSelected = _selectedIndex == index;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      child: InkWell(
-        onTap: () {
-          setState(() => _selectedIndex = index);
-          if (isDrawer) Navigator.pop(context);
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: isSelected ? _primaryColor.withOpacity(0.1) : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: isSelected ? _primaryColor : const Color(0xFF6B7280), size: 22),
-              const SizedBox(width: 16),
-              Text(
-                title,
-                style: GoogleFonts.poppins(
-                  color: isSelected ? _primaryColor : const Color(0xFF6B7280),
-                  fontSize: 14,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
-              ),
-            ],
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: ListTile(
+        onTap: () => setState(() => _selectedIndex = index),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        leading: Icon(icon, color: isSelected ? _primaryColor : const Color(0xFF9CA3AF), size: 22),
+        title: Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: isSelected ? _primaryColor : const Color(0xFF6B7280),
           ),
         ),
+        selected: isSelected,
+        selectedTileColor: _primaryColor.withOpacity(0.05),
       ),
     );
   }
 
-  Widget _buildLabHeader(bool showMenu) {
+  Widget _buildHeader(bool showMenu) {
     return Container(
       height: 80,
       color: Colors.white,
@@ -231,292 +136,169 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),
             ),
-          if (!showMenu)
-            Text(
-              'Terminal ID: LK-901-B',
-              style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF6B7280), fontWeight: FontWeight.w600),
-            )
-          else 
-            Text(
-              'Lab Terminal',
-              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          const Spacer(),
-          if (!showMenu) _statusIndicator('Lab Status: ACTIVE', Colors.green),
-          const SizedBox(width: 24),
-          _headerAction(
-            Icons.notifications_none_rounded, 
-            badgeCount: 2,
-            onTap: () => setState(() => _showNotifications = !_showNotifications),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Central Diagnostic Hub',
+                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF111827)),
+              ),
+              Text(
+                'Terminal Status: ONLINE',
+                style: GoogleFonts.poppins(fontSize: 11, color: Colors.green, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          _headerAction(Icons.bolt_rounded), // System status
-          const SizedBox(width: 24),
+          const Spacer(),
+          _headerAction(Icons.notifications_none_rounded),
+          const SizedBox(width: 20),
           const CircleAvatar(
             backgroundColor: Color(0xFFF3F4F6),
-            child: Icon(Icons.science, color: Color(0xFF1F2937)),
+            child: Icon(Icons.science_rounded, color: Color(0xFF1F2937), size: 20),
           ),
         ],
       ),
     );
   }
 
-  Widget _headerAction(IconData icon, {VoidCallback? onTap, int badgeCount = 0}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFF3F4F6)),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: const Color(0xFF6B7280), size: 18),
-          ),
-          if (badgeCount > 0)
-            Positioned(
-              top: -4,
-              right: -4,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(color: Color(0xFF12B8A6), shape: BoxShape.circle),
-                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                child: Text(
-                  badgeCount.toString(),
-                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotificationsPanel() {
+  Widget _headerAction(IconData icon) {
     return Container(
-      width: 320,
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 30,
-            offset: const Offset(0, 15),
-          ),
-        ],
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('System Alerts', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
-                const Icon(Icons.settings_outlined, size: 18, color: Color(0xFF9CA3AF)),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          _notificationItem('Critical Reagent Low', 'Analyzer-1 requires immediate refill.', Icons.warning_amber_rounded, Colors.red),
-          _notificationItem('Calibration Required', 'Immunoassay system calibration due.', Icons.build_outlined, Colors.orange),
-          _notificationItem('Sample Batch Uploaded', '32 new samples registered for analysis.', Icons.cloud_done_outlined, _primaryColor),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextButton(
-              onPressed: () => setState(() => _showNotifications = false),
-              child: Text('Close Diagnostics', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: const Color(0xFF6B7280))),
-            ),
-          ),
-        ],
-      ),
+      child: Icon(icon, size: 20, color: const Color(0xFF6B7280)),
     );
   }
 
-  Widget _notificationItem(String title, String sub, IconData icon, Color color) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-        child: Icon(icon, color: color, size: 18),
-      ),
-      title: Text(title, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
-      subtitle: Text(sub, style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF6B7280))),
-      onTap: () {},
-    );
+  Widget _buildContent(bool isDesktop) {
+    switch (_selectedIndex) {
+      case 0: return _buildAnalytics(isDesktop);
+      case 1: return _buildSampleManagement(isDesktop);
+      default: return _buildPlaceholder('Module');
+    }
   }
 
-  Widget _statusIndicator(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Row(
-        children: [
-          Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-          const SizedBox(width: 10),
-          Text(
-            text,
-            style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: color),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWelcomeSection() {
+  Widget _buildAnalytics(bool isDesktop) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Laboratory Management',
-          style: GoogleFonts.poppins(fontSize: 32, fontWeight: FontWeight.bold, color: _darkBg),
+        _buildSectionHeader('Laboratory Intelligence', 'Real-time tracking of diagnostic throughput.'),
+        const SizedBox(height: 32),
+        _buildStatsGrid(isDesktop),
+        const SizedBox(height: 40),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(flex: 2, child: _recentSamples(isDesktop)),
+            if (isDesktop) const SizedBox(width: 32),
+            if (isDesktop) Expanded(flex: 1, child: _reagentStatus()),
+          ],
         ),
-        Text(
-          'Automated tracking and result management system.',
-          style: GoogleFonts.poppins(fontSize: 16, color: const Color(0xFF6B7280)),
-        ),
+        if (!isDesktop) ...[
+          const SizedBox(height: 32),
+          _reagentStatus(),
+        ],
       ],
     );
   }
 
-  Widget _buildLabStats(bool isDesktop) {
+  Widget _buildSectionHeader(String title, String sub) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937))),
+        Text(sub, style: GoogleFonts.poppins(fontSize: 15, color: const Color(0xFF6B7280))),
+      ],
+    );
+  }
+
+  Widget _buildStatsGrid(bool isDesktop) {
+    List<Widget> stats = [
+      _statCard('Samples Pending', '42', Icons.hourglass_empty_rounded, Colors.orange),
+      _statCard('Tests Processed', '1,402', Icons.check_circle_outline_rounded, Colors.green),
+      _statCard('Urgent Requests', '08', Icons.bolt_rounded, Colors.red),
+      _statCard('Avg. Turnaround', '4.2h', Icons.timer_outlined, Colors.blue),
+    ];
+
     if (isDesktop) {
-      return Row(
-        children: _labStats.asMap().entries.map((entry) {
-          final index = entry.key;
-          final data = entry.value;
-          return Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(right: index < _labStats.length - 1 ? 24.0 : 0),
-              child: _labStatCard(data['title'], data['value'], data['icon'], data['color']),
-            ),
-          );
-        }).toList(),
-      );
+      return Row(children: stats.map((e) => Expanded(child: Padding(padding: const EdgeInsets.only(right: 20), child: e))).toList());
     } else {
-      return Column(
-        children: [
-          Row(
-            children: [
-              Expanded(child: _labStatCard(_labStats[0]['title'], _labStats[0]['value'], _labStats[0]['icon'], _labStats[0]['color'])),
-              const SizedBox(width: 16),
-              Expanded(child: _labStatCard(_labStats[1]['title'], _labStats[1]['value'], _labStats[1]['icon'], _labStats[1]['color'])),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(child: _labStatCard(_labStats[2]['title'], _labStats[2]['value'], _labStats[2]['icon'], _labStats[2]['color'])),
-              const SizedBox(width: 16),
-              Expanded(child: _labStatCard(_labStats[3]['title'], _labStats[3]['value'], _labStats[3]['icon'], _labStats[3]['color'])),
-            ],
-          ),
-        ],
+      return GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 2,
+        mainAxisSpacing: 20,
+        crossAxisSpacing: 20,
+        childAspectRatio: 1.2,
+        children: stats,
       );
     }
   }
 
-  Widget _labStatCard(String title, String val, IconData icon, Color color) {
+  Widget _statCard(String title, String val, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10)),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 30),
-          const SizedBox(height: 20),
-          Text(val, style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: _darkBg)),
-          Text(title, style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF9CA3AF), fontWeight: FontWeight.w500)),
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 16),
+          Text(val, style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold)),
+          Text(title, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF9CA3AF), fontWeight: FontWeight.w500)),
         ],
       ),
     );
   }
 
-  Widget _buildRecentTestsTable(bool isDesktop) {
+  Widget _recentSamples(bool isDesktop) {
     return Container(
-      padding: EdgeInsets.all(isDesktop ? 32 : 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-      ),
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Sample Processing', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(color: _primaryColor, borderRadius: BorderRadius.circular(10)),
-                child: Text('Register', style: GoogleFonts.poppins(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-              ),
+              Text('Sample Flow', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('View All', style: GoogleFonts.poppins(fontSize: 12, color: _primaryColor, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 32),
-          _tableHeaderRow(isDesktop),
-          const Divider(),
-          ..._recentTests.map((test) => 
-            _testDataRow(test['id'], test['patient'], test['test'], test['status'], test['progress'], isDesktop)
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _tableHeaderRow(bool isDesktop) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Expanded(flex: 1, child: Text('ID', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF9CA3AF)))),
-          Expanded(flex: 2, child: Text('PATIENT', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF9CA3AF)))),
-          if (isDesktop) Expanded(flex: 2, child: Text('TEST TYPE', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF9CA3AF)))),
-          Expanded(flex: 2, child: Text('PROGRESS', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF9CA3AF)))),
-        ],
-      ),
-    );
-  }
-
-  Widget _testDataRow(String id, String patient, String test, String status, double progress, bool isDesktop) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: [
-          Expanded(flex: 1, child: Text(id, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold))),
-          Expanded(flex: 2, child: Text(patient, style: GoogleFonts.poppins(fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
-          if (isDesktop) Expanded(flex: 2, child: Text(test, style: GoogleFonts.poppins(fontSize: 13, color: _primaryColor, fontWeight: FontWeight.w600))),
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 4,
+            separatorBuilder: (context, index) => const Divider(height: 32),
+            itemBuilder: (context, index) => Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: const Color(0xFFF3F4F6),
-                    valueColor: AlwaysStoppedAnimation<Color>(_primaryColor),
-                    minHeight: 4,
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(12)),
+                  child: Icon(Icons.science_outlined, color: _primaryColor, size: 20),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Sample #LK-7023${index+1}', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text('Blood Glucose Analysis', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
+                    ],
                   ),
                 ),
+                if (isDesktop) _statusBadge('Processing', Colors.blue),
+                const SizedBox(width: 20),
+                Text('10:30 AM', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -525,39 +307,37 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
     );
   }
 
-  Widget _buildLabCapacity() {
+  Widget _statusBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(30)),
+      child: Text(label, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
+    );
+  }
+
+  Widget _reagentStatus() {
     return Container(
       padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: _darkBg,
-        borderRadius: BorderRadius.circular(24),
-      ),
+      decoration: BoxDecoration(color: const Color(0xFF1F2937), borderRadius: BorderRadius.circular(24)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Lab Capacity', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 10),
-          Text('78% of analyzers active', style: GoogleFonts.poppins(fontSize: 13, color: Colors.white60)),
-          const SizedBox(height: 40),
-          _analyzerStat('Chemical Analyzer-1', 0.85),
-          const SizedBox(height: 24),
-          _analyzerStat('Hematology Auto', 0.40),
-          const SizedBox(height: 24),
-          _analyzerStat('Immunoassay Sys', 0.95),
-          const SizedBox(height: 40),
+          Text('System Health', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          const SizedBox(height: 32),
+          _healthMetric('Analyzer Connectivity', 0.98),
+          const SizedBox(height: 20),
+          _healthMetric('Sample Queue Load', 0.65),
+          const SizedBox(height: 20),
+          _healthMetric('Storage Temp (Critical)', 0.15),
+          const SizedBox(height: 32),
           Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(16)),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
             child: Row(
               children: [
-                const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 24),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Reagent levels low for Glucose Panel.',
-                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 12),
-                  ),
-                ),
+                const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 18),
+                const SizedBox(width: 12),
+                Expanded(child: Text('Calibration due for Station-4', style: GoogleFonts.poppins(color: Colors.red, fontSize: 12))),
               ],
             ),
           ),
@@ -566,11 +346,11 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
     );
   }
 
-  Widget _analyzerStat(String name, double val) {
+  Widget _healthMetric(String title, double val) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(name, style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12)),
+        Text(title, style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12)),
         const SizedBox(height: 8),
         LinearProgressIndicator(
           value: val,
@@ -579,6 +359,46 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
           minHeight: 4,
         ),
       ],
+    );
+  }
+
+  Widget _buildSampleManagement(bool isDesktop) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Scan & Register', 'Register incoming physical samples into the digital tracking system.'),
+        const SizedBox(height: 32),
+        Container(
+          height: 300,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: _primaryColor.withOpacity(0.2), style: BorderStyle.none),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.qr_code_scanner_rounded, size: 80, color: _primaryColor.withOpacity(0.3)),
+              const SizedBox(height: 20),
+              Text('Align barcode to scan sample', style: GoogleFonts.poppins(color: Colors.grey)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlaceholder(String title) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.science_rounded, size: 60, color: _primaryColor.withOpacity(0.2)),
+          const SizedBox(height: 16),
+          Text('$title Terminal is active.', style: GoogleFonts.poppins(color: Colors.grey)),
+        ],
+      ),
     );
   }
 }
