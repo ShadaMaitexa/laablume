@@ -29,10 +29,30 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
     super.dispose();
   }
 
+  String _getNameLabel() {
+    switch (widget.role) {
+      case 'Doctor': return 'Full Name';
+      case 'Lab': return 'Laboratory Name';
+      case 'Hospital': return 'Hospital Name';
+      case 'Admin': return 'Admin Name';
+      default: return 'Name';
+    }
+  }
+
+  String _getNameHint() {
+    switch (widget.role) {
+      case 'Doctor': return 'e.g. Dr. Sarah Wilson';
+      case 'Lab': return 'e.g. Kochi Central Lab';
+      case 'Hospital': return 'e.g. St. Mary Medical Center';
+      case 'Admin': return 'e.g. System Admin';
+      default: return 'Enter name';
+    }
+  }
+
   void _handleSignup() async {
     // Validate inputs
     if (_nameController.text.trim().isEmpty) {
-      _showSnackBar('Please enter your ${widget.role == 'Doctor' ? 'name' : 'lab name'}', isError: true);
+      _showSnackBar('Please enter your ${_getNameLabel()}', isError: true);
       return;
     }
 
@@ -215,7 +235,7 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                       
                       // Name Field
                       Text(
-                        widget.role == 'Doctor' ? 'Full Name' : 'Laboratory Name',
+                        _getNameLabel(),
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -226,7 +246,7 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                       TextField(
                         controller: _nameController,
                         decoration: InputDecoration(
-                          hintText: widget.role == 'Doctor' ? 'e.g. Dr. Sarah Wilson' : 'e.g. Kochi Central Lab',
+                          hintText: _getNameHint(),
                           prefixIcon: const Icon(Icons.person_outline, size: 20),
                           filled: true,
                           fillColor: const Color(0xFFF9FAFB),

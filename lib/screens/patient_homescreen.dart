@@ -10,6 +10,7 @@ import 'doctors/find_doctors_screen.dart';
 import 'chat_screen.dart';
 import 'my_appointments_screen.dart';
 import 'health_metrics/health_metrics_screen.dart';
+import 'common/notifications_screen.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -126,7 +127,10 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen())),
         ),
         const SizedBox(width: 12),
-        _iconButton(Icons.notifications_none_rounded, () {}),
+        _iconButton(
+          Icons.notifications_none_rounded, 
+          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen())),
+        ),
       ],
     );
   }

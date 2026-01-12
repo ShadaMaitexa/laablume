@@ -68,7 +68,7 @@ class _OtpScreenState extends State<OtpScreen> {
     });
 
     try {
-      final success = await AuthService().verifyOtp(
+      final response = await AuthService().verifyOtp(
         widget.mobileNumber, 
         otpController.text
       );
@@ -78,7 +78,15 @@ class _OtpScreenState extends State<OtpScreen> {
           _isVerifying = false;
         });
         
-        if (success) {
+        if (response != null) {
+          final role = response['role'] ?? 'patient';
+          if (role != 'patient') {
+            setState(() {
+              _otpError = 'This app is for patients only. Please use the Web Portal for $role role.';
+            });
+            return;
+          }
+
           // Success - navigate to next screen
           Navigator.push(
             context,

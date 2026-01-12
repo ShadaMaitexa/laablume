@@ -147,10 +147,14 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
             itemBuilder: (context) => [
               const PopupMenuItem(value: 'view', child: Text('View Details')),
               if (_activeTab == 0) ...[
+                const PopupMenuItem(value: 'consultation', child: Text('Consultation Notes', style: TextStyle(color: Color(0xFF10B981)))),
                 const PopupMenuItem(value: 'reschedule', child: Text('Reschedule')),
                 const PopupMenuItem(value: 'cancel', child: Text('Cancel Appointment', style: TextStyle(color: Colors.red))),
               ],
-              if (_activeTab == 1) const PopupMenuItem(value: 'chat', child: Text('Message Patient')),
+              if (_activeTab == 1) ...[
+                const PopupMenuItem(value: 'consultation', child: Text('Consultation Notes', style: TextStyle(color: Color(0xFF10B981)))),
+                const PopupMenuItem(value: 'chat', child: Text('Message Patient')),
+              ],
               const PopupMenuItem(value: 'video', child: Text('Start Video Call', style: TextStyle(color: Color(0xFF12B8A6)))),
             ],
             onSelected: (value) {
@@ -158,6 +162,8 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Redirecting to secure video consultation room...')),
                 );
+              } else if (value == 'consultation') {
+                _showConsultationDialog(context, index);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Action "$value" selected for Patient ${index + 1}')),
@@ -167,6 +173,119 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showConsultationDialog(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          width: 600,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Consultation Records - Patient ${index + 1}',
+                style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937)),
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Diagnosis',
+                  labelStyle: GoogleFonts.poppins(fontSize: 14),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF12B8A6), width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                maxLines: 5,
+                decoration: InputDecoration(
+                  labelText: 'Clinical Notes / Treatment Plan',
+                  alignLabelWithHint: true,
+                  labelStyle: GoogleFonts.poppins(fontSize: 14),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF12B8A6), width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Prescription',
+                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF4B5563)),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9FAFB),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Column(
+                  children: [
+                    _prescriptionRow('Amoxicillin', '500mg', 'Twice daily', '5 days'),
+                    const Divider(height: 24),
+                    _prescriptionRow('Paracetamol', '650mg', 'When needed', '3 days'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text('Save as Draft', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Consultation records finalized and shared with patient.')),
+                        );
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF12B8A6),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text('Finalize & Complete', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _prescriptionRow(String med, String dose, String freq, String dur) {
+    return Row(
+      children: [
+        Expanded(flex: 2, child: Text(med, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13))),
+        Expanded(child: Text(dose, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280)))),
+        Expanded(child: Text(freq, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280)))),
+        Text(dur, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF12B8A6), fontWeight: FontWeight.w600)),
+      ],
     );
   }
 }

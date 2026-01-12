@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
 import '../doctor_portal/doctor_dashboard.dart';
 import '../lab_portal/lab_dashboard.dart';
+import '../hospital_portal/hospital_dashboard.dart';
+import '../admin_portal/admin_dashboard.dart';
 import '../../../services/auth_service.dart';
 
 class RoleOtpScreen extends StatefulWidget {
@@ -72,9 +74,10 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
     });
 
     try {
-      final success = await AuthService().verifyOtp(
+      final response = await AuthService().verifyOtp(
         widget.mobileNumber, 
-        otpController.text
+        otpController.text,
+        role: widget.role.toLowerCase(), // Pass requested role to create user with it if new
       );
       
       if (mounted) {
@@ -82,20 +85,45 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
           _isVerifying = false;
         });
         
-        if (success) {
+        if (response != null) {
+          final returnedRole = response['role'];
+          if (returnedRole != widget.role.toLowerCase() && returnedRole != 'admin') {
+             setState(() {
+              _otpError = 'Access Denied: You are registered as $returnedRole. Please use the correct portal.';
+            });
+            return;
+          }
+
           // Success - navigate to dashboard based on role
-          if (widget.role == 'Doctor') {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const DoctorWebDashboard()),
-              (route) => false,
-            );
-          } else {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const LabWebDashboard()),
-              (route) => false,
-            );
+          switch (widget.role) {
+            case 'Doctor':
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const DoctorWebDashboard()),
+                (route) => false,
+              );
+              break;
+            case 'Lab':
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LabWebDashboard()),
+                (route) => false,
+              );
+              break;
+            case 'Hospital':
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HospitalWebDashboard()),
+                (route) => false,
+              );
+              break;
+            case 'Admin':
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminWebPortal()),
+                (route) => false,
+              );
+              break;
           }
         } else {
           // Show error

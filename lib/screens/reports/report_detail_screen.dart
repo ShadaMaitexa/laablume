@@ -29,6 +29,10 @@ class ReportDetailScreen extends StatelessWidget {
         ),
         centerTitle: true,
         actions: [
+          _iconButton(Icons.local_hospital_outlined, () {
+            _showHospitalShareDialog(context);
+          }),
+          const SizedBox(width: 8),
           _iconButton(Icons.share_rounded, () {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sharing report...')));
           }),
@@ -530,5 +534,102 @@ class ReportDetailScreen extends StatelessWidget {
   String _formatDateShort(DateTime date) {
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${date.day} ${months[date.month - 1]}, ${date.year}';
+  }
+
+  void _showHospitalShareDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Container(
+          padding: const EdgeInsets.all(28),
+          width: 400,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF12B8A6).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.security_rounded, color: Color(0xFF12B8A6), size: 32),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Share with Hospital',
+                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Select a hospital to share your ${report.testName} report. They will be able to view this for diagnostic purposes.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF6B7280), height: 1.5),
+              ),
+              const SizedBox(height: 24),
+              _hospitalItem('City General Hospital', 'New York, NY'),
+              const SizedBox(height: 12),
+              _hospitalItem('St. Mary Medical Center', 'Queens, NY'),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF6B7280), fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Report successfully shared with hospital.')),
+                        );
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF12B8A6),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: Text('Share Now', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _hospitalItem(String name, String location) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.business_rounded, color: Color(0xFF6B7280), size: 18),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold)),
+                Text(location, style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF9CA3AF))),
+              ],
+            ),
+          ),
+          const Radio(value: true, groupValue: false, onChanged: null),
+        ],
+      ),
+    );
   }
 }

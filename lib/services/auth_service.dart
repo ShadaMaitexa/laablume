@@ -20,25 +20,22 @@ class AuthService extends ApiBaseService {
     });
   }
 
-  Future<bool> verifyOtp(String mobileNumber, String otp) async {
+  Future<Map<String, dynamic>?> verifyOtp(String mobileNumber, String otp, {String? role}) async {
     final response = await post('/auth/verify-otp', {
       'mobileNumber': mobileNumber,
       'otp': otp,
+      if (role != null) 'role': role,
     });
     
-    if (response != null) {
-        String? token;
-        // Check for common token keys
-        if (response is Map<String, dynamic>) {
-            token = response['token'] ?? response['accessToken'] ?? response['jwt'];
-        } 
+    if (response != null && response is Map<String, dynamic>) {
+        String? token = response['token'] ?? response['accessToken'] ?? response['jwt'];
         
         if (token != null) {
             setToken(token);
             debugPrint('Token set: $token');
-            return true;
+            return response;
         }
     }
-    return false;
+    return null;
   }
 }
