@@ -11,6 +11,8 @@ import 'chat_screen.dart';
 import 'my_appointments_screen.dart';
 import 'health_metrics/health_metrics_screen.dart';
 import 'common/notifications_screen.dart';
+import 'common/feedback_screen.dart';
+
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -289,13 +291,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LabTestsScreen())),
             ),
             _serviceCard(
-              icon: Icons.upload_file_outlined,
-              title: 'Upload Report',
-              subtitle: 'AI Analysis',
-              color: const Color(0xFF6366F1),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const UploadReportScreen())),
-            ),
-            _serviceCard(
               icon: Icons.people_outline_rounded,
               title: 'Find Doctors',
               subtitle: 'Top specialists',
@@ -303,11 +298,18 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FindDoctorsScreen())),
             ),
             _serviceCard(
-              icon: Icons.folder_open_rounded,
-              title: 'My Reports',
-              subtitle: 'Manage records',
-              color: const Color(0xFFEC4899),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LabReportsScreen())),
+              icon: Icons.upload_file_outlined,
+              title: 'Upload Report',
+              subtitle: 'AI Analysis',
+              color: const Color(0xFF6366F1),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const UploadReportScreen())),
+            ),
+            _serviceCard(
+              icon: Icons.rate_review_outlined,
+              title: 'Give Feedback',
+              subtitle: 'Share experience',
+              color: Colors.orange,
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FeedbackScreen())),
             ),
           ],
         ),

@@ -491,7 +491,7 @@ class ChatDetailScreen extends StatelessWidget {
               ],
             ),
           ),
-          _buildChatInput(),
+          _buildChatInput(context),
         ],
       ),
     );
@@ -544,7 +544,7 @@ class ChatDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChatInput() {
+  Widget _buildChatInput(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       decoration: const BoxDecoration(

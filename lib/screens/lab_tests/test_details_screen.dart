@@ -251,6 +251,7 @@ class TestDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
                 const SizedBox(height: 32),
 
                 // Reviews Section
@@ -501,6 +502,8 @@ class TestDetailsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
   Widget _reviewCard({
     required String name,
     required double rating,

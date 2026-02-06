@@ -87,9 +87,9 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
               children: [
                 _sidebarItem(0, Icons.analytics_outlined, 'Laboratory Analytics'),
                 _sidebarItem(1, Icons.biotech_rounded, 'Manage Samples'),
-                _sidebarItem(2, Icons.fact_check_rounded, 'Results Validation'),
-                _sidebarItem(3, Icons.cloud_upload_rounded, 'Report Publishing'),
-                _sidebarItem(4, Icons.settings_rounded, 'Station Configuration'),
+                _sidebarItem(2, Icons.list_alt_rounded, 'Test Catalog'),
+                _sidebarItem(3, Icons.event_available_rounded, 'Service Availability'),
+                _sidebarItem(4, Icons.cloud_upload_rounded, 'Report Publishing'),
               ],
             ),
           ),
@@ -177,6 +177,8 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
     switch (_selectedIndex) {
       case 0: return _buildAnalytics(isDesktop);
       case 1: return _buildSampleManagement(isDesktop);
+      case 2: return _buildTestCatalog(isDesktop);
+      case 3: return _buildAvailability(isDesktop);
       default: return _buildPlaceholder('Module');
     }
   }
@@ -383,6 +385,78 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
               const SizedBox(height: 20),
               Text('Align barcode to scan sample', style: GoogleFonts.poppins(color: Colors.grey)),
             ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTestCatalog(bool isDesktop) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Service Catalog', 'Manage the types of tests and diagnostics offered by this facility.'),
+        const SizedBox(height: 32),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isDesktop ? 3 : 1,
+            mainAxisSpacing: 20,
+            crossAxisSpacing: 20,
+            childAspectRatio: 2.5,
+          ),
+          itemCount: 6,
+          itemBuilder: (context, index) => Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+            child: Row(
+              children: [
+                Icon(Icons.biotech_rounded, color: _primaryColor),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Blood Glucose Profile', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                      Text('₹499 • 24h Turnaround', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
+                    ],
+                  ),
+                ),
+                Switch(value: true, onChanged: (v) {}, activeColor: _primaryColor),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAvailability(bool isDesktop) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Operating Hours', 'Set and update your facility’s diagnostic service hours.'),
+        const SizedBox(height: 32),
+        Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+          child: Column(
+            children: List.generate(7, (index) => Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Row(
+                children: [
+                  SizedBox(width: 100, child: Text(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index], style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
+                  const Spacer(),
+                  Text('08:00 AM - 08:00 PM', style: GoogleFonts.poppins(color: Colors.grey)),
+                  const SizedBox(width: 40),
+                  _statusBadge('Active', Colors.green),
+                  const SizedBox(width: 20),
+                  IconButton(icon: const Icon(Icons.edit_note_rounded), onPressed: () {}),
+                ],
+              ),
+            )),
           ),
         ),
       ],

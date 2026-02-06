@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../services/auth_service.dart';
 
 class HospitalWebDashboard extends StatefulWidget {
   const HospitalWebDashboard({super.key});
@@ -178,6 +179,7 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
       case 0: return _buildAnalytics(isDesktop);
       case 1: return _buildSharedReports(isDesktop);
       case 2: return _buildBookings(isDesktop);
+      case 3: return _buildStaffDirectory(isDesktop);
       default: return _buildPlaceholder('Module');
     }
   }
@@ -414,6 +416,156 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildStaffDirectory(bool isDesktop) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionHeader('Staff Directory', 'Manage your facility\'s medical professionals.'),
+            ElevatedButton.icon(
+              onPressed: () => _showAddDoctorDialog(context),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Add New Doctor'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _primaryColor,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 32),
+        FutureBuilder<List<dynamic>>(
+          future: AuthService().getHospitalDoctors(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final doctors = snapshot.data ?? [];
+            if (doctors.isEmpty) {
+              return Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.people_outline_rounded, size: 64, color: Colors.grey[300]),
+                    const SizedBox(height: 16),
+                    Text('No doctors added yet', style: GoogleFonts.poppins(color: Colors.grey)),
+                  ],
+                ),
+              );
+            }
+            return Container(
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: doctors.length,
+                separatorBuilder: (context, index) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final doc = doctors[index];
+                  return ListTile(
+                    contentPadding: const EdgeInsets.all(24),
+                    leading: CircleAvatar(
+                      backgroundColor: _primaryColor.withOpacity(0.1),
+                      child: Text(doc['name']?[0] ?? 'D', style: TextStyle(color: _primaryColor)),
+                    ),
+                    title: Text(doc['name'] ?? 'Unknown Doctor', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                    subtitle: Text('${doc['specialty'] ?? 'General'} • ${doc['mobileNumber']}', style: GoogleFonts.poppins(fontSize: 13)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(icon: const Icon(Icons.edit_outlined), onPressed: () {}),
+                        IconButton(icon: const Icon(Icons.delete_outline_rounded, color: Colors.red), onPressed: () {}),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  void _showAddDoctorDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    final phoneController = TextEditingController();
+    final specialtyController = TextEditingController();
+    final emailController = TextEditingController();
+    bool isSaving = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text('Add New Doctor', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          content: Container(
+            width: 500,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _dialogField('Full Name', nameController, Icons.person_outline),
+                _dialogField('Mobile Number (with code)', phoneController, Icons.phone_outlined, keyboardType: TextInputType.phone),
+                _dialogField('Specialty', specialtyController, Icons.medical_services_outlined),
+                _dialogField('Email Address', emailController, Icons.email_outlined, keyboardType: TextInputType.emailAddress),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: isSaving ? null : () async {
+                if (nameController.text.isEmpty || phoneController.text.isEmpty) return;
+                setDialogState(() => isSaving = true);
+                try {
+                  await AuthService().addDoctor(
+                    name: nameController.text.trim(),
+                    mobileNumber: phoneController.text.trim(),
+                    specialty: specialtyController.text.trim(),
+                    email: emailController.text.trim(),
+                  );
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    setState(() {}); // Refresh list
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Doctor added successfully')));
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  }
+                } finally {
+                  setDialogState(() => isSaving = false);
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: _primaryColor, foregroundColor: Colors.white),
+              child: isSaving ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Add Doctor'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _dialogField(String label, TextEditingController controller, IconData icon, {TextInputType? keyboardType}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon, size: 20),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: _primaryColor, width: 2)),
+        ),
+        style: GoogleFonts.poppins(fontSize: 14),
+      ),
     );
   }
 

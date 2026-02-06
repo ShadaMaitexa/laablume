@@ -435,6 +435,16 @@ class _LabTechniciansScreenState extends State<LabTechniciansScreen> {
       ),
     );
   }
+
+  Widget _staffDetail(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: GoogleFonts.poppins(fontSize: 10, color: const Color(0xFF9CA3AF))),
+        Text(value, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
 }
 
 class LabSettingsScreen extends StatefulWidget {
@@ -747,9 +757,9 @@ class _LabReportUploadScreenState extends State<LabReportUploadScreen> {
                             onTap: () => setState(() => _selectedPatientId = patient['id']),
                             leading: CircleAvatar(
                               backgroundColor: isSelected ? const Color(0xFF12B8A6) : const Color(0xFFF3F4F6),
-                              child: Text(patient['name'][0], style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF1F2937))),
+                              child: Text(patient['name']![0], style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF1F2937))),
                             ),
-                            title: Text(patient['name'], style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                            title: Text(patient['name'] ?? '', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                             subtitle: Text('ID: ${patient['id']} • Last: ${patient['lastTest']}', style: GoogleFonts.poppins(fontSize: 12)),
                             trailing: isSelected ? const Icon(Icons.check_circle, color: Color(0xFF12B8A6)) : null,
                           );

@@ -233,7 +233,7 @@ class DoctorDetailScreen extends StatelessWidget {
                                 MaterialPageRoute(
                                   builder: (context) => ReviewsListScreen(
                                     title: doctor.name,
-                                    reviews: const [
+                                    reviews: [
                                       {
                                         'name': 'Emily Thompson',
                                         'rating': 5.0,

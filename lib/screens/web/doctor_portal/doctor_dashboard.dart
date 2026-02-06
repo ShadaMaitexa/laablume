@@ -89,23 +89,24 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
                 _sidebarItem(1, Icons.calendar_today_rounded, 'Patient Schedule'),
                 _sidebarItem(2, Icons.people_alt_rounded, 'My Patients'),
                 _sidebarItem(3, Icons.psychology_rounded, 'AI Recommendations'),
-                _sidebarItem(4, Icons.settings_rounded, 'Practice Settings'),
+                _sidebarItem(4, Icons.rate_review_rounded, 'Client Feedback'),
+                _sidebarItem(5, Icons.settings_rounded, 'Practice Settings'),
               ],
             ),
           ),
-          _sidebarItem(5, Icons.logout_rounded, 'Logout Practice'),
+          _sidebarItem(6, Icons.logout_rounded, 'Logout Practice', onTap: () => Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false)),
           const SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  Widget _sidebarItem(int index, IconData icon, String title) {
+  Widget _sidebarItem(int index, IconData icon, String title, {VoidCallback? onTap}) {
     bool isSelected = _selectedIndex == index;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
-        onTap: () => setState(() => _selectedIndex = index),
+        onTap: onTap ?? () => setState(() => _selectedIndex = index),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         leading: Icon(icon, color: isSelected ? _primaryColor : const Color(0xFF9CA3AF), size: 22),
         title: Text(
@@ -179,6 +180,7 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
     switch (_selectedIndex) {
       case 0: return _buildDoctorOverview(isDesktop);
       case 1: return _buildSchedule(isDesktop);
+      case 4: return _buildFeedbackView(isDesktop);
       default: return _buildPlaceholder('Module');
     }
   }
@@ -382,6 +384,51 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
           height: 400,
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
           child: Center(child: Text('Clinical Calendar View', style: GoogleFonts.poppins(color: Colors.grey))),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeedbackView(bool isDesktop) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Client Feedback', 'Insights into patient satisfaction and service quality.'),
+        const SizedBox(height: 32),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20)],
+          ),
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 5,
+            separatorBuilder: (context, index) => const Divider(height: 1),
+            itemBuilder: (context, index) => ListTile(
+              contentPadding: const EdgeInsets.all(32),
+              leading: const CircleAvatar(
+                backgroundColor: Color(0xFFF3F4F6),
+                child: Icon(Icons.person_outline, color: Color(0xFF1F2937)),
+              ),
+              title: Row(
+                children: [
+                  Text('Patient #PT-770${index+1}', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 12),
+                  ...List.generate(5, (s) => Icon(Icons.star_rounded, color: Colors.amber, size: 16)),
+                ],
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Great experience! The AI analysis was very helpful and the doctor explained everything clearly.',
+                  style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF4B5563)),
+                ),
+              ),
+              trailing: Text('12 Jan 2026', style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF9CA3AF))),
+            ),
+          ),
         ),
       ],
     );

@@ -183,6 +183,7 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
           ),
         ],
       ),
+    );
   }
 
   void _showReviewDialog(BuildContext context, String targetName, String type) {

@@ -5,6 +5,7 @@ import '../doctor_portal/doctor_dashboard.dart';
 import '../lab_portal/lab_dashboard.dart';
 import '../hospital_portal/hospital_dashboard.dart';
 import '../admin_portal/admin_dashboard.dart';
+import '../../patient_homescreen.dart';
 import '../../../services/auth_service.dart';
 
 class RoleOtpScreen extends StatefulWidget {
@@ -96,6 +97,13 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
 
           // Success - navigate to dashboard based on role
           switch (widget.role) {
+            case 'Patient':
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const PatientHomeScreen()),
+                (route) => false,
+              );
+              break;
             case 'Doctor':
               Navigator.pushAndRemoveUntil(
                 context,
