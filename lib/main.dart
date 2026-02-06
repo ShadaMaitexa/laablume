@@ -52,5 +52,5 @@ class PlatformSelector extends StatelessWidget {
     // If running on Web, show the professional Landing Page with role-based entry
     return const LandingPage();
   }
-}
+} 
 
