@@ -9,6 +9,7 @@ import 'screens/web/common/landing_page.dart';
 import 'screens/web/common/unified_signup_screen.dart';
 import 'screens/common/splash_screen.dart';
 import 'providers/patient_provider.dart';
+import 'providers/user_provider.dart';
 
 void main() {
   runApp(const LabLumeApp());
@@ -22,6 +23,7 @@ class LabLumeApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => PatientProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
       ],
       child: MaterialApp(
         title: 'LabLume',
@@ -54,3 +56,4 @@ class PlatformSelector extends StatelessWidget {
   }
 } 
 
+ 

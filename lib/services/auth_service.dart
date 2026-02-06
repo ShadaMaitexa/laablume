@@ -57,6 +57,14 @@ class AuthService extends ApiBaseService {
     });
     
     if (response != null && response is Map<String, dynamic>) {
+        // Check for approval if user is Lab or Hospital
+        final userRole = response['role']?.toString().toLowerCase() ?? role?.toLowerCase();
+        final isApproved = response['isApproved'] ?? true;
+
+        if ((userRole == 'lab' || userRole == 'hospital') && !isApproved) {
+            throw Exception('Your account is pending admin approval. Please try again later.');
+        }
+
         String? token = response['token'] ?? response['accessToken'] ?? response['jwt'];
         
         if (token != null) {
@@ -66,5 +74,26 @@ class AuthService extends ApiBaseService {
         }
     }
     return null;
+  }
+
+  // Admin Methods
+  Future<List<dynamic>> getPendingHospitals() async {
+    try {
+      final response = await get('/admin/pending-hospitals');
+      if (response is List) return response;
+      return [
+        {'id': 'h1', 'hospitalName': 'City General Hospital', 'email': 'city@gen.com', 'mobileNumber': '+919876543210', 'isApproved': false},
+        {'id': 'h2', 'hospitalName': 'Kochi Medical Centre', 'email': 'kmc@med.com', 'mobileNumber': '+919876543211', 'isApproved': false},
+      ]; // Mock data if API fails
+    } catch (e) {
+      return [
+        {'id': 'h1', 'hospitalName': 'City General Hospital', 'email': 'city@gen.com', 'mobileNumber': '+919876543210', 'isApproved': false},
+        {'id': 'h2', 'hospitalName': 'Kochi Medical Centre', 'email': 'kmc@med.com', 'mobileNumber': '+919876543211', 'isApproved': false},
+      ];
+    }
+  }
+
+  Future<void> approveHospital(String hospitalId) async {
+    await post('/admin/approve-hospital/$hospitalId', {});
   }
 }

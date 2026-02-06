@@ -7,6 +7,8 @@ import '../hospital_portal/hospital_dashboard.dart';
 import '../admin_portal/admin_dashboard.dart';
 import '../../patient_homescreen.dart';
 import '../../../services/auth_service.dart';
+import '../../../providers/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class RoleOtpScreen extends StatefulWidget {
   final String mobileNumber;
@@ -69,28 +71,25 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
       return;
     }
 
-    setState(() {
-      _isVerifying = true;
-      _otpError = null;
-    });
-
     try {
-      final response = await AuthService().verifyOtp(
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      await userProvider.login(
         widget.mobileNumber, 
         otpController.text,
-        role: widget.role.toLowerCase(), // Pass requested role to create user with it if new
+        widget.role.toLowerCase(),
       );
       
       if (mounted) {
         setState(() {
           _isVerifying = false;
         });
-        
-        if (response != null) {
-          final returnedRole = response['role'];
-          if (returnedRole != widget.role.toLowerCase() && returnedRole != 'admin') {
+
+        final user = userProvider.currentUser;
+        if (user != null) {
+          // Check role consistency
+          if (user.role != widget.role.toLowerCase() && user.role != 'admin') {
              setState(() {
-              _otpError = 'Access Denied: You are registered as $returnedRole. Please use the correct portal.';
+              _otpError = 'Access Denied: You are registered as ${user.role}. Please use the correct portal.';
             });
             return;
           }
@@ -133,12 +132,6 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
               );
               break;
           }
-        } else {
-          // Show error
-          setState(() {
-            _otpError = 'Invalid OTP. Please try again.';
-          });
-          otpController.clear();
         }
       }
     } catch (e) {

@@ -219,26 +219,23 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
   }
 
   Widget _buildStatsGrid(bool isDesktop) {
-    List<Widget> stats = [
-      _statCard('Total Admissions', '1,284', Icons.people_outline, Colors.blue),
-      _statCard('Critical Cases', '12', Icons.warning_amber_rounded, Colors.red),
-      _statCard('Referral Efficiency', '92%', Icons.trending_up, Colors.green),
-      _statCard('In-house Docs', '86', Icons.medical_services_rounded, Colors.teal),
-    ];
-
-    if (isDesktop) {
-      return Row(children: stats.map((e) => Expanded(child: Padding(padding: const EdgeInsets.only(right: 20), child: e))).toList());
-    } else {
-      return GridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: 2,
-        mainAxisSpacing: 20,
-        crossAxisSpacing: 20,
-        childAspectRatio: 1.2,
-        children: stats,
-      );
-    }
+    double screenWidth = MediaQuery.of(context).size.width;
+    int crossAxisCount = screenWidth > 1200 ? 4 : (screenWidth > 800 ? 2 : 1);
+    
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: crossAxisCount,
+      mainAxisSpacing: 20,
+      crossAxisSpacing: 20,
+      childAspectRatio: screenWidth > 600 ? 1.5 : 2.0,
+      children: [
+        _statCard('Total Admissions', '1,284', Icons.people_outline, Colors.blue),
+        _statCard('Critical Cases', '12', Icons.warning_amber_rounded, Colors.red),
+        _statCard('Referral Efficiency', '92%', Icons.trending_up, Colors.green),
+        _statCard('In-house Docs', '86', Icons.medical_services_rounded, Colors.teal),
+      ],
+    );
   }
 
   Widget _statCard(String title, String val, IconData icon, Color color) {
@@ -249,14 +246,24 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 10))],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 16),
-          Text(val, style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold)),
-          Text(title, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF9CA3AF), fontWeight: FontWeight.w500)),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(14)),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(val, style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold)),
+                Text(title, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF9CA3AF), fontWeight: FontWeight.w500)),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -426,14 +433,14 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildSectionHeader('Staff Directory', 'Manage your facility\'s medical professionals.'),
+            Expanded(child: _buildSectionHeader('Staff Directory', 'Manage your facility\'s medical professionals.')),
             ElevatedButton.icon(
               onPressed: () => _showAddDoctorDialog(context),
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Add New Doctor'),
+              label: Text(isDesktop ? 'Add New Doctor' : 'Add'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _primaryColor,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 16, vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -507,14 +514,17 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
           title: Text('Add New Doctor', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
           content: Container(
             width: 500,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _dialogField('Full Name', nameController, Icons.person_outline),
-                _dialogField('Mobile Number (with code)', phoneController, Icons.phone_outlined, keyboardType: TextInputType.phone),
-                _dialogField('Specialty', specialtyController, Icons.medical_services_outlined),
-                _dialogField('Email Address', emailController, Icons.email_outlined, keyboardType: TextInputType.emailAddress),
-              ],
+            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.9),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _dialogField('Full Name', nameController, Icons.person_outline),
+                  _dialogField('Mobile Number (with code)', phoneController, Icons.phone_outlined, keyboardType: TextInputType.phone),
+                  _dialogField('Specialty', specialtyController, Icons.medical_services_outlined),
+                  _dialogField('Email Address', emailController, Icons.email_outlined, keyboardType: TextInputType.emailAddress),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -543,7 +553,7 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
                   setDialogState(() => isSaving = false);
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: _primaryColor, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: _primaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
               child: isSaving ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Add Doctor'),
             ),
           ],

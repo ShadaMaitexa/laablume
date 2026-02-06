@@ -275,46 +275,151 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
       children: [
         _buildSectionHeader('Provider Verification', 'Review and authorize new medical partners.'),
         const SizedBox(height: 32),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20)],
-          ),
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 5,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) => ListTile(
-              contentPadding: const EdgeInsets.all(24),
-              leading: CircleAvatar(
-                radius: 28,
-                backgroundColor: _primaryColor.withOpacity(0.1),
-                child: Icon(Icons.business_rounded, color: _primaryColor),
+        FutureBuilder<List<dynamic>>(
+          future: AuthService().getPendingHospitals(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: Padding(
+                padding: EdgeInsets.all(50.0),
+                child: CircularProgressIndicator(),
+              ));
+            }
+            
+            final pending = snapshot.data ?? [];
+            
+            if (pending.isEmpty) {
+              return Center(
+                child: Container(
+                  padding: const EdgeInsets.all(48),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.check_circle_outline_rounded, size: 64, color: Colors.green.withOpacity(0.5)),
+                      const SizedBox(height: 16),
+                      Text('No pending approvals at the moment.', style: GoogleFonts.poppins(color: Colors.grey)),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20)],
               ),
-              title: Text('Healthcare Partner #90${index + 1}', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-              subtitle: Text('Category: Diagnostic Laboratory • Registered: Today', style: GoogleFonts.poppins(fontSize: 13)),
-              trailing: isDesktop 
-                ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _actionBtn('Review Details', Colors.grey, false),
-                    const SizedBox(width: 12),
-                    _actionBtn('Approve Partner', _primaryColor, true),
-                  ],
-                )
-                : IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-            ),
-          ),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: pending.length,
+                separatorBuilder: (context, index) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final partner = pending[index];
+                  return Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 28,
+                          backgroundColor: _primaryColor.withOpacity(0.1),
+                          child: Icon(Icons.business_rounded, color: _primaryColor),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(partner['hospitalName'] ?? 'Unnamed Partner', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
+                              const SizedBox(height: 4),
+                              Text('Email: ${partner['email']} • Phone: ${partner['mobileNumber']}', style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF6B7280))),
+                            ],
+                          ),
+                        ),
+                        if (isDesktop) 
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _actionBtn('Review Details', Colors.grey, false, () {}),
+                              const SizedBox(width: 12),
+                              _actionBtn('Approve Partner', _primaryColor, true, () async {
+                                try {
+                                  await AuthService().approveHospital(partner['id']);
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Hospital approved successfully')));
+                                    setState(() {}); // Refresh
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                  }
+                                }
+                              }),
+                            ],
+                          )
+                        else
+                          IconButton(
+                            icon: const Icon(Icons.more_vert), 
+                            onPressed: () => _showMobileActionMenu(context, partner)
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          },
         ),
       ],
     );
   }
 
-  Widget _actionBtn(String label, Color color, bool filled) {
+  void _showMobileActionMenu(BuildContext context, dynamic partner) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(partner['hospitalName'], style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Review Details'),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.check_circle_outline, color: Colors.green),
+              title: const Text('Approve Partner', style: TextStyle(color: Colors.green)),
+              onTap: () async {
+                Navigator.pop(context);
+                try {
+                  await AuthService().approveHospital(partner['id']);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Hospital approved successfully')));
+                    setState(() {});
+                  }
+                } catch (e) {
+                   if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  }
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _actionBtn(String label, Color color, bool filled, VoidCallback onTap) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: onTap,
       style: ElevatedButton.styleFrom(
         backgroundColor: filled ? color : Colors.white,
         foregroundColor: filled ? Colors.white : color,
