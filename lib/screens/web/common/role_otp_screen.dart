@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
-import '../doctor_portal/doctor_dashboard.dart';
-import '../lab_portal/lab_dashboard.dart';
-import '../hospital_portal/hospital_dashboard.dart';
-import '../admin_portal/admin_dashboard.dart';
-import '../../patient_homescreen.dart';
-import '../../../services/auth_service.dart';
-import '../../../providers/user_provider.dart';
+import 'package:laablume/services/auth_service.dart';
+import 'package:laablume/providers/user_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:laablume/screens/patient_homescreen.dart';
+import 'package:laablume/screens/web/admin_portal/admin_dashboard.dart';
+import 'package:laablume/screens/web/hospital_portal/hospital_dashboard.dart';
+import 'package:laablume/screens/web/lab_portal/lab_dashboard.dart';
+import 'package:laablume/screens/web/doctor_portal/doctor_dashboard.dart';
 
 class RoleOtpScreen extends StatefulWidget {
   final String mobileNumber;

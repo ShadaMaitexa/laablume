@@ -1,6 +1,6 @@
-import '../models/user_model.dart';
-import '../models/health_metric_model.dart';
-import 'api_base_service.dart';
+import 'package:laablume/models/user_model.dart';
+import 'package:laablume/models/health_metric_model.dart';
+import 'package:laablume/services/api_base_service.dart';
 
 class PatientService extends ApiBaseService {
   Future<DashboardData> getDashboardData() async {
@@ -11,10 +11,6 @@ class PatientService extends ApiBaseService {
       pendingReports: 1,
       healthScore: 85,
     );
-    
-    // Actual implementation would be:
-    // final response = await get('/dashboard');
-    // return DashboardData.fromJson(response);
   }
 
   Future<UserModel> getProfile() async {
@@ -23,6 +19,9 @@ class PatientService extends ApiBaseService {
       id: "1",
       name: "John Doe",
       email: "john.doe@example.com",
+      mobileNumber: "+910000000000",
+      role: "patient",
+      isApproved: true,
     );
   }
 
