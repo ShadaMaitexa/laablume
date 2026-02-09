@@ -12,17 +12,17 @@ class AuthService extends ApiBaseService {
     String email, {
     String? role,
   }) async {
-    final cleanPhone = mobileNumber.replaceAll('+', '').replaceAll(' ', '');
+    final cleanPhone = mobileNumber.replaceAll(' ', '');
     await post('/auth/register', {
       'name': userName,
       'phone': cleanPhone,
       'email': email,
-      'role': role ?? 'patient',
+      if (role != null) 'role': role,
     });
   }
 
   Future<void> requestOtp(String mobileNumber) async {
-    final cleanPhone = mobileNumber.replaceAll('+', '').replaceAll(' ', '');
+    final cleanPhone = mobileNumber.replaceAll(' ', '');
     await post('/auth/send-otp', {'phone': cleanPhone});
   }
 
@@ -31,11 +31,11 @@ class AuthService extends ApiBaseService {
     String otp, {
     String? role,
   }) async {
-    final cleanPhone = mobileNumber.replaceAll('+', '').replaceAll(' ', '');
+    final cleanPhone = mobileNumber.replaceAll(' ', '');
     final response = await post('/auth/verify-otp', {
       'phone': cleanPhone,
       'otp': otp,
-      'role': role ?? 'patient',
+      if (role != null) 'role': role,
     });
 
     if (response != null && response is Map<String, dynamic>) {
