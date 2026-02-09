@@ -6,94 +6,106 @@ class AuthService extends ApiBaseService {
   factory AuthService() => _instance;
   AuthService._internal();
 
-  Future<void> signup(String userName, String mobileNumber, String email, {String? role}) async {
-    await post('/auth/signup', {
-      'userName': userName,
-      'mobileNumber': mobileNumber,
-      'email': email,
-      if (role != null) 'role': role,
-    });
-  }
-
-  Future<void> addDoctor({
-    required String name,
-    required String mobileNumber,
-    required String specialty,
-    required String email,
+  Future<void> signup(
+    String userName,
+    String mobileNumber,
+    String email, {
+    String? role,
   }) async {
-    // This endpoint should be handled by the backend to associate the doctor with the hospital
-    await post('/hospital/add-doctor', {
-      'name': name,
-      'mobileNumber': mobileNumber,
-      'specialty': specialty,
+    final cleanPhone = mobileNumber.replaceAll('+', '').replaceAll(' ', '');
+    await post('/auth/register', {
+      'name': userName,
+      'phone': cleanPhone,
       'email': email,
-      'role': 'doctor',
+      'role': role ?? 'patient',
     });
-  }
-
-  Future<List<dynamic>> getHospitalDoctors() async {
-    try {
-      final response = await get('/hospital/doctors');
-      if (response is List) return response;
-      if (response is Map && response.containsKey('doctors')) return response['doctors'];
-      return [];
-    } catch (e) {
-      debugPrint('Error fetching doctors: $e');
-      return [];
-    }
   }
 
   Future<void> requestOtp(String mobileNumber) async {
-    await post('/auth/request-otp', {
-      'mobileNumber': mobileNumber,
-    });
+    final cleanPhone = mobileNumber.replaceAll('+', '').replaceAll(' ', '');
+    await post('/auth/send-otp', {'phone': cleanPhone});
   }
 
-  Future<Map<String, dynamic>?> verifyOtp(String mobileNumber, String otp, {String? role}) async {
+  Future<Map<String, dynamic>?> verifyOtp(
+    String mobileNumber,
+    String otp, {
+    String? role,
+  }) async {
+    final cleanPhone = mobileNumber.replaceAll('+', '').replaceAll(' ', '');
     final response = await post('/auth/verify-otp', {
-      'mobileNumber': mobileNumber,
+      'phone': cleanPhone,
       'otp': otp,
-      if (role != null) 'role': role,
+      'role': role ?? 'patient',
     });
-    
+
     if (response != null && response is Map<String, dynamic>) {
-        // Check for approval if user is Lab or Hospital
-        final userRole = response['role']?.toString().toLowerCase() ?? role?.toLowerCase();
-        final isApproved = response['isApproved'] ?? true;
+      final isApproved = response['isApproved'] ?? true;
+      final userRole =
+          response['role']?.toString().toLowerCase() ?? role?.toLowerCase();
 
-        if ((userRole == 'lab' || userRole == 'hospital') && !isApproved) {
-            throw Exception('Your account is pending admin approval. Please try again later.');
-        }
+      if ((userRole == 'lab' || userRole == 'hospital') && !isApproved) {
+        throw Exception(
+          'Your account is pending admin approval. Please try again later.',
+        );
+      }
 
-        String? token = response['token'] ?? response['accessToken'] ?? response['jwt'];
-        
-        if (token != null) {
-            setToken(token);
-            debugPrint('Token set: $token');
-            return response;
-        }
+      String? token =
+          response['token'] ?? response['accessToken'] ?? response['jwt'];
+
+      if (token != null) {
+        setToken(token);
+        debugPrint('Token set: $token');
+        return response;
+      }
     }
     return null;
   }
 
-  // Admin Methods
+  Future<void> refreshToken() async {
+    await post('/auth/refresh-token', {});
+  }
+
+  Future<void> logout() async {
+    await post('/auth/logout', {});
+    setToken(''); // Clear token locally
+  }
+
+  // Admin Portal Endpoints
   Future<List<dynamic>> getPendingHospitals() async {
-    try {
-      final response = await get('/admin/pending-hospitals');
-      if (response is List) return response;
-      return [
-        {'id': 'h1', 'hospitalName': 'City General Hospital', 'email': 'city@gen.com', 'mobileNumber': '+919876543210', 'isApproved': false},
-        {'id': 'h2', 'hospitalName': 'Kochi Medical Centre', 'email': 'kmc@med.com', 'mobileNumber': '+919876543211', 'isApproved': false},
-      ]; // Mock data if API fails
-    } catch (e) {
-      return [
-        {'id': 'h1', 'hospitalName': 'City General Hospital', 'email': 'city@gen.com', 'mobileNumber': '+919876543210', 'isApproved': false},
-        {'id': 'h2', 'hospitalName': 'Kochi Medical Centre', 'email': 'kmc@med.com', 'mobileNumber': '+919876543211', 'isApproved': false},
-      ];
-    }
+    final response = await get('/admin/pending-hospitals');
+    if (response is List) return response;
+    if (response is Map && response.containsKey('hospitals'))
+      return response['hospitals'];
+    return [];
   }
 
   Future<void> approveHospital(String hospitalId) async {
     await post('/admin/approve-hospital/$hospitalId', {});
+  }
+
+  Future<List<dynamic>> getPendingLabs() async {
+    final response = await get('/admin/pending-labs');
+    if (response is List) return response;
+    return [];
+  }
+
+  Future<void> approveLab(String labId) async {
+    await post('/admin/approve-lab/$labId', {});
+  }
+
+  Future<List<dynamic>> getUsers({String? query}) async {
+    final response = await get(
+      '/admin/users${query != null ? '?search=$query' : ''}',
+    );
+    if (response is List) return response;
+    return [];
+  }
+
+  Future<void> updateUserStatus(String userId, String status) async {
+    await patch('/admin/users/$userId/status', {'status': status});
+  }
+
+  Future<Map<String, dynamic>> getSystemReports() async {
+    return await get('/admin/reports/system');
   }
 }

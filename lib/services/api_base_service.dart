@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiBaseService {
-  final String baseUrl = "https://lab-loom-m25u.vercel.app";
+  final String baseUrl = "https://labloom-malabar.vercel.app/api";
   static String? _token;
 
   void setToken(String token) {
@@ -60,7 +60,9 @@ class ApiBaseService {
       if (response.body.isEmpty) return {};
       return jsonDecode(response.body);
     } else {
-      throw Exception('Error: ${response.statusCode} ${response.reasonPhrase} - ${response.body}');
+      throw Exception(
+        'Error: ${response.statusCode} ${response.reasonPhrase} - ${response.body}',
+      );
     }
   }
 }

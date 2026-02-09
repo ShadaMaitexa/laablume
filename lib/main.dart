@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
-import 'screens/main_navigation_screen.dart';
-import 'screens/web/doctor_portal/doctor_dashboard.dart';
-import 'screens/web/lab_portal/lab_dashboard.dart';
 import 'screens/web/common/landing_page.dart';
-import 'screens/web/common/unified_signup_screen.dart';
 import 'screens/common/splash_screen.dart';
 import 'providers/patient_provider.dart';
 import 'providers/user_provider.dart';
@@ -34,7 +30,7 @@ class LabLumeApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF12B8A6)),
           textTheme: GoogleFonts.poppinsTextTheme(),
         ),
-        // Automatically detect platform or show selector for development
+       
         home: const PlatformSelector(),
       ),
     );

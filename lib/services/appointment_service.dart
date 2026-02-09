@@ -8,32 +8,34 @@ class AppointmentService extends ApiBaseService {
     required String reasonForVisit,
     String status = "Scheduled",
   }) async {
-    final response = await post('/appointments', {
+    final response = await post('/patients/appointments', {
       'doctorID': doctorID,
       'appointmentDateTime': appointmentDateTime.toUtc().toIso8601String(),
       'reasonForVisit': reasonForVisit,
       'status': status,
     });
-    
-    return AppointmentModel.fromJson(response['appointment']);
+
+    return AppointmentModel.fromJson(response['appointment'] ?? response);
   }
 
   Future<List<AppointmentModel>> getMyAppointments() async {
-    final response = await get('/appointments/me');
-    
-    if (response['appointments'] != null) {
-      return (response['appointments'] as List)
-          .map((e) => AppointmentModel.fromJson(e))
-          .toList();
-    }
-    return [];
+    final response = await get('/patients/appointments/me');
+
+    final List<dynamic> list = (response is List)
+        ? response
+        : (response['appointments'] ?? []);
+    return list.map((e) => AppointmentModel.fromJson(e)).toList();
   }
 
-  Future<AppointmentModel> updateStatus(String appointmentID, String status) async {
-    final response = await patch('/appointments/$appointmentID/status', {
+  Future<AppointmentModel> updateStatus(
+    String appointmentID,
+    String status,
+  ) async {
+    // Note: status update is typically for doctors
+    final response = await patch('/doctor/appointments/$appointmentID/status', {
       'status': status,
     });
-    
-    return AppointmentModel.fromJson(response['appointment']);
+
+    return AppointmentModel.fromJson(response['appointment'] ?? response);
   }
 }

@@ -13,7 +13,11 @@ import 'package:laablume/screens/web/doctor_portal/doctor_dashboard.dart';
 class RoleOtpScreen extends StatefulWidget {
   final String mobileNumber;
   final String role; // 'Doctor' or 'Lab'
-  const RoleOtpScreen({super.key, required this.mobileNumber, required this.role});
+  const RoleOtpScreen({
+    super.key,
+    required this.mobileNumber,
+    required this.role,
+  });
 
   @override
   State<RoleOtpScreen> createState() => _RoleOtpScreenState();
@@ -46,15 +50,15 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
     _canResend = false;
     _resendTimer = 60;
     setState(() {});
-    
+
     Future.doWhile(() async {
       await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return false;
-      
+
       setState(() {
         _resendTimer--;
       });
-      
+
       if (_resendTimer <= 0) {
         _canResend = true;
         return false;
@@ -74,11 +78,11 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       await userProvider.login(
-        widget.mobileNumber, 
+        widget.mobileNumber,
         otpController.text,
         widget.role.toLowerCase(),
       );
-      
+
       if (mounted) {
         setState(() {
           _isVerifying = false;
@@ -88,8 +92,9 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
         if (user != null) {
           // Check role consistency
           if (user.role != widget.role.toLowerCase() && user.role != 'admin') {
-             setState(() {
-              _otpError = 'Access Denied: You are registered as ${user.role}. Please use the correct portal.';
+            setState(() {
+              _otpError =
+                  'Access Denied: You are registered as ${user.role}. Please use the correct portal.';
             });
             return;
           }
@@ -147,12 +152,12 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
 
   void _resendOtp() async {
     if (!_canResend) return;
-    
+
     try {
       await AuthService().requestOtp(widget.mobileNumber);
-      
+
       _startResendTimer();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -188,7 +193,9 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _otpError != null ? Colors.red : const Color(0xFFE5E7EB)),
+        border: Border.all(
+          color: _otpError != null ? Colors.red : const Color(0xFFE5E7EB),
+        ),
       ),
     );
 
@@ -207,7 +214,10 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
                     Positioned(
                       top: -100,
                       left: -100,
-                      child: CircleAvatar(radius: 200, backgroundColor: _primaryColor.withOpacity(0.1)),
+                      child: CircleAvatar(
+                        radius: 200,
+                        backgroundColor: _primaryColor.withOpacity(0.1),
+                      ),
                     ),
                     Center(
                       child: Padding(
@@ -221,7 +231,11 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                               ),
-                              child: Image.asset('assets/logo.png', width: 60, height: 60),
+                              child: Image.asset(
+                                'assets/logo.png',
+                                width: 60,
+                                height: 60,
+                              ),
                             ),
                             const SizedBox(height: 24),
                             Text(
@@ -249,7 +263,7 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
                 ),
               ),
             ),
-          
+
           // Right Side: OTP Form
           Expanded(
             flex: 1,
@@ -279,7 +293,11 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
                           color: _primaryColor.withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: Image.asset('assets/logo.png', width: 40, height: 40),
+                        child: Image.asset(
+                          'assets/logo.png',
+                          width: 40,
+                          height: 40,
+                        ),
                       ),
                       const SizedBox(height: 24),
                     ],
@@ -310,7 +328,7 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
                       ),
                     ),
                     const SizedBox(height: 48),
-                    
+
                     // OTP Input
                     if (_otpError != null) ...[
                       Text(
@@ -329,10 +347,14 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
                       defaultPinTheme: defaultPinTheme,
                       focusedPinTheme: defaultPinTheme.copyWith(
                         decoration: defaultPinTheme.decoration!.copyWith(
-                          border: Border.all(color: _primaryColor, width: 2),
+                          border: Border.all(
+                            color: const Color(0xFF12B8A6),
+                            width: 2,
+                          ),
                         ),
                       ),
                       submittedPinTheme: defaultPinTheme,
+                      followingPinTheme: defaultPinTheme,
                       onCompleted: (pin) {
                         _otpFocusNode.unfocus();
                         _verifyOtp();
@@ -345,9 +367,9 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
                         }
                       },
                     ),
-                    
+
                     const SizedBox(height: 40),
-                    
+
                     // Verify Button
                     SizedBox(
                       width: double.infinity,
@@ -356,14 +378,19 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
                         onPressed: _isVerifying ? null : _verifyOtp,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _primaryColor,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                           elevation: 0,
                         ),
                         child: _isVerifying
                             ? const SizedBox(
                                 height: 24,
                                 width: 24,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               )
                             : Text(
                                 'Verify & Sign In',
@@ -375,9 +402,9 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
                               ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Resend OTP
                     Column(
                       children: [
@@ -392,21 +419,23 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
                         TextButton(
                           onPressed: _canResend ? _resendOtp : null,
                           child: Text(
-                            _canResend 
-                                ? "Resend OTP" 
+                            _canResend
+                                ? "Resend OTP"
                                 : "Resend OTP in $_resendTimer s",
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: _canResend ? _primaryColor : const Color(0xFF6B7280),
+                              color: _canResend
+                                  ? _primaryColor
+                                  : const Color(0xFF6B7280),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: Text(

@@ -37,15 +37,15 @@ class _OtpScreenState extends State<OtpScreen> {
     _canResend = false;
     _resendTimer = 60;
     setState(() {});
-    
+
     Future.doWhile(() async {
       await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return false;
-      
+
       setState(() {
         _resendTimer--;
       });
-      
+
       if (_resendTimer <= 0) {
         _canResend = true;
         return false;
@@ -69,20 +69,21 @@ class _OtpScreenState extends State<OtpScreen> {
 
     try {
       final response = await AuthService().verifyOtp(
-        widget.mobileNumber, 
-        otpController.text
+        widget.mobileNumber,
+        otpController.text,
       );
-      
+
       if (mounted) {
         setState(() {
           _isVerifying = false;
         });
-        
+
         if (response != null) {
           final role = response['role'] ?? 'patient';
           if (role != 'patient') {
             setState(() {
-              _otpError = 'This app is for patients only. Please use the Web Portal for $role role.';
+              _otpError =
+                  'This app is for patients only. Please use the Web Portal for $role role.';
             });
             return;
           }
@@ -90,12 +91,10 @@ class _OtpScreenState extends State<OtpScreen> {
           // Success - navigate to next screen
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => const PersonalDataScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const PersonalDataScreen()),
           );
         } else {
-           // Show error
+          // Show error
           setState(() {
             _otpError = 'Invalid OTP. Please try again.';
           });
@@ -105,8 +104,8 @@ class _OtpScreenState extends State<OtpScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-           _isVerifying = false;
-           _otpError = e.toString().replaceAll('Exception: ', '');
+          _isVerifying = false;
+          _otpError = e.toString().replaceAll('Exception: ', '');
         });
         otpController.clear();
       }
@@ -115,12 +114,12 @@ class _OtpScreenState extends State<OtpScreen> {
 
   void _resendOtp() async {
     if (!_canResend) return;
-    
+
     try {
       await AuthService().requestOtp(widget.mobileNumber);
-      
+
       _startResendTimer();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -154,7 +153,9 @@ class _OtpScreenState extends State<OtpScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: _otpError != null ? Colors.red : const Color(0xFFE5E7EB)),
+        border: Border.all(
+          color: _otpError != null ? Colors.red : const Color(0xFFE5E7EB),
+        ),
       ),
     );
 
@@ -223,10 +224,12 @@ class _OtpScreenState extends State<OtpScreen> {
                           decoration: defaultPinTheme.decoration!.copyWith(
                             border: Border.all(
                               color: const Color(0xFF12B8A6),
+                              width: 2,
                             ),
                           ),
                         ),
                         submittedPinTheme: defaultPinTheme,
+                        followingPinTheme: defaultPinTheme,
                         onCompleted: (pin) {
                           _otpFocusNode.unfocus();
                           _verifyOtp();
@@ -297,14 +300,14 @@ class _OtpScreenState extends State<OtpScreen> {
                     GestureDetector(
                       onTap: _resendOtp,
                       child: Text(
-                        _canResend 
-                            ? "Resend OTP" 
+                        _canResend
+                            ? "Resend OTP"
                             : "Resend OTP ($_resendTimer)",
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: _canResend 
-                              ? const Color(0xFF12B8A6) 
+                          color: _canResend
+                              ? const Color(0xFF12B8A6)
                               : const Color(0xFF6B7280),
                         ),
                       ),

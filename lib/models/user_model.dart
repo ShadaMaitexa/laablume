@@ -13,16 +13,17 @@ class UserModel {
     required this.email,
     required this.mobileNumber,
     required this.role,
-    this.isApproved = true, // Default to true for patients, false for labs/hospitals if needed
+    this.isApproved =
+        true, // Default to true for patients, false for labs/hospitals if needed
     this.profileImageUrl,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] ?? json['_id'] ?? '',
-      name: json['name'] ?? json['userName'] ?? '',
+      name: json['name'] ?? json['userName'] ?? json['fullName'] ?? '',
       email: json['email'] ?? '',
-      mobileNumber: json['mobileNumber'] ?? '',
+      mobileNumber: json['phone'] ?? json['mobileNumber'] ?? '',
       role: json['role'] ?? 'patient',
       isApproved: json['isApproved'] ?? true,
       profileImageUrl: json['profileImageUrl'],
@@ -64,10 +65,11 @@ class HospitalModel {
   factory HospitalModel.fromJson(Map<String, dynamic> json) {
     return HospitalModel(
       id: json['id'] ?? json['_id'] ?? '',
-      hospitalName: json['hospitalName'] ?? json['userName'] ?? '',
+      hospitalName:
+          json['hospitalName'] ?? json['name'] ?? json['userName'] ?? '',
       location: json['location'] ?? '',
       email: json['email'] ?? '',
-      mobileNumber: json['mobileNumber'] ?? '',
+      mobileNumber: json['phone'] ?? json['mobileNumber'] ?? '',
       isApproved: json['isApproved'] ?? false,
       doctorIds: List<String>.from(json['doctorIds'] ?? []),
     );

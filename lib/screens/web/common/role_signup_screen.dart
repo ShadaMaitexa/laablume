@@ -31,21 +31,31 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
 
   String _getNameLabel() {
     switch (widget.role) {
-      case 'Doctor': return 'Full Name';
-      case 'Lab': return 'Laboratory Name';
-      case 'Hospital': return 'Hospital Name';
-      case 'Admin': return 'Admin Name';
-      default: return 'Name';
+      case 'Doctor':
+        return 'Full Name';
+      case 'Lab':
+        return 'Laboratory Name';
+      case 'Hospital':
+        return 'Hospital Name';
+      case 'Admin':
+        return 'Admin Name';
+      default:
+        return 'Name';
     }
   }
 
   String _getNameHint() {
     switch (widget.role) {
-      case 'Doctor': return 'e.g. Dr. Sarah Wilson';
-      case 'Lab': return 'e.g. Kochi Central Lab';
-      case 'Hospital': return 'e.g. St. Mary Medical Center';
-      case 'Admin': return 'e.g. System Admin';
-      default: return 'Enter name';
+      case 'Doctor':
+        return 'e.g. Dr. Sarah Wilson';
+      case 'Lab':
+        return 'e.g. Kochi Central Lab';
+      case 'Hospital':
+        return 'e.g. St. Mary Medical Center';
+      case 'Admin':
+        return 'e.g. System Admin';
+      default:
+        return 'Enter name';
     }
   }
 
@@ -56,12 +66,14 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
       return;
     }
 
-    if (_phoneController.text.trim().isEmpty || _phoneController.text.trim().length < 10) {
+    if (_phoneController.text.trim().isEmpty ||
+        _phoneController.text.trim().length < 10) {
       _showSnackBar('Please enter a valid mobile number', isError: true);
       return;
     }
 
-    if (_emailController.text.trim().isEmpty || !_emailController.text.contains('@')) {
+    if (_emailController.text.trim().isEmpty ||
+        !_emailController.text.contains('@')) {
       _showSnackBar('Please enter a valid email address', isError: true);
       return;
     }
@@ -81,28 +93,37 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
         _nameController.text.trim(),
         mobileNumber,
         _emailController.text.trim(),
+        role: widget.role.toLowerCase(),
       );
 
       if (mounted) {
         setState(() => _isLoading = false);
 
         // Show success message
-        _showSnackBar('Account created successfully! Please login.', isError: false);
+        _showSnackBar(
+          'Account created successfully! Please login.',
+          isError: false,
+        );
 
         // Redirect to login screen after a short delay
         await Future.delayed(const Duration(seconds: 1));
-        
+
         if (mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => RoleLoginScreen(role: widget.role)),
+            MaterialPageRoute(
+              builder: (context) => RoleLoginScreen(role: widget.role),
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        _showSnackBar(e.toString().replaceAll('Exception: ', ''), isError: true);
+        _showSnackBar(
+          e.toString().replaceAll('Exception: ', ''),
+          isError: true,
+        );
       }
     }
   }
@@ -135,7 +156,10 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                     Positioned(
                       top: -100,
                       left: -100,
-                      child: CircleAvatar(radius: 200, backgroundColor: _primaryColor.withOpacity(0.1)),
+                      child: CircleAvatar(
+                        radius: 200,
+                        backgroundColor: _primaryColor.withOpacity(0.1),
+                      ),
                     ),
                     Center(
                       child: Padding(
@@ -149,7 +173,11 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                               ),
-                              child: Image.asset('assets/logo.png', width: 60, height: 60),
+                              child: Image.asset(
+                                'assets/logo.png',
+                                width: 60,
+                                height: 60,
+                              ),
                             ),
                             const SizedBox(height: 24),
                             Text(
@@ -177,7 +205,7 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                 ),
               ),
             ),
-          
+
           // Right Side: Signup Form
           Expanded(
             flex: 1,
@@ -210,7 +238,11 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                               color: _primaryColor.withOpacity(0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: Image.asset('assets/logo.png', width: 40, height: 40),
+                            child: Image.asset(
+                              'assets/logo.png',
+                              width: 40,
+                              height: 40,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -232,7 +264,7 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                         ),
                       ),
                       const SizedBox(height: 40),
-                      
+
                       // Name Field
                       Text(
                         _getNameLabel(),
@@ -247,7 +279,10 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                         controller: _nameController,
                         decoration: InputDecoration(
                           hintText: _getNameHint(),
-                          prefixIcon: const Icon(Icons.person_outline, size: 20),
+                          prefixIcon: const Icon(
+                            Icons.person_outline,
+                            size: 20,
+                          ),
                           filled: true,
                           fillColor: const Color(0xFFF9FAFB),
                           border: OutlineInputBorder(
@@ -258,7 +293,7 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                         style: GoogleFonts.poppins(fontSize: 14),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Mobile Number Field
                       Text(
                         'Mobile Number',
@@ -278,16 +313,33 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                           children: [
                             // Country Code Dropdown
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                               child: DropdownButton<String>(
                                 value: _selectedCountryCode,
                                 underline: const SizedBox(),
                                 items: const [
-                                  DropdownMenuItem(value: '+91', child: Text('🇮🇳 +91')),
-                                  DropdownMenuItem(value: '+1', child: Text('🇺🇸 +1')),
-                                  DropdownMenuItem(value: '+44', child: Text('🇬🇧 +44')),
-                                  DropdownMenuItem(value: '+86', child: Text('🇨🇳 +86')),
-                                  DropdownMenuItem(value: '+81', child: Text('🇯🇵 +81')),
+                                  DropdownMenuItem(
+                                    value: '+91',
+                                    child: Text('🇮🇳 +91'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '+1',
+                                    child: Text('🇺🇸 +1'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '+44',
+                                    child: Text('🇬🇧 +44'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '+86',
+                                    child: Text('🇨🇳 +86'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '+81',
+                                    child: Text('🇯🇵 +81'),
+                                  ),
                                 ],
                                 onChanged: (value) {
                                   setState(() => _selectedCountryCode = value!);
@@ -316,7 +368,9 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                                     color: const Color(0xFF9CA3AF),
                                   ),
                                   border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                 ),
                                 style: GoogleFonts.poppins(fontSize: 14),
                               ),
@@ -325,7 +379,7 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Email Field
                       Text(
                         'Email Address',
@@ -340,8 +394,13 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
-                          hintText: widget.role == 'Doctor' ? 'doctor@example.com' : 'lab@example.com',
-                          prefixIcon: const Icon(Icons.email_outlined, size: 20),
+                          hintText: widget.role == 'Doctor'
+                              ? 'doctor@example.com'
+                              : 'lab@example.com',
+                          prefixIcon: const Icon(
+                            Icons.email_outlined,
+                            size: 20,
+                          ),
                           filled: true,
                           fillColor: const Color(0xFFF9FAFB),
                           border: OutlineInputBorder(
@@ -351,19 +410,23 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                         ),
                         style: GoogleFonts.poppins(fontSize: 14),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Terms & Conditions
                       GestureDetector(
-                        onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+                        onTap: () =>
+                            setState(() => _agreedToTerms = !_agreedToTerms),
                         child: Row(
                           children: [
                             Checkbox(
                               value: _agreedToTerms,
-                              onChanged: (v) => setState(() => _agreedToTerms = v!),
+                              onChanged: (v) =>
+                                  setState(() => _agreedToTerms = v!),
                               activeColor: _primaryColor,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
                             ),
                             Expanded(
                               child: RichText(
@@ -388,9 +451,9 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Signup Button
                       SizedBox(
                         width: double.infinity,
@@ -399,28 +462,33 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                           onPressed: _isLoading ? null : _handleSignup,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _primaryColor,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             elevation: 0,
                           ),
-                          child: _isLoading 
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                              )
-                            : Text(
-                                'Create Account',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  'Create Account',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Login Link
                       Center(
                         child: GestureDetector(
@@ -428,7 +496,8 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => RoleLoginScreen(role: widget.role),
+                                builder: (context) =>
+                                    RoleLoginScreen(role: widget.role),
                               ),
                             );
                           },
@@ -439,7 +508,9 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
                                 color: const Color(0xFF6B7280),
                               ),
                               children: [
-                                const TextSpan(text: 'Already have an account? '),
+                                const TextSpan(
+                                  text: 'Already have an account? ',
+                                ),
                                 TextSpan(
                                   text: 'Login Now',
                                   style: GoogleFonts.poppins(

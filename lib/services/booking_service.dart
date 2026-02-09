@@ -8,33 +8,30 @@ class BookingService extends ApiBaseService {
     required DateTime bookingDate,
     String status = "Scheduled",
   }) async {
-    final response = await post('/bookings', {
+    final response = await post('/patients/bookings', {
       'labID': labID,
       'testID': testID,
       'bookingDate': bookingDate.toUtc().toIso8601String(),
       'status': status,
-      'reportURL': '', // Optional/Empty on creation usually
     });
-    
-    return BookingModel.fromJson(response['booking']);
+
+    return BookingModel.fromJson(response['booking'] ?? response);
   }
 
   Future<List<BookingModel>> getMyBookings() async {
-    final response = await get('/bookings/me');
-    
-    if (response['bookings'] != null) {
-      return (response['bookings'] as List)
-          .map((e) => BookingModel.fromJson(e))
-          .toList();
-    }
-    return [];
+    final response = await get('/patients/bookings/me');
+
+    final List<dynamic> list = (response is List)
+        ? response
+        : (response['bookings'] ?? []);
+    return list.map((e) => BookingModel.fromJson(e)).toList();
   }
 
   Future<BookingModel> updateStatus(String bookingID, String status) async {
-    final response = await patch('/bookings/$bookingID/status', {
+    final response = await patch('/lab/bookings/$bookingID/status', {
       'status': status,
     });
-    
-    return BookingModel.fromJson(response['booking']);
+
+    return BookingModel.fromJson(response['booking'] ?? response);
   }
 }
