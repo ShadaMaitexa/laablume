@@ -40,11 +40,16 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
 
   String _getNameLabel() {
     switch (_selectedRole) {
-      case 'Doctor': return 'Full Name';
-      case 'Lab': return 'Laboratory Name';
-      case 'Hospital': return 'Hospital Name';
-      case 'Admin': return 'Admin Name';
-      default: return 'Name';
+      case 'Doctor':
+        return 'Full Name';
+      case 'Lab':
+        return 'Laboratory Name';
+      case 'Hospital':
+        return 'Hospital Name';
+      case 'Admin':
+        return 'Admin Name';
+      default:
+        return 'Name';
     }
   }
 
@@ -54,12 +59,14 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
       return;
     }
 
-    if (_phoneController.text.trim().isEmpty || _phoneController.text.trim().length < 10) {
+    if (_phoneController.text.trim().isEmpty ||
+        _phoneController.text.trim().length < 10) {
       _showSnackBar('Please enter a valid mobile number', isError: true);
       return;
     }
 
-    if (_emailController.text.trim().isEmpty || !_emailController.text.contains('@')) {
+    if (_emailController.text.trim().isEmpty ||
+        !_emailController.text.contains('@')) {
       _showSnackBar('Please enter a valid email address', isError: true);
       return;
     }
@@ -83,20 +90,28 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
 
       if (mounted) {
         setState(() => _isLoading = false);
-        _showSnackBar('Account created successfully! Please login.', isError: false);
+        _showSnackBar(
+          'Account created successfully! Please login.',
+          isError: false,
+        );
         await Future.delayed(const Duration(seconds: 1));
-        
+
         if (mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => RoleLoginScreen(role: _selectedRole)),
+            MaterialPageRoute(
+              builder: (context) => RoleLoginScreen(role: _selectedRole),
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        _showSnackBar(e.toString().replaceAll('Exception: ', ''), isError: true);
+        _showSnackBar(
+          e.toString().replaceAll('Exception: ', ''),
+          isError: true,
+        );
       }
     }
   }
@@ -128,7 +143,10 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                     Positioned(
                       top: -100,
                       left: -100,
-                      child: CircleAvatar(radius: 200, backgroundColor: _primaryColor.withOpacity(0.1)),
+                      child: CircleAvatar(
+                        radius: 200,
+                        backgroundColor: _primaryColor.withOpacity(0.1),
+                      ),
                     ),
                     Center(
                       child: Padding(
@@ -142,7 +160,11 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                               ),
-                              child: Image.asset('assets/logo.png', width: 60, height: 60),
+                              child: Image.asset(
+                                'assets/logo.png',
+                                width: 60,
+                                height: 60,
+                              ),
                             ),
                             const SizedBox(height: 24),
                             Text(
@@ -170,13 +192,13 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                 ),
               ),
             ),
-          
+
           Expanded(
             flex: 1,
             child: Center(
               child: SingleChildScrollView(
                 child: Container(
-                  width: 500,
+                  constraints: const BoxConstraints(maxWidth: 500),
                   padding: const EdgeInsets.all(48),
                   margin: const EdgeInsets.symmetric(vertical: 24),
                   decoration: BoxDecoration(
@@ -233,14 +255,20 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                             value: _selectedRole,
                             isExpanded: true,
                             items: ['Doctor', 'Lab', 'Hospital', 'Admin']
-                                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                .map(
+                                  (e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Text(e),
+                                  ),
+                                )
                                 .toList(),
-                            onChanged: (v) => setState(() => _selectedRole = v!),
+                            onChanged: (v) =>
+                                setState(() => _selectedRole = v!),
                           ),
                         ),
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Name Field
                       Text(
                         _getNameLabel(),
@@ -254,8 +282,12 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                       TextField(
                         controller: _nameController,
                         decoration: InputDecoration(
-                          hintText: 'Enter your ${_getNameLabel().toLowerCase()}',
-                          prefixIcon: const Icon(Icons.person_outline, size: 20),
+                          hintText:
+                              'Enter your ${_getNameLabel().toLowerCase()}',
+                          prefixIcon: const Icon(
+                            Icons.person_outline,
+                            size: 20,
+                          ),
                           filled: true,
                           fillColor: const Color(0xFFF9FAFB),
                           border: OutlineInputBorder(
@@ -266,7 +298,7 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                         style: GoogleFonts.poppins(fontSize: 14),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Mobile Number Field
                       Text(
                         'Mobile Number',
@@ -285,19 +317,33 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                               child: DropdownButtonHideUnderline(
                                 child: DropdownButton<String>(
                                   value: _selectedCountryCode,
                                   items: const [
-                                    DropdownMenuItem(value: '+91', child: Text('🇮🇳 +91')),
-                                    DropdownMenuItem(value: '+1', child: Text('🇺🇸 +1')),
+                                    DropdownMenuItem(
+                                      value: '+91',
+                                      child: Text('🇮🇳 +91'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: '+1',
+                                      child: Text('🇺🇸 +1'),
+                                    ),
                                   ],
-                                  onChanged: (value) => setState(() => _selectedCountryCode = value!),
+                                  onChanged: (value) => setState(
+                                    () => _selectedCountryCode = value!,
+                                  ),
                                 ),
                               ),
                             ),
-                            Container(width: 1, height: 30, color: const Color(0xFFE5E7EB)),
+                            Container(
+                              width: 1,
+                              height: 30,
+                              color: const Color(0xFFE5E7EB),
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: TextField(
@@ -314,7 +360,7 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Email Field
                       Text(
                         'Email Address',
@@ -330,7 +376,10 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           hintText: 'example@domain.com',
-                          prefixIcon: const Icon(Icons.email_outlined, size: 20),
+                          prefixIcon: const Icon(
+                            Icons.email_outlined,
+                            size: 20,
+                          ),
                           filled: true,
                           fillColor: const Color(0xFFF9FAFB),
                           border: OutlineInputBorder(
@@ -340,28 +389,38 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                         ),
                         style: GoogleFonts.poppins(fontSize: 14),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       GestureDetector(
-                        onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+                        onTap: () =>
+                            setState(() => _agreedToTerms = !_agreedToTerms),
                         child: Row(
                           children: [
                             Checkbox(
                               value: _agreedToTerms,
-                              onChanged: (v) => setState(() => _agreedToTerms = v!),
+                              onChanged: (v) =>
+                                  setState(() => _agreedToTerms = v!),
                               activeColor: _primaryColor,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
                             ),
                             Expanded(
                               child: RichText(
                                 text: TextSpan(
-                                  style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF6B7280)),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    color: const Color(0xFF6B7280),
+                                  ),
                                   children: [
                                     const TextSpan(text: 'I agree to the '),
                                     TextSpan(
                                       text: 'Terms & Conditions',
-                                      style: GoogleFonts.poppins(color: _primaryColor, fontWeight: FontWeight.w600),
+                                      style: GoogleFonts.poppins(
+                                        color: _primaryColor,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -370,9 +429,9 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       SizedBox(
                         width: double.infinity,
                         height: 56,
@@ -380,36 +439,60 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                           onPressed: _isLoading ? null : _handleSignup,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _primaryColor,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             elevation: 0,
                           ),
-                          child: _isLoading 
-                            ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : Text(
-                                'Create Account',
-                                style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                              ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  'Create Account',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       Center(
                         child: GestureDetector(
                           onTap: () {
-                             Navigator.pushReplacement(
+                            Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(builder: (context) => RoleLoginScreen(role: _selectedRole)),
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    RoleLoginScreen(role: _selectedRole),
+                              ),
                             );
                           },
                           child: RichText(
                             text: TextSpan(
-                              style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF6B7280)),
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: const Color(0xFF6B7280),
+                              ),
                               children: [
-                                const TextSpan(text: 'Already have an account? '),
+                                const TextSpan(
+                                  text: 'Already have an account? ',
+                                ),
                                 TextSpan(
                                   text: 'Login Now',
-                                  style: GoogleFonts.poppins(color: _primaryColor, fontWeight: FontWeight.w600),
+                                  style: GoogleFonts.poppins(
+                                    color: _primaryColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ],
                             ),

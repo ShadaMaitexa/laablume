@@ -50,17 +50,18 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => RoleOtpScreen(
-              mobileNumber: mobileNumber,
-              role: widget.role,
-            ),
+            builder: (context) =>
+                RoleOtpScreen(mobileNumber: mobileNumber, role: widget.role),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        _showSnackBar(e.toString().replaceAll('Exception: ', ''), isError: true);
+        _showSnackBar(
+          e.toString().replaceAll('Exception: ', ''),
+          isError: true,
+        );
       }
     }
   }
@@ -93,7 +94,10 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                     Positioned(
                       top: -100,
                       left: -100,
-                      child: CircleAvatar(radius: 200, backgroundColor: _primaryColor.withOpacity(0.1)),
+                      child: CircleAvatar(
+                        radius: 200,
+                        backgroundColor: _primaryColor.withOpacity(0.1),
+                      ),
                     ),
                     Center(
                       child: Padding(
@@ -107,7 +111,11 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                               ),
-                              child: Image.asset('assets/logo.png', width: 60, height: 60),
+                              child: Image.asset(
+                                'assets/logo.png',
+                                width: 60,
+                                height: 60,
+                              ),
                             ),
                             const SizedBox(height: 24),
                             Text(
@@ -135,201 +143,233 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                 ),
               ),
             ),
-          
+
           // Right Side: Login Form
           Expanded(
             flex: 1,
-            child: Center(
-              child: Container(
-                width: 450,
-                padding: const EdgeInsets.all(48),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(32),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 30,
-                      offset: const Offset(0, 15),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (!isDesktop) ...[
-                      Center(
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: _primaryColor.withOpacity(0.1),
-                            shape: BoxShape.circle,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Center(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 450),
+                  padding: const EdgeInsets.all(48),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 30,
+                        offset: const Offset(0, 15),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!isDesktop) ...[
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: _primaryColor.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Image.asset(
+                              'assets/logo.png',
+                              width: 40,
+                              height: 40,
+                            ),
                           ),
-                          child: Image.asset('assets/logo.png', width: 40, height: 40),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                      Text(
+                        'Welcome Back',
+                        style: GoogleFonts.poppins(
+                          fontSize: isDesktop ? 28 : 24,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1F2937),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Enter your mobile number to access the ${widget.role.toLowerCase()} portal.',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                      const SizedBox(height: 48),
+
+                      // Mobile Number Field
+                      Text(
+                        'Mobile Number',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1F2937),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            // Country Code Dropdown
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              child: DropdownButton<String>(
+                                value: _selectedCountryCode,
+                                underline: const SizedBox(),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: '+91',
+                                    child: Text('🇮🇳 +91'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '+1',
+                                    child: Text('🇺🇸 +1'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '+44',
+                                    child: Text('🇬🇧 +44'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '+86',
+                                    child: Text('🇨🇳 +86'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '+81',
+                                    child: Text('🇯🇵 +81'),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  setState(() => _selectedCountryCode = value!);
+                                },
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 30,
+                              color: const Color(0xFFE5E7EB),
+                            ),
+                            const SizedBox(width: 12),
+                            // Phone Number Input
+                            Expanded(
+                              child: TextField(
+                                controller: _phoneController,
+                                keyboardType: TextInputType.phone,
+                                decoration: InputDecoration(
+                                  hintText: 'Enter your phone number',
+                                  hintStyle: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: const Color(0xFF9CA3AF),
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                ),
+                                style: GoogleFonts.poppins(fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      // Send OTP Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _handleSendOTP,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  'Send OTP',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 24),
-                    ],
-                    Text(
-                      'Welcome Back',
-                      style: GoogleFonts.poppins(
-                        fontSize: isDesktop ? 28 : 24,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1F2937),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Enter your mobile number to access the ${widget.role.toLowerCase()} portal.',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: const Color(0xFF6B7280),
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    
-                    // Mobile Number Field
-                    Text(
-                      'Mobile Number',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          // Country Code Dropdown
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: DropdownButton<String>(
-                              value: _selectedCountryCode,
-                              underline: const SizedBox(),
-                              items: const [
-                                DropdownMenuItem(value: '+91', child: Text('🇮🇳 +91')),
-                                DropdownMenuItem(value: '+1', child: Text('🇺🇸 +1')),
-                                DropdownMenuItem(value: '+44', child: Text('🇬🇧 +44')),
-                                DropdownMenuItem(value: '+86', child: Text('🇨🇳 +86')),
-                                DropdownMenuItem(value: '+81', child: Text('🇯🇵 +81')),
-                              ],
-                              onChanged: (value) {
-                                setState(() => _selectedCountryCode = value!);
-                              },
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            width: 1,
-                            height: 30,
-                            color: const Color(0xFFE5E7EB),
-                          ),
-                          const SizedBox(width: 12),
-                          // Phone Number Input
-                          Expanded(
-                            child: TextField(
-                              controller: _phoneController,
-                              keyboardType: TextInputType.phone,
-                              decoration: InputDecoration(
-                                hintText: 'Enter your phone number',
-                                hintStyle: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  color: const Color(0xFF9CA3AF),
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                              ),
-                              style: GoogleFonts.poppins(fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 40),
-                    
-                    // Send OTP Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _handleSendOTP,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _primaryColor,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 0,
-                        ),
-                        child: _isLoading 
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                            )
-                          : Text(
-                              'Send OTP',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Center(
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          'Go Back to Platform Selector',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Signup Link
-                    Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RoleSignupScreen(role: widget.role),
-                            ),
-                          );
-                        },
-                        child: RichText(
-                          text: TextSpan(
+                      Center(
+                        child: TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(
+                            'Go Back to Platform Selector',
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               color: const Color(0xFF6B7280),
                             ),
-                            children: [
-                              const TextSpan(text: 'New User? '),
-                              TextSpan(
-                                text: 'Register Now',
-                                style: GoogleFonts.poppins(
-                                  color: _primaryColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      // Signup Link
+                      Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    RoleSignupScreen(role: widget.role),
+                              ),
+                            );
+                          },
+                          child: RichText(
+                            text: TextSpan(
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: const Color(0xFF6B7280),
+                              ),
+                              children: [
+                                const TextSpan(text: 'New User? '),
+                                TextSpan(
+                                  text: 'Register Now',
+                                  style: GoogleFonts.poppins(
+                                    color: _primaryColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

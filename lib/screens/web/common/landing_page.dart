@@ -27,8 +27,11 @@ class _LandingPageState extends State<LandingPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 900;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
+      drawer: isMobile ? _buildMobileDrawer(context) : null,
       body: SingleChildScrollView(
         controller: _scrollController,
         child: Column(
@@ -62,7 +65,10 @@ class _LandingPageState extends State<LandingPage> {
           const SizedBox(height: 16),
           Text(
             'Our team is here to help you with any questions.',
-            style: GoogleFonts.poppins(fontSize: 18, color: const Color(0xFF64748B)),
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              color: const Color(0xFF64748B),
+            ),
           ),
           const SizedBox(height: 64),
           Wrap(
@@ -95,7 +101,12 @@ class _LandingPageState extends State<LandingPage> {
     );
   }
 
-  Widget _contactCard({required IconData icon, required String title, required String detail, required String desc}) {
+  Widget _contactCard({
+    required IconData icon,
+    required String title,
+    required String detail,
+    required String desc,
+  }) {
     return Container(
       width: 300,
       padding: const EdgeInsets.all(32),
@@ -123,27 +134,102 @@ class _LandingPageState extends State<LandingPage> {
           const SizedBox(height: 24),
           Text(
             title,
-            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)),
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1E293B),
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             detail,
-            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: const Color(0xFF12B8A6)),
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF12B8A6),
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             desc,
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF64748B)),
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: const Color(0xFF64748B),
+            ),
           ),
         ],
       ),
     );
   }
 
+  Widget _buildMobileDrawer(BuildContext context) {
+    return Drawer(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 50),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'LabLume',
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 50),
+            _navbarItem(
+              'Solutions',
+              onTap: () {
+                Navigator.pop(context);
+                _scrollToSegment(_featuresKey);
+              },
+            ),
+            const SizedBox(height: 20),
+            _navbarItem(
+              'About',
+              onTap: () {
+                Navigator.pop(context);
+                _scrollToSegment(_trustKey);
+              },
+            ),
+            const SizedBox(height: 20),
+            _navbarItem(
+              'Contact',
+              onTap: () {
+                Navigator.pop(context);
+                _scrollToSegment(_footerKey);
+              },
+            ),
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showRoleLoginPicker(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF12B8A6),
+                  padding: const EdgeInsets.all(16),
+                ),
+                child: const Text('Login'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildNavbar(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 900;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : 50,
+        vertical: 20,
+      ),
       child: Row(
         children: [
           GestureDetector(
@@ -152,56 +238,81 @@ class _LandingPageState extends State<LandingPage> {
               cursor: SystemMouseCursors.click,
               child: Row(
                 children: [
-                  Image.asset('assets/logo.png', height: 40, errorBuilder: (c, e, s) => const Icon(Icons.hub, color: Color(0xFF12B8A6), size: 40)),
-                  const SizedBox(width: 12),
-                  Text(
-                    'LabLume',
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1E293B),
+                  Image.asset(
+                    'assets/logo.png',
+                    height: 40,
+                    errorBuilder: (c, e, s) => const Icon(
+                      Icons.hub,
+                      color: Color(0xFF12B8A6),
+                      size: 40,
                     ),
                   ),
+                  const SizedBox(width: 12),
+                  if (!isMobile)
+                    Text(
+                      'LabLume',
+                      style: GoogleFonts.poppins(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1E293B),
+                      ),
+                    ),
                 ],
               ),
             ),
           ),
           const Spacer(),
-          _navbarItem('Solutions', onTap: () => _scrollToSegment(_featuresKey)),
-          _navbarItem('About', onTap: () => _scrollToSegment(_trustKey)),
-          _navbarItem('Contact', onTap: () => _scrollToSegment(_footerKey)),
-          const SizedBox(width: 20),
-          TextButton(
-            onPressed: () {
-               _showRoleLoginPicker(context);
-            },
-            child: Text(
-              'Login',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1E293B),
+          if (!isMobile) ...[
+            _navbarItem(
+              'Solutions',
+              onTap: () => _scrollToSegment(_featuresKey),
+            ),
+            _navbarItem('About', onTap: () => _scrollToSegment(_trustKey)),
+            _navbarItem('Contact', onTap: () => _scrollToSegment(_footerKey)),
+            const SizedBox(width: 20),
+            TextButton(
+              onPressed: () => _showRoleLoginPicker(context),
+              child: Text(
+                'Login',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E293B),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 20),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const UnifiedSignupScreen()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF12B8A6),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            const SizedBox(width: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const UnifiedSignupScreen(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF12B8A6),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Sign Up',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              ),
             ),
-            child: Text(
-              'Sign Up',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          ] else
+            Builder(
+              builder: (context) => IconButton(
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                icon: const Icon(Icons.menu_rounded, color: Color(0xFF1E293B)),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -239,7 +350,10 @@ class _LandingPageState extends State<LandingPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF12B8A6).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -273,38 +387,54 @@ class _LandingPageState extends State<LandingPage> {
                   ),
                 ),
                 const SizedBox(height: 48),
-                Row(
+                Wrap(
+                  spacing: 20,
+                  runSpacing: 20,
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                         Navigator.push(
+                        Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const UnifiedSignupScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const UnifiedSignupScreen(),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF12B8A6),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 20,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(
                         'Get Started Free',
-                        style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 20),
                     OutlinedButton(
                       onPressed: () => _scrollToSegment(_featuresKey),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 20,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         side: const BorderSide(color: Color(0xFFCBD5E1)),
                       ),
                       child: Text(
                         'Learn More',
                         style: GoogleFonts.poppins(
-                          fontSize: 16, 
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF1E293B),
                         ),
@@ -355,7 +485,10 @@ class _LandingPageState extends State<LandingPage> {
                               Text(
                                 'Failed to load: assets/realistic_hero.jpg\n${error.toString().split('\n').first}',
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(color: const Color(0xFF12B8A6), fontSize: 10),
+                                style: GoogleFonts.poppins(
+                                  color: const Color(0xFF12B8A6),
+                                  fontSize: 10,
+                                ),
                               ),
                             ],
                           ),
@@ -390,7 +523,10 @@ class _LandingPageState extends State<LandingPage> {
           const SizedBox(height: 16),
           Text(
             'Unified tools for doctors, labs, and patients.',
-            style: GoogleFonts.poppins(fontSize: 18, color: const Color(0xFF64748B)),
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              color: const Color(0xFF64748B),
+            ),
           ),
           const SizedBox(height: 80),
           Wrap(
@@ -401,17 +537,20 @@ class _LandingPageState extends State<LandingPage> {
               _featureCard(
                 icon: Icons.biotech,
                 title: 'Smart Lab Integration',
-                desc: 'Real-time test tracking and automated report generation.',
+                desc:
+                    'Real-time test tracking and automated report generation.',
               ),
               _featureCard(
                 icon: Icons.security,
                 title: 'Consent-based Privacy',
-                desc: 'Patients control who sees their data with blockchain-grade security.',
+                desc:
+                    'Patients control who sees their data with blockchain-grade security.',
               ),
               _featureCard(
                 icon: Icons.analytics,
                 title: 'AI Insights',
-                desc: 'Leverage AI to identify trends and anomalies in patient reports.',
+                desc:
+                    'Leverage AI to identify trends and anomalies in patient reports.',
               ),
             ],
           ),
@@ -434,23 +573,33 @@ class _LandingPageState extends State<LandingPage> {
           ),
         ),
         const SizedBox(height: 48),
-        Row(
+        Wrap(
+          spacing: 24,
+          runSpacing: 24,
+          alignment: WrapAlignment.center,
           children: [
-            Expanded(
+            SizedBox(
+              width: MediaQuery.of(context).size.width < 600
+                  ? double.infinity
+                  : 300,
               child: _galleryImage(
                 'assets/realistic_research.jpg',
                 'Precision Research',
               ),
             ),
-            const SizedBox(width: 24),
-            Expanded(
+            SizedBox(
+              width: MediaQuery.of(context).size.width < 600
+                  ? double.infinity
+                  : 300,
               child: _galleryImage(
                 'assets/realistic_consultation.jpg',
                 'Clinical Consulting',
               ),
             ),
-            const SizedBox(width: 24),
-            Expanded(
+            SizedBox(
+              width: MediaQuery.of(context).size.width < 600
+                  ? double.infinity
+                  : 300,
               child: _galleryImage(
                 'assets/realistic_diagnostics.jpg',
                 'Advanced Diagnostics',
@@ -483,14 +632,21 @@ class _LandingPageState extends State<LandingPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.medical_services_outlined, color: Color(0xFF12B8A6), size: 48),
+                    const Icon(
+                      Icons.medical_services_outlined,
+                      color: Color(0xFF12B8A6),
+                      size: 48,
+                    ),
                     const SizedBox(height: 12),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'Failed to load: $assetPath\n${error.toString().split('\n').first}',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(color: const Color(0xFF12B8A6), fontSize: 10),
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFF12B8A6),
+                          fontSize: 10,
+                        ),
                       ),
                     ),
                   ],
@@ -512,7 +668,11 @@ class _LandingPageState extends State<LandingPage> {
     );
   }
 
-  Widget _featureCard({required IconData icon, required String title, required String desc}) {
+  Widget _featureCard({
+    required IconData icon,
+    required String title,
+    required String desc,
+  }) {
     return Container(
       width: 350,
       padding: const EdgeInsets.all(40),
@@ -535,12 +695,20 @@ class _LandingPageState extends State<LandingPage> {
           const SizedBox(height: 24),
           Text(
             title,
-            style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)),
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1E293B),
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             desc,
-            style: GoogleFonts.poppins(fontSize: 16, color: const Color(0xFF64748B), height: 1.5),
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: const Color(0xFF64748B),
+              height: 1.5,
+            ),
           ),
         ],
       ),
@@ -555,17 +723,20 @@ class _LandingPageState extends State<LandingPage> {
         children: [
           Text(
             'Trusted by leading medical institutions',
-            style: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontWeight: FontWeight.w600),
+            style: GoogleFonts.poppins(
+              color: const Color(0xFF94A3B8),
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 40),
           Wrap(
             spacing: 60,
             runSpacing: 30,
             children: [
-               _trustLogo('General Health'),
-               _trustLogo('BioDiagnostic'),
-               _trustLogo('MediGroup'),
-               _trustLogo('UnityCare'),
+              _trustLogo('General Health'),
+              _trustLogo('BioDiagnostic'),
+              _trustLogo('MediGroup'),
+              _trustLogo('UnityCare'),
             ],
           ),
         ],
@@ -591,11 +762,13 @@ class _LandingPageState extends State<LandingPage> {
       color: const Color(0xFF1E293B),
       child: Column(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Wrap(
+            spacing: 40,
+            runSpacing: 40,
+            alignment: WrapAlignment.spaceBetween,
             children: [
-              Expanded(
-                flex: 2,
+              SizedBox(
+                width: 300,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -610,17 +783,21 @@ class _LandingPageState extends State<LandingPage> {
                     const SizedBox(height: 20),
                     Text(
                       'The intelligent healthcare platform bridging the gap between diagnosis and treatment.',
-                      style: GoogleFonts.poppins(color: const Color(0xFF94A3B8), height: 1.6),
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF94A3B8),
+                        height: 1.6,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const Spacer(),
               _footerCol('Product', ['Features', 'Pricing', 'API', 'Docs']),
-              const SizedBox(width: 40),
               _footerCol('Company', ['About', 'Careers', 'Press', 'Contact']),
-              const SizedBox(width: 40),
-              _footerCol('Contact', ['support@lablume.com', '+1 (555) 000-1234', '123 Healthcare Way']),
+              _footerCol('Contact', [
+                'support@lablume.com',
+                '+1 (555) 000-1234',
+                '123 Healthcare Way',
+              ]),
             ],
           ),
           const SizedBox(height: 80),
@@ -639,12 +816,23 @@ class _LandingPageState extends State<LandingPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 20),
-        ...items.map((e) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Text(e, style: GoogleFonts.poppins(color: const Color(0xFF94A3B8))),
-        )),
+        ...items.map(
+          (e) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              e,
+              style: GoogleFonts.poppins(color: const Color(0xFF94A3B8)),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -653,7 +841,10 @@ class _LandingPageState extends State<LandingPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Select Portal', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Select Portal',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -671,7 +862,10 @@ class _LandingPageState extends State<LandingPage> {
   Widget _roleOption(BuildContext context, String role, IconData icon) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF12B8A6)),
-      title: Text(role, style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+      title: Text(
+        role,
+        style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+      ),
       onTap: () {
         Navigator.pop(context);
         Navigator.push(

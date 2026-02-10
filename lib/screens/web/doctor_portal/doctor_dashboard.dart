@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/user_provider.dart';
+import '../../auth/login.dart';
 
 class DoctorWebDashboard extends StatefulWidget {
   const DoctorWebDashboard({super.key});
@@ -17,15 +20,17 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
   @override
   Widget build(BuildContext context) {
     bool isDesktop = MediaQuery.of(context).size.width >= 1100;
-    
+
     return Scaffold(
       backgroundColor: _bgColor,
       key: GlobalKey<ScaffoldState>(),
-      drawer: isDesktop ? null : Drawer(
-        width: 280,
-        backgroundColor: Colors.white,
-        child: _buildSidebar(isDrawer: true),
-      ),
+      drawer: isDesktop
+          ? null
+          : Drawer(
+              width: 280,
+              backgroundColor: Colors.white,
+              child: _buildSidebar(isDrawer: true),
+            ),
       body: Row(
         children: [
           if (isDesktop) _buildSidebar(),
@@ -86,7 +91,11 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
             child: ListView(
               children: [
                 _sidebarItem(0, Icons.dashboard_rounded, 'Doctor Dashboard'),
-                _sidebarItem(1, Icons.calendar_today_rounded, 'Patient Schedule'),
+                _sidebarItem(
+                  1,
+                  Icons.calendar_today_rounded,
+                  'Patient Schedule',
+                ),
                 _sidebarItem(2, Icons.people_alt_rounded, 'My Patients'),
                 _sidebarItem(3, Icons.psychology_rounded, 'AI Recommendations'),
                 _sidebarItem(4, Icons.rate_review_rounded, 'Client Feedback'),
@@ -94,21 +103,42 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
               ],
             ),
           ),
-          _sidebarItem(6, Icons.logout_rounded, 'Logout Practice', onTap: () => Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false)),
+          _sidebarItem(
+            6,
+            Icons.logout_rounded,
+            'Logout Practice',
+            onTap: () {
+              context.read<UserProvider>().logout();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+          ),
           const SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  Widget _sidebarItem(int index, IconData icon, String title, {VoidCallback? onTap}) {
+  Widget _sidebarItem(
+    int index,
+    IconData icon,
+    String title, {
+    VoidCallback? onTap,
+  }) {
     bool isSelected = _selectedIndex == index;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
         onTap: onTap ?? () => setState(() => _selectedIndex = index),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        leading: Icon(icon, color: isSelected ? _primaryColor : const Color(0xFF9CA3AF), size: 22),
+        leading: Icon(
+          icon,
+          color: isSelected ? _primaryColor : const Color(0xFF9CA3AF),
+          size: 22,
+        ),
         title: Text(
           title,
           style: GoogleFonts.poppins(
@@ -124,6 +154,9 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
   }
 
   Widget _buildHeader(bool showMenu) {
+    final userProvider = context.watch<UserProvider>();
+    final user = userProvider.currentUser;
+
     return Container(
       height: 80,
       color: Colors.white,
@@ -142,12 +175,19 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Dr. Sarah Wilson',
-                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF111827)),
+                user?.name ?? 'Dr. Sarah Wilson',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF111827),
+                ),
               ),
               Text(
-                'Clinical Hub: Cardiology',
-                style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF6B7280)),
+                user?.email ?? 'Clinical Hub: Cardiology',
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: const Color(0xFF6B7280),
+                ),
               ),
             ],
           ),
@@ -158,7 +198,11 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
           const SizedBox(width: 20),
           const CircleAvatar(
             backgroundColor: Color(0xFFF3F4F6),
-            child: Icon(Icons.person_rounded, color: Color(0xFF1F2937), size: 20),
+            child: Icon(
+              Icons.person_rounded,
+              color: Color(0xFF1F2937),
+              size: 20,
+            ),
           ),
         ],
       ),
@@ -178,10 +222,14 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
 
   Widget _buildContent(bool isDesktop) {
     switch (_selectedIndex) {
-      case 0: return _buildDoctorOverview(isDesktop);
-      case 1: return _buildSchedule(isDesktop);
-      case 4: return _buildFeedbackView(isDesktop);
-      default: return _buildPlaceholder('Module');
+      case 0:
+        return _buildDoctorOverview(isDesktop);
+      case 1:
+        return _buildSchedule(isDesktop);
+      case 4:
+        return _buildFeedbackView(isDesktop);
+      default:
+        return _buildPlaceholder('Module');
     }
   }
 
@@ -189,7 +237,10 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('Practice Insights', 'A complete overview of your clinical activity today.'),
+        _buildSectionHeader(
+          'Practice Insights',
+          'A complete overview of your clinical activity today.',
+        ),
         const SizedBox(height: 32),
         _buildStatsGrid(isDesktop),
         const SizedBox(height: 40),
@@ -201,10 +252,7 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
             if (isDesktop) Expanded(flex: 1, child: _recentActivity()),
           ],
         ),
-        if (!isDesktop) ...[
-          const SizedBox(height: 32),
-          _recentActivity(),
-        ],
+        if (!isDesktop) ...[const SizedBox(height: 32), _recentActivity()],
       ],
     );
   }
@@ -213,22 +261,61 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937))),
-        Text(sub, style: GoogleFonts.poppins(fontSize: 15, color: const Color(0xFF6B7280))),
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF1F2937),
+          ),
+        ),
+        Text(
+          sub,
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            color: const Color(0xFF6B7280),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildStatsGrid(bool isDesktop) {
     List<Widget> stats = [
-      _statCard('Today Patients', '18', Icons.people_outline_rounded, Colors.blue),
-      _statCard('Consultations', '562', Icons.medical_services_outlined, Colors.purple),
+      _statCard(
+        'Today Patients',
+        '18',
+        Icons.people_outline_rounded,
+        Colors.blue,
+      ),
+      _statCard(
+        'Consultations',
+        '562',
+        Icons.medical_services_outlined,
+        Colors.purple,
+      ),
       _statCard('Avg. Rating', '4.9', Icons.star_outline_rounded, Colors.amber),
-      _statCard('Reports Pending', '04', Icons.description_outlined, Colors.red),
+      _statCard(
+        'Reports Pending',
+        '04',
+        Icons.description_outlined,
+        Colors.red,
+      ),
     ];
 
     if (isDesktop) {
-      return Row(children: stats.map((e) => Expanded(child: Padding(padding: const EdgeInsets.only(right: 20), child: e))).toList());
+      return Row(
+        children: stats
+            .map(
+              (e) => Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: e,
+                ),
+              ),
+            )
+            .toList(),
+      );
     } else {
       return GridView.count(
         shrinkWrap: true,
@@ -248,7 +335,13 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,8 +349,21 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
         children: [
           Icon(icon, color: color, size: 28),
           const SizedBox(height: 16),
-          Text(val, style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold)),
-          Text(title, style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF9CA3AF), fontWeight: FontWeight.w500)),
+          Text(
+            val,
+            style: GoogleFonts.poppins(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: const Color(0xFF9CA3AF),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
@@ -266,14 +372,23 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
   Widget _appointmentQueue(bool isDesktop) {
     return Container(
       padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Up Next', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                'Up Next',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               _statusBadge('4 Active', _primaryColor),
             ],
           ),
@@ -295,14 +410,36 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Alice Brown', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14)),
-                      Text('Video Consultation • Heart Rate Issues', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
+                      Text(
+                        'Alice Brown',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        'Video Consultation • Heart Rate Issues',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                Text('10:30 AM', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold)),
+                Text(
+                  '10:30 AM',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(width: 20),
-                if (isDesktop) _statusBadge(index == 0 ? 'In Progress' : 'Upcoming', index == 0 ? Colors.green : Colors.blue),
+                if (isDesktop)
+                  _statusBadge(
+                    index == 0 ? 'In Progress' : 'Upcoming',
+                    index == 0 ? Colors.green : Colors.blue,
+                  ),
               ],
             ),
           ),
@@ -314,35 +451,77 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
   Widget _statusBadge(String label, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(30)),
-      child: Text(label, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.poppins(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
     );
   }
 
   Widget _recentActivity() {
     return Container(
       padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(color: const Color(0xFF1F2937), borderRadius: BorderRadius.circular(24)),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F2937),
+        borderRadius: BorderRadius.circular(24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Clinical Journal', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(
+            'Clinical Journal',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(height: 32),
-          _journalItem('Prescription signed for PT-9011', '10 mins ago', Colors.green),
-          _journalItem('Lab report reviewed for PT-9012', '25 mins ago', _primaryColor),
-          _journalItem('Emergency referral: PT-8114', '1 hour ago', Colors.orange),
+          _journalItem(
+            'Prescription signed for PT-9011',
+            '10 mins ago',
+            Colors.green,
+          ),
+          _journalItem(
+            'Lab report reviewed for PT-9012',
+            '25 mins ago',
+            _primaryColor,
+          ),
+          _journalItem(
+            'Emergency referral: PT-8114',
+            '1 hour ago',
+            Colors.orange,
+          ),
           const SizedBox(height: 32),
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Row(
               children: [
-                const Icon(Icons.auto_awesome_rounded, color: Colors.purpleAccent, size: 24),
+                const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Colors.purpleAccent,
+                  size: 24,
+                ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
                     'AI analysis suggests follow-up for PT-9023.',
-                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 12),
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               ],
@@ -358,14 +537,31 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
       padding: const EdgeInsets.only(bottom: 24),
       child: Row(
         children: [
-          Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(msg, style: GoogleFonts.poppins(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
-                Text(time, style: GoogleFonts.poppins(color: Colors.white60, fontSize: 11)),
+                Text(
+                  msg,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  time,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white60,
+                    fontSize: 11,
+                  ),
+                ),
               ],
             ),
           ),
@@ -378,12 +574,23 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('Patient Schedule', 'Keep track of all your upcoming medical sessions.'),
+        _buildSectionHeader(
+          'Patient Schedule',
+          'Keep track of all your upcoming medical sessions.',
+        ),
         const SizedBox(height: 32),
         Container(
           height: 400,
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
-          child: Center(child: Text('Clinical Calendar View', style: GoogleFonts.poppins(color: Colors.grey))),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Center(
+            child: Text(
+              'Clinical Calendar View',
+              style: GoogleFonts.poppins(color: Colors.grey),
+            ),
+          ),
         ),
       ],
     );
@@ -393,13 +600,18 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('Client Feedback', 'Insights into patient satisfaction and service quality.'),
+        _buildSectionHeader(
+          'Client Feedback',
+          'Insights into patient satisfaction and service quality.',
+        ),
         const SizedBox(height: 32),
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20)],
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20),
+            ],
           ),
           child: ListView.separated(
             shrinkWrap: true,
@@ -414,19 +626,35 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
               ),
               title: Row(
                 children: [
-                  Text('Patient #PT-770${index+1}', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Patient #PT-770${index + 1}',
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(width: 12),
-                  ...List.generate(5, (s) => Icon(Icons.star_rounded, color: Colors.amber, size: 16)),
+                  ...List.generate(
+                    5,
+                    (s) =>
+                        Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                  ),
                 ],
               ),
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   'Great experience! The AI analysis was very helpful and the doctor explained everything clearly.',
-                  style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF4B5563)),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: const Color(0xFF4B5563),
+                  ),
                 ),
               ),
-              trailing: Text('12 Jan 2026', style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF9CA3AF))),
+              trailing: Text(
+                '12 Jan 2026',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: const Color(0xFF9CA3AF),
+                ),
+              ),
             ),
           ),
         ),
@@ -439,9 +667,16 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.medical_services_rounded, size: 60, color: _primaryColor.withOpacity(0.2)),
+          Icon(
+            Icons.medical_services_rounded,
+            size: 60,
+            color: _primaryColor.withOpacity(0.2),
+          ),
           const SizedBox(height: 16),
-          Text('$title Feature Module is active.', style: GoogleFonts.poppins(color: Colors.grey)),
+          Text(
+            '$title Feature Module is active.',
+            style: GoogleFonts.poppins(color: Colors.grey),
+          ),
         ],
       ),
     );

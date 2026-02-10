@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/user_provider.dart';
+import '../../auth/login.dart';
 import 'package:laablume/services/auth_service.dart';
 
 class AdminWebPortal extends StatefulWidget {
@@ -18,15 +21,17 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
   @override
   Widget build(BuildContext context) {
     bool isDesktop = MediaQuery.of(context).size.width >= 1100;
-    
+
     return Scaffold(
       backgroundColor: _bgColor,
       key: GlobalKey<ScaffoldState>(),
-      drawer: isDesktop ? null : Drawer(
-        width: 280,
-        backgroundColor: _sidebarBg,
-        child: _buildSidebar(isDrawer: true),
-      ),
+      drawer: isDesktop
+          ? null
+          : Drawer(
+              width: 280,
+              backgroundColor: _sidebarBg,
+              child: _buildSidebar(isDrawer: true),
+            ),
       body: Row(
         children: [
           if (isDesktop) _buildSidebar(),
@@ -86,27 +91,60 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                 _sidebarItem(0, Icons.grid_view_rounded, 'System Overview'),
                 _sidebarItem(1, Icons.how_to_reg_rounded, 'Provider Approvals'),
                 _sidebarItem(2, Icons.people_alt_rounded, 'User Directories'),
-                _sidebarItem(3, Icons.account_balance_wallet_rounded, 'Financial Logs'),
-                _sidebarItem(4, Icons.thumbs_up_down_rounded, 'Platform Quality'),
-                _sidebarItem(5, Icons.notifications_active_rounded, 'Broadcasts'),
+                _sidebarItem(
+                  3,
+                  Icons.account_balance_wallet_rounded,
+                  'Financial Logs',
+                ),
+                _sidebarItem(
+                  4,
+                  Icons.thumbs_up_down_rounded,
+                  'Platform Quality',
+                ),
+                _sidebarItem(
+                  5,
+                  Icons.notifications_active_rounded,
+                  'Broadcasts',
+                ),
               ],
             ),
           ),
-          _sidebarItem(6, Icons.logout_rounded, 'Sign Out'),
+          _sidebarItem(
+            6,
+            Icons.logout_rounded,
+            'Sign Out',
+            onTap: () {
+              context.read<UserProvider>().logout();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+          ),
           const SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  Widget _sidebarItem(int index, IconData icon, String title) {
+  Widget _sidebarItem(
+    int index,
+    IconData icon,
+    String title, {
+    VoidCallback? onTap,
+  }) {
     bool isSelected = _selectedIndex == index;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
-        onTap: () => setState(() => _selectedIndex = index),
+        onTap: onTap ?? () => setState(() => _selectedIndex = index),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        leading: Icon(icon, color: isSelected ? _primaryColor : const Color(0xFF9CA3AF), size: 22),
+        leading: Icon(
+          icon,
+          color: isSelected ? _primaryColor : const Color(0xFF9CA3AF),
+          size: 22,
+        ),
         title: Text(
           title,
           style: GoogleFonts.poppins(
@@ -122,6 +160,9 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
   }
 
   Widget _buildHeader(bool showMenu) {
+    final userProvider = context.watch<UserProvider>();
+    final user = userProvider.currentUser;
+
     return Container(
       height: 80,
       color: Colors.white,
@@ -135,13 +176,27 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),
             ),
-          Text(
-            isDesktop ? 'Master Governance Terminal' : 'Admin Panel',
-            style: GoogleFonts.poppins(
-              fontSize: showMenu ? 18 : 20, 
-              fontWeight: FontWeight.bold, 
-              color: const Color(0xFF111827)
-            ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isDesktop ? 'Master Governance Terminal' : 'Admin Panel',
+                style: GoogleFonts.poppins(
+                  fontSize: showMenu ? 18 : 20,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF111827),
+                ),
+              ),
+              if (user != null)
+                Text(
+                  'Connected as: ${user.name}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: const Color(0xFF6B7280),
+                  ),
+                ),
+            ],
           ),
           const Spacer(),
           Container(
@@ -152,16 +207,34 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
             ),
             child: Row(
               children: [
-                Container(width: 8, height: 8, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Text('SYSTEM LIVE', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.green)),
+                Text(
+                  'SYSTEM LIVE',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(width: 20),
           const CircleAvatar(
             backgroundColor: Color(0xFFF3F4F6),
-            child: Icon(Icons.shield_rounded, color: Color(0xFF1F2937), size: 20),
+            child: Icon(
+              Icons.shield_rounded,
+              color: Color(0xFF1F2937),
+              size: 20,
+            ),
           ),
         ],
       ),
@@ -172,10 +245,14 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
 
   Widget _buildContent(bool isDesktop) {
     switch (_selectedIndex) {
-      case 0: return _buildOverview(isDesktop);
-      case 1: return _buildApprovals(isDesktop);
-      case 2: return _buildPlaceholder('User Management');
-      default: return _buildPlaceholder('Feature Module');
+      case 0:
+        return _buildOverview(isDesktop);
+      case 1:
+        return _buildApprovals(isDesktop);
+      case 2:
+        return _buildPlaceholder('User Management');
+      default:
+        return _buildPlaceholder('Feature Module');
     }
   }
 
@@ -183,7 +260,10 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('Ecosystem Vitals', 'Real-time platform performance metrics.'),
+        _buildSectionHeader(
+          'Ecosystem Vitals',
+          'Real-time platform performance metrics.',
+        ),
         const SizedBox(height: 32),
         _buildStatsGrid(isDesktop),
         const SizedBox(height: 40),
@@ -212,8 +292,21 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937))),
-        Text(sub, style: GoogleFonts.poppins(fontSize: 15, color: const Color(0xFF6B7280))),
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF1F2937),
+          ),
+        ),
+        Text(
+          sub,
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            color: const Color(0xFF6B7280),
+          ),
+        ),
       ],
     );
   }
@@ -221,13 +314,34 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
   Widget _buildStatsGrid(bool isDesktop) {
     List<Widget> stats = [
       _statCard('Total Patients', '18,542', Icons.person_rounded, Colors.blue),
-      _statCard('Active Doctors', '452', Icons.medical_services_rounded, Colors.teal),
+      _statCard(
+        'Active Doctors',
+        '452',
+        Icons.medical_services_rounded,
+        Colors.teal,
+      ),
       _statCard('Partner Labs', '84', Icons.biotech_rounded, Colors.orange),
-      _statCard('Platform Revenue', '₹4.2M', Icons.payments_rounded, Colors.green),
+      _statCard(
+        'Platform Revenue',
+        '₹4.2M',
+        Icons.payments_rounded,
+        Colors.green,
+      ),
     ];
 
     if (isDesktop) {
-      return Row(children: stats.map((e) => Expanded(child: Padding(padding: const EdgeInsets.only(right: 20), child: e))).toList());
+      return Row(
+        children: stats
+            .map(
+              (e) => Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: e,
+                ),
+              ),
+            )
+            .toList(),
+      );
     } else {
       return GridView.count(
         shrinkWrap: true,
@@ -247,7 +361,13 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,14 +375,31 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(14)),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(14),
+            ),
             child: Icon(icon, color: color, size: 24),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(val, style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937))),
-              Text(title, style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF9CA3AF), fontWeight: FontWeight.w500)),
+              Text(
+                val,
+                style: GoogleFonts.poppins(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1F2937),
+                ),
+              ),
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: const Color(0xFF9CA3AF),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ],
@@ -274,20 +411,25 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('Provider Verification', 'Review and authorize new medical partners.'),
+        _buildSectionHeader(
+          'Provider Verification',
+          'Review and authorize new medical partners.',
+        ),
         const SizedBox(height: 32),
         FutureBuilder<List<dynamic>>(
           future: AuthService().getPendingHospitals(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: Padding(
-                padding: EdgeInsets.all(50.0),
-                child: CircularProgressIndicator(),
-              ));
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(50.0),
+                  child: CircularProgressIndicator(),
+                ),
+              );
             }
-            
+
             final pending = snapshot.data ?? [];
-            
+
             if (pending.isEmpty) {
               return Center(
                 child: Container(
@@ -298,9 +440,16 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                   ),
                   child: Column(
                     children: [
-                      Icon(Icons.check_circle_outline_rounded, size: 64, color: Colors.green.withOpacity(0.5)),
+                      Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 64,
+                        color: Colors.green.withOpacity(0.5),
+                      ),
                       const SizedBox(height: 16),
-                      Text('No pending approvals at the moment.', style: GoogleFonts.poppins(color: Colors.grey)),
+                      Text(
+                        'No pending approvals at the moment.',
+                        style: GoogleFonts.poppins(color: Colors.grey),
+                      ),
                     ],
                   ),
                 ),
@@ -311,7 +460,12 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20)],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 20,
+                  ),
+                ],
               ),
               child: ListView.separated(
                 shrinkWrap: true,
@@ -327,44 +481,84 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                         CircleAvatar(
                           radius: 28,
                           backgroundColor: _primaryColor.withOpacity(0.1),
-                          child: Icon(Icons.business_rounded, color: _primaryColor),
+                          child: Icon(
+                            Icons.business_rounded,
+                            color: _primaryColor,
+                          ),
                         ),
                         const SizedBox(width: 20),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(partner['hospitalName'] ?? 'Unnamed Partner', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
+                              Text(
+                                partner['hospitalName'] ?? 'Unnamed Partner',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
                               const SizedBox(height: 4),
-                              Text('Email: ${partner['email']} • Phone: ${partner['mobileNumber']}', style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF6B7280))),
+                              Text(
+                                'Email: ${partner['email']} • Phone: ${partner['mobileNumber']}',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  color: const Color(0xFF6B7280),
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                        if (isDesktop) 
+                        if (isDesktop)
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              _actionBtn('Review Details', Colors.grey, false, () {}),
+                              _actionBtn(
+                                'Review Details',
+                                Colors.grey,
+                                false,
+                                () {},
+                              ),
                               const SizedBox(width: 12),
-                              _actionBtn('Approve Partner', _primaryColor, true, () async {
-                                try {
-                                  await AuthService().approveHospital(partner['id']);
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Hospital approved successfully')));
-                                    setState(() {}); // Refresh
+                              _actionBtn(
+                                'Approve Partner',
+                                _primaryColor,
+                                true,
+                                () async {
+                                  try {
+                                    await AuthService().approveHospital(
+                                      partner['id'],
+                                    );
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Hospital approved successfully',
+                                          ),
+                                        ),
+                                      );
+                                      setState(() {}); // Refresh
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(content: Text('Error: $e')),
+                                      );
+                                    }
                                   }
-                                } catch (e) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                                  }
-                                }
-                              }),
+                                },
+                              ),
                             ],
                           )
                         else
                           IconButton(
-                            icon: const Icon(Icons.more_vert), 
-                            onPressed: () => _showMobileActionMenu(context, partner)
+                            icon: const Icon(Icons.more_vert),
+                            onPressed: () =>
+                                _showMobileActionMenu(context, partner),
                           ),
                       ],
                     ),
@@ -381,13 +575,21 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
   void _showMobileActionMenu(BuildContext context, dynamic partner) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(partner['hospitalName'], style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(
+              partner['hospitalName'],
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
             const SizedBox(height: 20),
             ListTile(
               leading: const Icon(Icons.info_outline),
@@ -395,19 +597,31 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.check_circle_outline, color: Colors.green),
-              title: const Text('Approve Partner', style: TextStyle(color: Colors.green)),
+              leading: const Icon(
+                Icons.check_circle_outline,
+                color: Colors.green,
+              ),
+              title: const Text(
+                'Approve Partner',
+                style: TextStyle(color: Colors.green),
+              ),
               onTap: () async {
                 Navigator.pop(context);
                 try {
                   await AuthService().approveHospital(partner['id']);
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Hospital approved successfully')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Hospital approved successfully'),
+                      ),
+                    );
                     setState(() {});
                   }
                 } catch (e) {
-                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  if (mounted) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
                   }
                 }
               },
@@ -418,18 +632,28 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
     );
   }
 
-  Widget _actionBtn(String label, Color color, bool filled, VoidCallback onTap) {
+  Widget _actionBtn(
+    String label,
+    Color color,
+    bool filled,
+    VoidCallback onTap,
+  ) {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
         backgroundColor: filled ? color : Colors.white,
         foregroundColor: filled ? Colors.white : color,
         elevation: 0,
-        side: filled ? BorderSide.none : BorderSide(color: color.withOpacity(0.2)),
+        side: filled
+            ? BorderSide.none
+            : BorderSide(color: color.withOpacity(0.2)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      child: Text(label, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
+      child: Text(
+        label,
+        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+      ),
     );
   }
 
@@ -437,13 +661,28 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
     return Container(
       height: 400,
       padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Growth Analytics', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            'Growth Analytics',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const Spacer(),
-          Center(child: Icon(Icons.insights_rounded, size: 80, color: _primaryColor.withOpacity(0.2))),
+          Center(
+            child: Icon(
+              Icons.insights_rounded,
+              size: 80,
+              color: _primaryColor.withOpacity(0.2),
+            ),
+          ),
           const Spacer(),
         ],
       ),
@@ -454,15 +693,37 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
     return Container(
       height: 400,
       padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(color: const Color(0xFF1F2937), borderRadius: BorderRadius.circular(24)),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F2937),
+        borderRadius: BorderRadius.circular(24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Security Log', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(
+            'Security Log',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(height: 24),
-          _securityItem('Suspicious login attempt blocked', 'IP: 192.168.1.45', Colors.orange),
-          _securityItem('Database backup successful', 'Cloud Cluster A', Colors.green),
-          _securityItem('SSL Certificate renewal due', 'Expires in 14 days', Colors.red),
+          _securityItem(
+            'Suspicious login attempt blocked',
+            'IP: 192.168.1.45',
+            Colors.orange,
+          ),
+          _securityItem(
+            'Database backup successful',
+            'Cloud Cluster A',
+            Colors.green,
+          ),
+          _securityItem(
+            'SSL Certificate renewal due',
+            'Expires in 14 days',
+            Colors.red,
+          ),
         ],
       ),
     );
@@ -473,14 +734,34 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
         children: [
-          Container(width: 4, height: 40, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10))),
+          Container(
+            width: 4,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(msg, style: GoogleFonts.poppins(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
-                Text(sub, style: GoogleFonts.poppins(color: Colors.white60, fontSize: 11)),
+                Text(
+                  msg,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  sub,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white60,
+                    fontSize: 11,
+                  ),
+                ),
               ],
             ),
           ),
@@ -494,9 +775,16 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.auto_awesome_rounded, size: 60, color: _primaryColor.withOpacity(0.3)),
+          Icon(
+            Icons.auto_awesome_rounded,
+            size: 60,
+            color: _primaryColor.withOpacity(0.3),
+          ),
           const SizedBox(height: 16),
-          Text('$title Terminal is active.', style: GoogleFonts.poppins(color: Colors.grey)),
+          Text(
+            '$title Terminal is active.',
+            style: GoogleFonts.poppins(color: Colors.grey),
+          ),
         ],
       ),
     );

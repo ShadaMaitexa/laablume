@@ -267,186 +267,189 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
           // Right Side: OTP Form
           Expanded(
             flex: 1,
-            child: Center(
-              child: Container(
-                width: 450,
-                padding: const EdgeInsets.all(48),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(32),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 30,
-                      offset: const Offset(0, 15),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    if (!isDesktop) ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: _primaryColor.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Image.asset(
-                          'assets/logo.png',
-                          width: 40,
-                          height: 40,
-                        ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Center(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 450),
+                  padding: const EdgeInsets.all(48),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 30,
+                        offset: const Offset(0, 15),
                       ),
-                      const SizedBox(height: 24),
                     ],
-                    Text(
-                      'Verify OTP',
-                      style: GoogleFonts.poppins(
-                        fontSize: isDesktop ? 28 : 24,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1F2937),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Enter the 4-digit code sent to',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: const Color(0xFF6B7280),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.mobileNumber,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: _primaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-
-                    // OTP Input
-                    if (_otpError != null) ...[
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      if (!isDesktop) ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _primaryColor.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Image.asset(
+                            'assets/logo.png',
+                            width: 40,
+                            height: 40,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
                       Text(
-                        _otpError!,
+                        'Verify OTP',
                         style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.red,
+                          fontSize: isDesktop ? 28 : 24,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1F2937),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                    ],
-                    Pinput(
-                      controller: otpController,
-                      focusNode: _otpFocusNode,
-                      length: 4,
-                      defaultPinTheme: defaultPinTheme,
-                      focusedPinTheme: defaultPinTheme.copyWith(
-                        decoration: defaultPinTheme.decoration!.copyWith(
-                          border: Border.all(
-                            color: const Color(0xFF12B8A6),
-                            width: 2,
-                          ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Enter the 4-digit code sent to',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: const Color(0xFF6B7280),
                         ),
                       ),
-                      submittedPinTheme: defaultPinTheme,
-                      followingPinTheme: defaultPinTheme,
-                      onCompleted: (pin) {
-                        _otpFocusNode.unfocus();
-                        _verifyOtp();
-                      },
-                      onChanged: (pin) {
-                        if (_otpError != null) {
-                          setState(() {
-                            _otpError = null;
-                          });
-                        }
-                      },
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // Verify Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _isVerifying ? null : _verifyOtp,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.mobileNumber,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: _primaryColor,
                         ),
-                        child: _isVerifying
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                'Verify & Sign In',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
                       ),
-                    ),
+                      const SizedBox(height: 48),
 
-                    const SizedBox(height: 24),
-
-                    // Resend OTP
-                    Column(
-                      children: [
+                      // OTP Input
+                      if (_otpError != null) ...[
                         Text(
-                          "Didn't receive OTP?",
+                          _otpError!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.red,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      Pinput(
+                        controller: otpController,
+                        focusNode: _otpFocusNode,
+                        length: 4,
+                        defaultPinTheme: defaultPinTheme,
+                        focusedPinTheme: defaultPinTheme.copyWith(
+                          decoration: defaultPinTheme.decoration!.copyWith(
+                            border: Border.all(
+                              color: const Color(0xFF12B8A6),
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        submittedPinTheme: defaultPinTheme,
+                        followingPinTheme: defaultPinTheme,
+                        onCompleted: (pin) {
+                          _otpFocusNode.unfocus();
+                          _verifyOtp();
+                        },
+                        onChanged: (pin) {
+                          if (_otpError != null) {
+                            setState(() {
+                              _otpError = null;
+                            });
+                          }
+                        },
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      // Verify Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _isVerifying ? null : _verifyOtp,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: _isVerifying
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  'Verify & Sign In',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Resend OTP
+                      Column(
+                        children: [
+                          Text(
+                            "Didn't receive OTP?",
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              color: const Color(0xFF6B7280),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: _canResend ? _resendOtp : null,
+                            child: Text(
+                              _canResend
+                                  ? "Resend OTP"
+                                  : "Resend OTP in $_resendTimer s",
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: _canResend
+                                    ? _primaryColor
+                                    : const Color(0xFF6B7280),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'Change Phone Number',
                           style: GoogleFonts.poppins(
                             fontSize: 13,
                             color: const Color(0xFF6B7280),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: _canResend ? _resendOtp : null,
-                          child: Text(
-                            _canResend
-                                ? "Resend OTP"
-                                : "Resend OTP in $_resendTimer s",
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: _canResend
-                                  ? _primaryColor
-                                  : const Color(0xFF6B7280),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        'Change Phone Number',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: const Color(0xFF6B7280),
-                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

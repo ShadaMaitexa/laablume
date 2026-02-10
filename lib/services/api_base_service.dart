@@ -58,11 +58,28 @@ class ApiBaseService {
   dynamic _processResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (response.body.isEmpty) return {};
-      return jsonDecode(response.body);
+      try {
+        return jsonDecode(response.body);
+      } catch (e) {
+        return {};
+      }
     } else {
+      // If we are in a mock session, don't throw, just return empty/mock data
+      if (_token != null && _token!.startsWith('mock_')) {
+        return _getMockResponseForEndpoint(response.request?.url.path ?? '');
+      }
       throw Exception(
         'Error: ${response.statusCode} ${response.reasonPhrase} - ${response.body}',
       );
     }
+  }
+
+  dynamic _getMockResponseForEndpoint(String path) {
+    // Return basic mock structures so dashboards don't crash
+    if (path.contains('/doctors')) return [];
+    if (path.contains('/reports')) return [];
+    if (path.contains('/appointments')) return [];
+    if (path.contains('/analytics')) return {};
+    return {};
   }
 }

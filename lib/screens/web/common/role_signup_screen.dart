@@ -212,7 +212,7 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
             child: Center(
               child: SingleChildScrollView(
                 child: Container(
-                  width: 450,
+                  constraints: const BoxConstraints(maxWidth: 450),
                   padding: const EdgeInsets.all(48),
                   margin: const EdgeInsets.symmetric(vertical: 24),
                   decoration: BoxDecoration(

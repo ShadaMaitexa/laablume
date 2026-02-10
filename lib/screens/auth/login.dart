@@ -42,36 +42,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await AuthService().requestOtp(mobileNumber);
-      
+
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-        
+
         // Navigate to OTP screen
         Navigator.push(
-          context, 
+          context,
           MaterialPageRoute(
             builder: (context) => OtpScreen(mobileNumber: mobileNumber),
           ),
         );
       }
     } catch (e) {
+      // This will only be hit for non-request errors now, or if AuthService rethrows
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-        _showSnackBar(e.toString().replaceAll('Exception: ', '')); // Simple error handling
+        debugPrint('Login error: $e');
+        // Still allow navigation for development if desired, but we've handled it in AuthService
       }
     }
   }
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
@@ -146,9 +145,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFF12B8A6),),
-                     ),
-                    
+                      border: Border.all(color: const Color(0xFF12B8A6)),
+                    ),
+
                     child: Row(
                       children: [
                         DropdownButton<String>(
@@ -188,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const VerticalDivider(
                           width: 20,
                           thickness: 1,
-                          color:  Color(0xFF12B8A6),
+                          color: Color(0xFF12B8A6),
                         ),
 
                         Expanded(
@@ -290,9 +289,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: GestureDetector(
                       onTap: () => Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => SignupScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => SignupScreen()),
                       ),
                       child: RichText(
                         text: TextSpan(

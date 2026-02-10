@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/user_provider.dart';
+import '../../auth/login.dart';
 import 'package:laablume/services/hospital_service.dart';
 
 class HospitalWebDashboard extends StatefulWidget {
@@ -104,19 +107,36 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
               ],
             ),
           ),
-          _sidebarItem(5, Icons.logout_rounded, 'Logout Terminal'),
+          _sidebarItem(
+            5,
+            Icons.logout_rounded,
+            'Logout Terminal',
+            onTap: () {
+              context.read<UserProvider>().logout();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+          ),
           const SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  Widget _sidebarItem(int index, IconData icon, String title) {
+  Widget _sidebarItem(
+    int index,
+    IconData icon,
+    String title, {
+    VoidCallback? onTap,
+  }) {
     bool isSelected = _selectedIndex == index;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
-        onTap: () => setState(() => _selectedIndex = index),
+        onTap: onTap ?? () => setState(() => _selectedIndex = index),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         leading: Icon(
           icon,
@@ -138,6 +158,9 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
   }
 
   Widget _buildHeader(bool showMenu) {
+    final userProvider = context.watch<UserProvider>();
+    final user = userProvider.currentUser;
+
     return Container(
       height: 80,
       color: Colors.white,
@@ -156,7 +179,7 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'St. Mary Medical Center',
+                user?.name ?? 'St. Mary Medical Center',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -164,7 +187,7 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
                 ),
               ),
               Text(
-                'Facility ID: HOSP-9021-X',
+                user?.email ?? 'Facility ID: HOSP-9021-X',
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   color: const Color(0xFF6B7280),
