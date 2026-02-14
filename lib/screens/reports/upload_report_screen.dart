@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:laablume/services/ai_service.dart';
 
 class UploadReportScreen extends StatefulWidget {
   const UploadReportScreen({super.key});
@@ -34,39 +37,63 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
       _isAnalyzing = true;
     });
 
-    // TODO: Replace with actual AI analysis API call
-    await Future.delayed(const Duration(seconds: 3));
+    try {
+      final analysis = await AIService().analyzeLabReport(_selectedFile!);
 
-    setState(() {
-      _isAnalyzing = false;
-      _aiAnalysis = '''Based on the uploaded lab report analysis:
-
-**Overall Health Status:** Good
+      setState(() {
+        _isAnalyzing = false;
+        _aiAnalysis =
+            '''**Overall Health Status:** Good
 
 **Key Findings:**
-• Hemoglobin levels are within normal range (14.2 g/dL)
-• White blood cell count is normal
-• Platelet count is adequate
-• All parameters are within acceptable limits
+${(analysis['findings'] as List).map((f) => '• $f').join('\n')}
 
 **Recommendations:**
-• Maintain current health routine
-• Stay hydrated
-• Regular exercise recommended
-• Follow-up test in 6 months
+${(analysis['recommendations'] as List).map((r) => '• $r').join('\n')}
 
-**Note:** This is an AI-generated analysis. Please consult with a healthcare professional for detailed interpretation.''';
-    });
+**Note:** ${analysis['note']}''';
+      });
 
-    _showSnackBar('Report analyzed successfully!');
+      _showSnackBar('Report analyzed successfully!');
+    } catch (e) {
+      setState(() {
+        _isAnalyzing = false;
+      });
+      _showSnackBar('Analysis failed: $e');
+    }
   }
 
-  // Simulate file picker
-  void _pickFile(String type) {
-    setState(() {
-      _selectedFile = File('/path/to/sample_report.pdf');
-    });
-    _showSnackBar('File selected: sample_report.pdf');
+  // Real file picker
+  Future<void> _pickFile(String type) async {
+    try {
+      if (type == 'pdf') {
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['pdf'],
+        );
+
+        if (result != null && result.files.single.path != null) {
+          setState(() {
+            _selectedFile = File(result.files.single.path!);
+          });
+          _showSnackBar('File selected: ${result.files.single.name}');
+        }
+      } else {
+        final ImagePicker picker = ImagePicker();
+        final XFile? image = await picker.pickImage(
+          source: type == 'camera' ? ImageSource.camera : ImageSource.gallery,
+        );
+
+        if (image != null) {
+          setState(() {
+            _selectedFile = File(image.path);
+          });
+          _showSnackBar('Image selected');
+        }
+      }
+    } catch (e) {
+      _showSnackBar('Error picking file: $e');
+    }
   }
 
   @override
@@ -77,7 +104,11 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
         backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Color(0xFF111827),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -255,7 +286,11 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                           color: const Color(0xFFF3F4F6),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.close_rounded, color: Color(0xFFEF4444), size: 20),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          color: Color(0xFFEF4444),
+                          size: 20,
+                        ),
                       ),
                     ),
                   ],
@@ -280,7 +315,9 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                   ],
                 ),
                 child: ElevatedButton(
-                  onPressed: _isUploading || _isAnalyzing ? null : _uploadAndAnalyze,
+                  onPressed: _isUploading || _isAnalyzing
+                      ? null
+                      : _uploadAndAnalyze,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF12B8A6),
                     shape: RoundedRectangleBorder(
@@ -293,7 +330,11 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.auto_awesome_rounded, size: 20, color: Colors.white),
+                            const Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 20,
+                              color: Colors.white,
+                            ),
                             const SizedBox(width: 12),
                             Text(
                               'Scale & Analyze',
@@ -425,11 +466,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                 color: const Color(0xFF12B8A6).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(
-                icon,
-                color: const Color(0xFF12B8A6),
-                size: 24,
-              ),
+              child: Icon(icon, color: const Color(0xFF12B8A6), size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -470,7 +507,10 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
         backgroundColor: const Color(0xFF111827),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

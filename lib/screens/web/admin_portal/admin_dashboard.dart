@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/user_provider.dart';
 import '../../auth/login.dart';
-import 'package:laablume/services/auth_service.dart';
+import 'package:laablume/services/admin_service.dart';
 
 class AdminWebPortal extends StatefulWidget {
   const AdminWebPortal({super.key});
@@ -417,7 +417,7 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
         ),
         const SizedBox(height: 32),
         FutureBuilder<List<dynamic>>(
-          future: AuthService().getPendingHospitals(),
+          future: AdminService().getPendingHospitals(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
@@ -526,7 +526,7 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                                 true,
                                 () async {
                                   try {
-                                    await AuthService().approveHospital(
+                                    await AdminService().approveHospital(
                                       partner['id'],
                                     );
                                     if (mounted) {
@@ -608,7 +608,7 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
               onTap: () async {
                 Navigator.pop(context);
                 try {
-                  await AuthService().approveHospital(partner['id']);
+                  await AdminService().approveHospital(partner['id']);
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(

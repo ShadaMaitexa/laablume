@@ -1,37 +1,28 @@
-import '../models/booking_model.dart';
 import 'api_base_service.dart';
 
 class BookingService extends ApiBaseService {
-  Future<BookingModel> createBooking({
-    required String labID,
-    required String testID,
-    required DateTime bookingDate,
-    String status = "Scheduled",
-  }) async {
-    final response = await post('/patients/bookings', {
-      'labID': labID,
-      'testID': testID,
-      'bookingDate': bookingDate.toUtc().toIso8601String(),
-      'status': status,
-    });
+  static final BookingService _instance = BookingService._internal();
+  factory BookingService() => _instance;
+  BookingService._internal();
 
-    return BookingModel.fromJson(response['booking'] ?? response);
+  Future<Map<String, dynamic>> createBooking(
+    Map<String, dynamic> bookingData,
+  ) async {
+    final response = await post('/bookings', bookingData);
+    return response is Map<String, dynamic> ? response : {};
   }
 
-  Future<List<BookingModel>> getMyBookings() async {
-    final response = await get('/patients/bookings/me');
-
-    final List<dynamic> list = (response is List)
-        ? response
-        : (response['bookings'] ?? []);
-    return list.map((e) => BookingModel.fromJson(e)).toList();
+  Future<List<dynamic>> getMyBookings() async {
+    final response = await get('/bookings/my');
+    return response is List ? response : [];
   }
 
-  Future<BookingModel> updateStatus(String bookingID, String status) async {
-    final response = await patch('/lab/bookings/$bookingID/status', {
-      'status': status,
-    });
+  Future<void> cancelBooking(String bookingId) async {
+    await patch('/bookings/$bookingId/cancel', {});
+  }
 
-    return BookingModel.fromJson(response['booking'] ?? response);
+  Future<Map<String, dynamic>> getBookingDetails(String bookingId) async {
+    final response = await get('/bookings/$bookingId');
+    return response is Map<String, dynamic> ? response : {};
   }
 }
