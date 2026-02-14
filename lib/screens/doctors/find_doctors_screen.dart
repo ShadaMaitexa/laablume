@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'doctor_detail_screen.dart';
 import '../../services/doctor_service.dart';
 import '../../models/doctor_model.dart';
-import 'package:intl/intl.dart';
 
 class FindDoctorsScreen extends StatefulWidget {
   const FindDoctorsScreen({super.key});
@@ -39,7 +38,11 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
         backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Color(0xFF111827),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -51,10 +54,7 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
           ),
         ),
         centerTitle: true,
-        actions: [
-          _iconButton(Icons.tune_rounded),
-          const SizedBox(width: 16),
-        ],
+        actions: [_iconButton(Icons.tune_rounded), const SizedBox(width: 16)],
       ),
       body: Column(
         children: [
@@ -78,7 +78,11 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.search_rounded, color: Color(0xFF9CA3AF), size: 22),
+                  const Icon(
+                    Icons.search_rounded,
+                    color: Color(0xFF9CA3AF),
+                    size: 22,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
@@ -123,9 +127,7 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF12B8A6),
-                    ),
+                    child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
                   );
                 }
 
@@ -135,21 +137,26 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
 
                 final doctors = snapshot.data!;
                 final filteredDoctors = doctors.where((doctor) {
-                  final matchesSpecialty = _selectedSpecialty == 'All' ||
+                  final matchesSpecialty =
+                      _selectedSpecialty == 'All' ||
                       doctor.specialty == _selectedSpecialty;
-                  final matchesSearch = _searchQuery.isEmpty ||
-                      doctor.name.toLowerCase().contains(_searchQuery.toLowerCase());
+                  final matchesSearch =
+                      _searchQuery.isEmpty ||
+                      doctor.name.toLowerCase().contains(
+                        _searchQuery.toLowerCase(),
+                      );
                   return matchesSpecialty && matchesSearch;
                 }).toList();
 
                 if (filteredDoctors.isEmpty) {
-                   return _emptyState();
+                  return _emptyState();
                 }
 
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                   itemCount: filteredDoctors.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     return _doctorCard(filteredDoctors[index]);
                   },
@@ -181,7 +188,7 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
 
   Widget _specialtyChip(String specialty) {
     final isSelected = _selectedSpecialty == specialty;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() => _selectedSpecialty = specialty);
@@ -198,13 +205,15 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
                 ? const Color(0xFF12B8A6)
                 : const Color(0xFFE5E7EB),
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: const Color(0xFF12B8A6).withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            )
-          ] : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF12B8A6).withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           specialty,
@@ -252,8 +261,11 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF12B8A6).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
-                    image: doctor.imageUrl != null 
-                        ? DecorationImage(image: NetworkImage(doctor.imageUrl!), fit: BoxFit.cover)
+                    image: doctor.imageUrl != null
+                        ? DecorationImage(
+                            image: NetworkImage(doctor.imageUrl!),
+                            fit: BoxFit.cover,
+                          )
                         : null,
                   ),
                   child: doctor.imageUrl == null
@@ -461,7 +473,11 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
               color: const Color(0xFFF3F4F6),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.person_search_rounded, size: 48, color: Colors.grey.shade400),
+            child: Icon(
+              Icons.person_search_rounded,
+              size: 48,
+              color: Colors.grey.shade400,
+            ),
           ),
           const SizedBox(height: 20),
           Text(
