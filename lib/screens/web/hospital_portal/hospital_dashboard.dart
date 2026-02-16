@@ -914,10 +914,8 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
   }
 
   void _showAddDoctorDialog(BuildContext context) {
-    final nameController = TextEditingController();
-    final phoneController = TextEditingController();
-    final specialtyController = TextEditingController();
-    final emailController = TextEditingController();
+    final doctorIdController = TextEditingController();
+    final departmentController = TextEditingController();
     bool isSaving = false;
 
     showDialog(
@@ -928,7 +926,7 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
             borderRadius: BorderRadius.circular(24),
           ),
           title: Text(
-            'Add New Doctor',
+            'Associate Doctor',
             style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
           ),
           content: Container(
@@ -940,27 +938,23 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Text(
+                    'Enter the Doctor ID to associate them with this facility.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   _dialogField(
-                    'Full Name',
-                    nameController,
-                    Icons.person_outline,
+                    'Doctor ID',
+                    doctorIdController,
+                    Icons.badge_outlined,
                   ),
                   _dialogField(
-                    'Mobile Number (with code)',
-                    phoneController,
-                    Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                  ),
-                  _dialogField(
-                    'Specialty',
-                    specialtyController,
+                    'Department',
+                    departmentController,
                     Icons.medical_services_outlined,
-                  ),
-                  _dialogField(
-                    'Email Address',
-                    emailController,
-                    Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
                   ),
                 ],
               ),
@@ -975,31 +969,23 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
               onPressed: isSaving
                   ? null
                   : () async {
-                      if (nameController.text.isEmpty ||
-                          phoneController.text.isEmpty)
+                      if (doctorIdController.text.isEmpty ||
+                          departmentController.text.isEmpty) {
                         return;
+                      }
                       setDialogState(() => isSaving = true);
-                      final userProvider = context.read<UserProvider>();
-                      final hospitalId = userProvider.currentUser?.id;
 
                       try {
                         await HospitalService().addDoctor({
-                          'name': nameController.text.trim(),
-                          'doctorName': nameController.text.trim(),
-                          'phone': phoneController.text.trim(),
-                          'mobileNumber': phoneController.text.trim(),
-                          'specialty': specialtyController.text.trim(),
-                          'specialization': specialtyController.text.trim(),
-                          'email': emailController.text.trim(),
-                          'hospital': hospitalId,
-                          'hospitalId': hospitalId,
+                          'doctorId': doctorIdController.text.trim(),
+                          'department': departmentController.text.trim(),
                         });
                         if (context.mounted) {
                           Navigator.pop(context);
                           setState(() {}); // Refresh list
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Doctor added successfully'),
+                              content: Text('Doctor associated successfully'),
                             ),
                           );
                         }
