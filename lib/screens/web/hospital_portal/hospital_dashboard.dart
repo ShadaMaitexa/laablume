@@ -178,7 +178,7 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                user?.name ?? 'St. Mary Medical Center',
+                user?.name ?? 'Hospital Portal',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -186,7 +186,7 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
                 ),
               ),
               Text(
-                user?.email ?? 'Facility ID: HOSP-9021-X',
+                user?.email ?? '',
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   color: const Color(0xFF6B7280),
@@ -248,17 +248,11 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _configRow(
-                'Facility Name',
-                user?.name ?? 'St. Mary Medical Center',
-              ),
+              _configRow('Facility Name', user?.name ?? 'N/A'),
               const Divider(height: 48),
-              _configRow('Contact Email', user?.email ?? 'stmary@hospital.com'),
+              _configRow('Contact Email', user?.email ?? 'N/A'),
               const Divider(height: 48),
-              _configRow(
-                'Phone Support',
-                user?.mobileNumber ?? '+91 98765 43210',
-              ),
+              _configRow('Phone Support', user?.mobileNumber ?? 'N/A'),
               const Divider(height: 48),
               _configRow('Portal Access', 'Active', isStatus: true),
               const SizedBox(height: 48),
@@ -400,25 +394,25 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
       children: [
         _statCard(
           'Total Admissions',
-          '${data['totalAdmissions'] ?? "1,284"}',
+          '${data['totalAdmissions'] ?? "0"}',
           Icons.people_outline,
           Colors.blue,
         ),
         _statCard(
           'Critical Cases',
-          '${data['criticalCases'] ?? "12"}',
+          '${data['criticalCases'] ?? "0"}',
           Icons.warning_amber_rounded,
           Colors.red,
         ),
         _statCard(
           'Referral Efficiency',
-          '${data['efficiency'] ?? "92%"}',
+          '${data['efficiency'] ?? "0%"}',
           Icons.trending_up,
           Colors.green,
         ),
         _statCard(
           'In-house Docs',
-          '${data['doctorCount'] ?? "86"}',
+          '${data['doctorCount'] ?? "0"}',
           Icons.medical_services_rounded,
           Colors.teal,
         ),
@@ -480,25 +474,37 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
   }
 
   Widget _inventoryStatus(Map<String, dynamic> data) {
-    final inventory =
-        data['inventory'] as List? ??
-        [
-          {
-            'name': 'Blood Sugar Test Kits',
-            'progress': 0.85,
-            'label': 'Stable',
-          },
-          {
-            'name': 'Oxygen Supply Level',
-            'progress': 0.40,
-            'label': 'Refill Soon',
-          },
-          {
-            'name': 'Emergency Bed Capacity',
-            'progress': 0.92,
-            'label': 'Critical',
-          },
-        ];
+    final inventory = data['inventory'] as List? ?? [];
+
+    if (inventory.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(32),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Diagnostics Tracking',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Center(
+              child: Text(
+                'No inventory data available',
+                style: GoogleFonts.poppins(color: Colors.grey),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.all(32),
@@ -572,7 +578,7 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
   }
 
   Widget _patientDemographics(Map<String, dynamic> data) {
-    final occupancy = data['occupancy'] ?? 78;
+    final occupancy = data['occupancy'] ?? 0;
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
