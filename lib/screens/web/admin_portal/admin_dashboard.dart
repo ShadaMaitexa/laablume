@@ -100,16 +100,11 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                   'Global Bookings',
                 ),
                 _sidebarItem(5, Icons.rate_review_rounded, 'Patient Feedback'),
-                _sidebarItem(
-                  6,
-                  Icons.notifications_active_rounded,
-                  'Broadcasts',
-                ),
               ],
             ),
           ),
           _sidebarItem(
-            7,
+            6,
             Icons.logout_rounded,
             'Sign Out',
             onTap: () {
