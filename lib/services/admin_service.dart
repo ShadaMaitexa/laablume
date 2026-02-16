@@ -64,4 +64,35 @@ class AdminService extends ApiBaseService {
     final response = await get('/admin/reports/bookings');
     return Map<String, dynamic>.from(response);
   }
+
+  // Get patient feedback
+  Future<List<dynamic>> getFeedback() async {
+    // Return mock data if API fails or for demonstration
+    try {
+      final response = await get('/admin/feedback');
+      return response['feedback'] ?? response['data'] ?? [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Get registration growth trends for charts
+  Future<Map<String, dynamic>> getGrowthTrends() async {
+    try {
+      final response = await get('/admin/reports/growth');
+      return Map<String, dynamic>.from(response);
+    } catch (e) {
+      return {};
+    }
+  }
+
+  // Get system security logs
+  Future<List<dynamic>> getSecurityLogs() async {
+    try {
+      final response = await get('/admin/logs/security');
+      return response['logs'] ?? response['data'] ?? [];
+    } catch (e) {
+      return [];
+    }
+  }
 }

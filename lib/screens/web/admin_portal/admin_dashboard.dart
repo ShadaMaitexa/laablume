@@ -1011,81 +1011,113 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
           'Insights into patient satisfaction and service quality platform-wide.',
         ),
         const SizedBox(height: 32),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 10),
-            ],
-          ),
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 6,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) => Padding(
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: _primaryColor.withOpacity(0.1),
-                    child: Text(
-                      'P${index + 1}',
-                      style: TextStyle(
-                        color: _primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+        FutureBuilder<List<dynamic>>(
+          future: AdminService().getFeedback(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final feedbackList = snapshot.data ?? [];
+            if (feedbackList.isEmpty) {
+              return _emptyState('No recent feedback available.');
+            }
+
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.01),
+                    blurRadius: 10,
                   ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                ],
+              ),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: feedbackList.length,
+                separatorBuilder: (context, index) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final feedback = feedbackList[index];
+                  final patientName =
+                      feedback['patientName'] ??
+                      feedback['userName'] ??
+                      'Anonymous'; // Fallback
+                  final rating = (feedback['rating'] is int)
+                      ? feedback['rating']
+                      : int.tryParse(feedback['rating'].toString()) ?? 5;
+                  final comment =
+                      feedback['comment'] ??
+                      feedback['message'] ??
+                      'No comments provided.';
+                  final date = feedback['date'] ?? 'Recent';
+
+                  return Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Patient #PT-770${index + 1}',
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.bold,
-                              ),
+                        CircleAvatar(
+                          backgroundColor: _primaryColor.withOpacity(0.1),
+                          child: Text(
+                            'P${index + 1}',
+                            style: TextStyle(
+                              color: _primaryColor,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(width: 12),
-                            ...List.generate(
-                              5,
-                              (s) => Icon(
-                                Icons.star_rounded,
-                                color: s < (5 - (index % 2))
-                                    ? Colors.amber
-                                    : Colors.grey.shade300,
-                                size: 14,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    patientName,
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  ...List.generate(
+                                    5,
+                                    (s) => Icon(
+                                      Icons.star_rounded,
+                                      color: s < rating
+                                          ? Colors.amber
+                                          : Colors.grey.shade300,
+                                      size: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                comment,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         Text(
-                          'The overall coordination between the lab and the specialist was seamless. Really appreciated the AI-driven health summary.',
+                          date,
                           style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                            color: Colors.grey,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  Text(
-                    '${12 + index} Feb 2026',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
-            ),
-          ),
+            );
+          },
         ),
       ],
     );
@@ -1255,74 +1287,152 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
   }
 
   Widget _buildRegistrationTrends() {
-    return Container(
-      height: 400,
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Growth Analytics',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+    return FutureBuilder<Map<String, dynamic>>(
+      future: AdminService().getGrowthTrends(),
+      builder: (context, snapshot) {
+        final data = snapshot.data ?? {};
+        final growth = data['growth'] ?? '+0%';
+        final newUsers = data['newUsers'] ?? 0;
+        final period = data['period'] ?? 'This Month';
+
+        return Container(
+          height: 400,
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
           ),
-          const Spacer(),
-          Center(
-            child: Icon(
-              Icons.insights_rounded,
-              size: 80,
-              color: _primaryColor.withOpacity(0.2),
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Growth Analytics',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                '$newUsers New Users',
+                style: GoogleFonts.poppins(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: _primaryColor,
+                ),
+              ),
+              Text(
+                'Growth: $growth ($period)',
+                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey),
+              ),
+              const Spacer(),
+              // Simple Visual Bar Chart Placeholder using Containers
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: List.generate(7, (index) {
+                  // Mock visual height based on index if data not granular
+                  final height = 50.0 + (index * 20) % 150;
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 30,
+                        height: height,
+                        decoration: BoxDecoration(
+                          color: _primaryColor.withOpacity(0.2 + (index * 0.1)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Day ${index + 1}',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
+              const Spacer(),
+            ],
           ),
-          const Spacer(),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildSecurityAlerts() {
-    return Container(
-      height: 400,
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F2937),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Security Log',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+    return FutureBuilder<List<dynamic>>(
+      future: AdminService().getSecurityLogs(),
+      builder: (context, snapshot) {
+        final logs = snapshot.data ?? [];
+
+        return Container(
+          height: 400,
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F2937),
+            borderRadius: BorderRadius.circular(24),
           ),
-          const SizedBox(height: 24),
-          _securityItem(
-            'Suspicious login attempt blocked',
-            'IP: 192.168.1.45',
-            Colors.orange,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Security Log',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 24),
+              if (logs.isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.security,
+                          color: Colors.green,
+                          size: 48,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No active threats.',
+                          style: GoogleFonts.poppins(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: logs.length,
+                    itemBuilder: (context, index) {
+                      final log = logs[index];
+                      final msg = log['message'] ?? 'System Event';
+                      final sub = log['details'] ?? 'No details';
+                      final type = log['type'] ?? 'info';
+
+                      Color color = Colors.blue;
+                      if (type == 'warning') color = Colors.orange;
+                      if (type == 'critical' || type == 'error')
+                        color = Colors.red;
+                      if (type == 'success') color = Colors.green;
+
+                      return _securityItem(msg, sub, color);
+                    },
+                  ),
+                ),
+            ],
           ),
-          _securityItem(
-            'Database backup successful',
-            'Cloud Cluster A',
-            Colors.green,
-          ),
-          _securityItem(
-            'SSL Certificate renewal due',
-            'Expires in 14 days',
-            Colors.red,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
