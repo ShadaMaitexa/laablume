@@ -5,30 +5,33 @@ class HospitalService extends ApiBaseService {
   factory HospitalService() => _instance;
   HospitalService._internal();
 
-  Future<List<dynamic>> getPatients() async {
-    final response = await get('/hospitals/patients');
-    return response is List ? response : [];
+  // Associate a doctor with the hospital
+  Future<Map<String, dynamic>> addDoctor(Map<String, dynamic> data) async {
+    final response = await post('/hospital/add-doctor', data);
+    return response;
   }
 
-  Future<Map<String, dynamic>> getBedAvailability() async {
-    final response = await get('/hospitals/beds');
-    return response is Map<String, dynamic> ? response : {};
-  }
-
-  Future<void> admitPatient(Map<String, dynamic> patientData) async {
-    await post('/hospitals/patients/admit', patientData);
-  }
-
-  Future<void> dischargePatient(String patientId) async {
-    await post('/hospitals/patients/$patientId/discharge', {});
-  }
-
+  // List all doctors in hospital staff
   Future<List<dynamic>> getHospitalDoctors() async {
-    final response = await get('/hospitals/doctors');
-    return response is List ? response : [];
+    final response = await get('/hospital/doctors');
+    return response['doctors'] ?? response['data'] ?? [];
   }
 
-  Future<void> addDoctor(Map<String, dynamic> doctorData) async {
-    await post('/hospitals/doctors', doctorData);
+  // Remove doctor from hospital staff
+  Future<Map<String, dynamic>> removeDoctor(String id) async {
+    final response = await delete('/hospital/doctors/$id');
+    return response;
+  }
+
+  // Overall stats for visits and revenue
+  Future<Map<String, dynamic>> getDashboard() async {
+    final response = await get('/hospital/dashboard');
+    return response;
+  }
+
+  // Integrated view of all appointments in the facility
+  Future<List<dynamic>> getAllAppointments() async {
+    final response = await get('/hospital/appointments');
+    return response['appointments'] ?? response['data'] ?? [];
   }
 }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'lab_tests_screen.dart';
+import '../../models/test_model.dart';
 import 'book_test_screen.dart';
 import '../common/reviews_list_screen.dart';
 
 class TestDetailsScreen extends StatelessWidget {
-  final LabTest test;
+  final Test test;
 
   const TestDetailsScreen({super.key, required this.test});
 
@@ -17,7 +17,11 @@ class TestDetailsScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Color(0xFF111827),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -73,13 +77,16 @@ class TestDetailsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF12B8A6).withOpacity(0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          test.category.toUpperCase(),
+                          (test.category ?? "General").toUpperCase(),
                           style: GoogleFonts.poppins(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -108,7 +115,7 @@ class TestDetailsScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '₹${test.price.toInt()}',
+                                '₹${test.price?.toInt() ?? 0}',
                                 style: GoogleFonts.poppins(
                                   fontSize: 28,
                                   fontWeight: FontWeight.w800,
@@ -118,16 +125,23 @@ class TestDetailsScreen extends StatelessWidget {
                             ],
                           ),
                           const Spacer(),
-                          if (test.isPopular)
+                          if (test.isPopular ?? false)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.auto_awesome_rounded, size: 14, color: Color(0xFFFDE68A)),
+                                  const Icon(
+                                    Icons.auto_awesome_rounded,
+                                    size: 14,
+                                    color: Color(0xFFFDE68A),
+                                  ),
                                   const SizedBox(width: 8),
                                   Text(
                                     'Popular',
@@ -153,7 +167,7 @@ class TestDetailsScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 _infoCard(
                   child: Text(
-                    test.description,
+                    test.description ?? "No description available",
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -198,7 +212,8 @@ class TestDetailsScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              test.preparationTime,
+                              test.preparationInstructions ??
+                                  "No special preparation required",
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -271,19 +286,22 @@ class TestDetailsScreen extends StatelessWidget {
                                   'name': 'Sarah Miller',
                                   'rating': 5.0,
                                   'date': 'Today',
-                                  'comment': 'Very professional staff and the home collection was right on time. Highly recommended!',
+                                  'comment':
+                                      'Very professional staff and the home collection was right on time. Highly recommended!',
                                 },
                                 {
                                   'name': 'James Wilson',
                                   'rating': 4.8,
                                   'date': '3 days ago',
-                                  'comment': 'Clean laboratory and quick results. The AI analysis helped me understand the values better.',
+                                  'comment':
+                                      'Clean laboratory and quick results. The AI analysis helped me understand the values better.',
                                 },
                                 {
                                   'name': 'Robert Brown',
                                   'rating': 4.5,
                                   'date': '1 week ago',
-                                  'comment': 'Smooth process, phlebotomist was very gentle. Results came on time.',
+                                  'comment':
+                                      'Smooth process, phlebotomist was very gentle. Results came on time.',
                                 },
                               ],
                             ),
@@ -306,14 +324,16 @@ class TestDetailsScreen extends StatelessWidget {
                   name: 'Sarah Miller',
                   rating: 5.0,
                   date: 'Today',
-                  comment: 'Very professional staff and the home collection was right on time. Highly recommended!',
+                  comment:
+                      'Very professional staff and the home collection was right on time. Highly recommended!',
                 ),
                 const SizedBox(height: 12),
                 _reviewCard(
                   name: 'James Wilson',
                   rating: 4.8,
                   date: '3 days ago',
-                  comment: 'Clean laboratory and quick results. The AI analysis helped me understand the values better.',
+                  comment:
+                      'Clean laboratory and quick results. The AI analysis helped me understand the values better.',
                 ),
 
                 const SizedBox(height: 140),
@@ -330,7 +350,9 @@ class TestDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(32),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFF111827).withOpacity(0.08),
@@ -455,15 +477,17 @@ class TestDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _collectionOption({required IconData icon, required String title, required String subtitle}) {
+  Widget _collectionOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-        ),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Column(
         children: [
@@ -473,11 +497,7 @@ class TestDetailsScreen extends StatelessWidget {
               color: const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              size: 24,
-              color: const Color(0xFF12B8A6),
-            ),
+            child: Icon(icon, size: 24, color: const Color(0xFF12B8A6)),
           ),
           const SizedBox(height: 12),
           Text(

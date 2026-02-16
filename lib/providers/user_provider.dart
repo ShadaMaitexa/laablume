@@ -19,7 +19,11 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await AuthService().verifyOtp(mobileNumber, otp, role: role);
+      final response = await AuthService().verifyOtp(
+        phone: mobileNumber,
+        otp: otp,
+        role: role,
+      );
       if (response != null) {
         _currentUser = UserModel.fromJson(response);
       }

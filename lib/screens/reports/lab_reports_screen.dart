@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'upload_report_screen.dart';
 import 'report_detail_screen.dart';
+import '../../services/patient_service.dart';
+import '../../models/report_model.dart';
 
 class LabReportsScreen extends StatefulWidget {
   const LabReportsScreen({super.key});
@@ -12,36 +14,16 @@ class LabReportsScreen extends StatefulWidget {
 
 class _LabReportsScreenState extends State<LabReportsScreen> {
   // API READY - Fetch lab reports
-  Future<List<LabReport>> fetchLabReports() async {
-    // TODO: Replace with actual API call
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    return [
-      LabReport(
-        id: '1',
-        testName: 'Complete Blood Count',
-        date: DateTime.now().subtract(const Duration(days: 5)),
-        status: 'analyzed',
-        labName: 'LabLume Diagnostics',
-        hasAbnormalities: false,
-      ),
-      LabReport(
-        id: '2',
-        testName: 'Lipid Profile',
-        date: DateTime.now().subtract(const Duration(days: 15)),
-        status: 'analyzed',
-        labName: 'LabLume Diagnostics',
-        hasAbnormalities: true,
-      ),
-      LabReport(
-        id: '3',
-        testName: 'Thyroid Function Test',
-        date: DateTime.now().subtract(const Duration(days: 30)),
-        status: 'pending',
-        labName: 'LabLume Diagnostics',
-        hasAbnormalities: false,
-      ),
-    ];
+  final PatientService _patientService = PatientService();
+
+  Future<List<Report>> fetchLabReports() async {
+    try {
+      final List<dynamic> response = await _patientService.getReports();
+      return response.map((json) => Report.fromJson(json)).toList();
+    } catch (e) {
+      debugPrint("Error fetching reports: $e");
+      return [];
+    }
   }
 
   @override
@@ -52,7 +34,11 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
         backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Color(0xFF111827),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -64,10 +50,7 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
           ),
         ),
         centerTitle: true,
-        actions: [
-          _iconButton(Icons.tune_rounded),
-          const SizedBox(width: 16),
-        ],
+        actions: [_iconButton(Icons.tune_rounded), const SizedBox(width: 16)],
       ),
       body: Column(
         children: [
@@ -152,7 +135,7 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
 
           // Reports List
           Expanded(
-            child: FutureBuilder<List<LabReport>>(
+            child: FutureBuilder<List<Report>>(
               future: fetchLabReports(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -173,7 +156,8 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
                   itemCount: reports.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     return _reportCard(reports[index]);
                   },
@@ -217,10 +201,12 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
     );
   }
 
-  Widget _reportCard(LabReport report) {
+  Widget _reportCard(Report report) {
     return GestureDetector(
       onTap: () {
-        if (report.status == 'analyzed') {
+        if (report.status.toLowerCase() == 'analyzed' ||
+            report.status.toLowerCase() == 'delivered' ||
+            report.status.toLowerCase() == 'validated') {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -274,7 +260,7 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        report.labName,
+                        "Laboratory", // Since we only have labId in the model
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -284,14 +270,21 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                     ],
                   ),
                 ),
-                const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFFD1D5DB)),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: Color(0xFFD1D5DB),
+                ),
               ],
             ),
             const SizedBox(height: 20),
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(10),
@@ -316,18 +309,27 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                   ),
                 ),
                 const Spacer(),
-                if (report.status == 'analyzed') ...[
+                if (report.status == 'analyzed' ||
+                    report.status == 'delivered') ...[
                   GestureDetector(
-                    onTap: () => _showReviewDialog(context, report.labName, 'lab'),
+                    onTap: () =>
+                        _showReviewDialog(context, "Laboratory", 'lab'),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.star_rounded, size: 14, color: Color(0xFF10B981)),
+                          const Icon(
+                            Icons.star_rounded,
+                            size: 14,
+                            color: Color(0xFF10B981),
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             'Rate Lab',
@@ -343,7 +345,10 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                   ),
                   const SizedBox(width: 12),
                 ],
-                _statusBadgeContainer(report.status, report.hasAbnormalities),
+                _statusBadgeContainer(
+                  report.status,
+                  report.isValidated ?? false,
+                ),
               ],
             ),
           ],
@@ -376,7 +381,11 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
     );
   }
 
-  Widget _badge({required String text, required Color color, required Color bgColor}) {
+  Widget _badge({
+    required String text,
+    required Color color,
+    required Color bgColor,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -395,10 +404,13 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
   }
 
   Color _getStatusColor(String status) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'analyzed':
+      case 'delivered':
+      case 'validated':
         return const Color(0xFF12B8A6);
       case 'pending':
+      case 'processing':
         return const Color(0xFFF59E0B);
       default:
         return const Color(0xFF6B7280);
@@ -406,10 +418,13 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
   }
 
   IconData _getStatusIcon(String status) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'analyzed':
+      case 'delivered':
+      case 'validated':
         return Icons.verified_user_rounded;
       case 'pending':
+      case 'processing':
         return Icons.sync_rounded;
       default:
         return Icons.description_rounded;
@@ -417,7 +432,20 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
   }
 
   String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${date.day} ${months[date.month - 1]}, ${date.year}';
   }
 
@@ -432,7 +460,11 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
               color: const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(32),
             ),
-            child: Icon(Icons.description_outlined, size: 64, color: Colors.grey.shade400),
+            child: Icon(
+              Icons.description_outlined,
+              size: 64,
+              color: Colors.grey.shade400,
+            ),
           ),
           const SizedBox(height: 24),
           Text(
@@ -484,7 +516,10 @@ class _ReviewDialogState extends State<ReviewDialog> {
           children: [
             Text(
               'Rate your experience',
-              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -499,8 +534,12 @@ class _ReviewDialogState extends State<ReviewDialog> {
                 return IconButton(
                   onPressed: () => setState(() => _rating = index + 1.0),
                   icon: Icon(
-                    index < _rating ? Icons.star_rounded : Icons.star_outline_rounded,
-                    color: index < _rating ? Colors.amber : const Color(0xFFD1D5DB),
+                    index < _rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    color: index < _rating
+                        ? Colors.amber
+                        : const Color(0xFFD1D5DB),
                     size: 32,
                   ),
                 );
@@ -527,25 +566,43 @@ class _ReviewDialogState extends State<ReviewDialog> {
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF6B7280), fontWeight: FontWeight.w600)),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF6B7280),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _rating == 0 ? null : () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Thank you for your feedback!')),
-                      );
-                      Navigator.pop(context);
-                    },
+                    onPressed: _rating == 0
+                        ? null
+                        : () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Thank you for your feedback!'),
+                              ),
+                            );
+                            Navigator.pop(context);
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF12B8A6),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
-                    child: Text('Submit', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: Colors.white)),
+                    child: Text(
+                      'Submit',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -557,34 +614,4 @@ class _ReviewDialogState extends State<ReviewDialog> {
   }
 }
 
-// =================================================
-// MODEL (API READY)
-// =================================================
-class LabReport {
-  final String id;
-  final String testName;
-  final DateTime date;
-  final String status; // 'pending', 'analyzed'
-  final String labName;
-  final bool hasAbnormalities;
-
-  LabReport({
-    required this.id,
-    required this.testName,
-    required this.date,
-    required this.status,
-    required this.labName,
-    this.hasAbnormalities = false,
-  });
-
-  factory LabReport.fromJson(Map<String, dynamic> json) {
-    return LabReport(
-      id: json['id'],
-      testName: json['test_name'],
-      date: DateTime.parse(json['date']),
-      status: json['status'],
-      labName: json['lab_name'],
-      hasAbnormalities: json['has_abnormalities'] ?? false,
-    );
-  }
-}
+// Local model removed in favor of global Report model

@@ -69,8 +69,8 @@ class _OtpScreenState extends State<OtpScreen> {
 
     try {
       final response = await AuthService().verifyOtp(
-        widget.mobileNumber,
-        otpController.text,
+        phone: widget.mobileNumber,
+        otp: otpController.text,
       );
 
       if (mounted) {

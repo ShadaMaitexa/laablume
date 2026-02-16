@@ -1,41 +1,52 @@
-import '../models/appointment_model.dart';
 import 'api_base_service.dart';
 
 class AppointmentService extends ApiBaseService {
-  Future<AppointmentModel> createAppointment({
-    required String doctorID,
-    required DateTime appointmentDateTime,
-    required String reasonForVisit,
-    String status = "Scheduled",
-  }) async {
-    final response = await post('/patients/appointments', {
-      'doctorID': doctorID,
-      'appointmentDateTime': appointmentDateTime.toUtc().toIso8601String(),
-      'reasonForVisit': reasonForVisit,
-      'status': status,
-    });
+  static final AppointmentService _instance = AppointmentService._internal();
+  factory AppointmentService() => _instance;
+  AppointmentService._internal();
 
-    return AppointmentModel.fromJson(response['appointment'] ?? response);
+  // Get patient's appointments
+  Future<List<dynamic>> getMyAppointments({String? status}) async {
+    final queryParams = status != null ? {'status': status} : null;
+    final response = await get(
+      '/patients/appointments/me',
+      queryParams: queryParams,
+    );
+    return response['appointments'] ?? response['data'] ?? [];
   }
 
-  Future<List<AppointmentModel>> getMyAppointments() async {
-    final response = await get('/patients/appointments/me');
-
-    final List<dynamic> list = (response is List)
-        ? response
-        : (response['appointments'] ?? []);
-    return list.map((e) => AppointmentModel.fromJson(e)).toList();
-  }
-
-  Future<AppointmentModel> updateStatus(
-    String appointmentID,
-    String status,
+  // Book new appointment
+  Future<Map<String, dynamic>> bookAppointment(
+    Map<String, dynamic> appointmentData,
   ) async {
-    // Note: status update is typically for doctors
-    final response = await patch('/doctor/appointments/$appointmentID/status', {
-      'status': status,
-    });
+    final response = await post('/patients/appointments', appointmentData);
+    return response;
+  }
 
-    return AppointmentModel.fromJson(response['appointment'] ?? response);
+  // Get appointment details
+  Future<Map<String, dynamic>> getAppointmentDetails(String id) async {
+    final response = await get('/doctor/appointments/$id');
+    return response;
+  }
+
+  // Update appointment status (for doctors)
+  Future<Map<String, dynamic>> updateAppointmentStatus(
+    String id,
+    String status, {
+    String? reason,
+  }) async {
+    final response = await patch('/doctor/appointments/$id/status', {
+      'status': status,
+      if (reason != null) 'reason': reason,
+    });
+    return response;
+  }
+
+  // Cancel appointment (for patients)
+  Future<Map<String, dynamic>> cancelAppointment(
+    String id, {
+    String? reason,
+  }) async {
+    return updateAppointmentStatus(id, 'cancelled', reason: reason);
   }
 }

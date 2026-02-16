@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'lab_reports_screen.dart';
+import '../../models/report_model.dart';
 import '../doctors/find_doctors_screen.dart';
 
 class ReportDetailScreen extends StatelessWidget {
-  final LabReport report;
+  final Report report;
 
   const ReportDetailScreen({super.key, required this.report});
 
@@ -16,7 +16,11 @@ class ReportDetailScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Color(0xFF111827),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -34,11 +38,17 @@ class ReportDetailScreen extends StatelessWidget {
           }),
           const SizedBox(width: 8),
           _iconButton(Icons.share_rounded, () {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sharing report...')));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Sharing report...')));
           }),
           const SizedBox(width: 8),
           _iconButton(Icons.download_rounded, () {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report downloading to your device...')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Report downloading to your device...'),
+              ),
+            );
           }),
           const SizedBox(width: 16),
         ],
@@ -85,7 +95,7 @@ class ReportDetailScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                         'AI Powered Analysis',
+                        'AI Powered Analysis',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -106,10 +116,14 @@ class ReportDetailScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.location_on_rounded, color: Colors.white38, size: 14),
+                      const Icon(
+                        Icons.location_on_rounded,
+                        color: Colors.white38,
+                        size: 14,
+                      ),
                       const SizedBox(width: 6),
                       Text(
-                        report.labName,
+                        "Laboratory",
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -126,7 +140,10 @@ class ReportDetailScreen extends StatelessWidget {
                     children: [
                       _headerStat('Date', _formatDateShort(report.date)),
                       const Spacer(),
-                      _headerStat('Status', report.hasAbnormalities ? 'Attention' : 'Normal'),
+                      _headerStat(
+                        'Status',
+                        (report.isValidated ?? false) ? 'Normal' : 'Processing',
+                      ),
                     ],
                   ),
                 ],
@@ -139,12 +156,18 @@ class ReportDetailScreen extends StatelessWidget {
             _sectionTitle('Health Recommendation'),
             const SizedBox(height: 16),
             _statusCard(
-              status: report.hasAbnormalities ? 'Follow-up Suggested' : 'Good Health Condition',
-              color: report.hasAbnormalities ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
-              icon: report.hasAbnormalities ? Icons.notifications_active_rounded : Icons.verified_rounded,
-              description: report.hasAbnormalities
-                  ? 'We noticed some irregularities in your report parameters. We recommend scheduling a consultation.'
-                  : 'Great! All your diagnostic parameters are within the standard medical reference ranges.',
+              status: (report.isValidated ?? false)
+                  ? 'Good Health Condition'
+                  : 'Processing Analysis',
+              color: (report.isValidated ?? false)
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFF59E0B),
+              icon: (report.isValidated ?? false)
+                  ? Icons.verified_rounded
+                  : Icons.sync_rounded,
+              description: (report.isValidated ?? false)
+                  ? 'Great! All your diagnostic parameters are within the standard medical reference ranges.'
+                  : 'We are currently processing your report tokens. AI analysis will be available shortly.',
             ),
 
             const SizedBox(height: 32),
@@ -208,7 +231,11 @@ class ReportDetailScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.videocam_rounded, size: 22, color: Colors.white),
+                    const Icon(
+                      Icons.videocam_rounded,
+                      size: 22,
+                      color: Colors.white,
+                    ),
                     const SizedBox(width: 12),
                     Text(
                       'Consult a Specialist',
@@ -350,7 +377,9 @@ class ReportDetailScreen extends StatelessWidget {
     required String status,
   }) {
     final isNormal = status == 'normal';
-    final statusColor = isNormal ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
+    final statusColor = isNormal
+        ? const Color(0xFF10B981)
+        : const Color(0xFFF59E0B);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -380,7 +409,10 @@ class ReportDetailScreen extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: statusColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
@@ -455,9 +487,7 @@ class ReportDetailScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF12B8A6).withOpacity(0.08),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFF12B8A6).withOpacity(0.1),
-        ),
+        border: Border.all(color: const Color(0xFF12B8A6).withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,7 +511,9 @@ class ReportDetailScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _recommendationItem('Maintain your current diet and hydration levels'),
+          _recommendationItem(
+            'Maintain your current diet and hydration levels',
+          ),
           _recommendationItem('Stay active with at least 30 minutes of cardio'),
           _recommendationItem('Schedule a routine checkup in 6 months'),
           const SizedBox(height: 20),
@@ -513,7 +545,11 @@ class ReportDetailScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle_rounded, size: 16, color: Color(0xFF12B8A6)),
+          const Icon(
+            Icons.check_circle_rounded,
+            size: 16,
+            color: Color(0xFF12B8A6),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -532,7 +568,20 @@ class ReportDetailScreen extends StatelessWidget {
   }
 
   String _formatDateShort(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${date.day} ${months[date.month - 1]}, ${date.year}';
   }
 
@@ -553,18 +602,29 @@ class ReportDetailScreen extends StatelessWidget {
                   color: const Color(0xFF12B8A6).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.security_rounded, color: Color(0xFF12B8A6), size: 32),
+                child: const Icon(
+                  Icons.security_rounded,
+                  color: Color(0xFF12B8A6),
+                  size: 32,
+                ),
               ),
               const SizedBox(height: 24),
               Text(
                 'Share with Hospital',
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
               Text(
                 'Select a hospital to share your ${report.testName} report. They will be able to view this for diagnostic purposes.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF6B7280), height: 1.5),
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: const Color(0xFF6B7280),
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 24),
               _hospitalItem('City General Hospital', 'New York, NY'),
@@ -576,7 +636,13 @@ class ReportDetailScreen extends StatelessWidget {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF6B7280), fontWeight: FontWeight.w600)),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFF6B7280),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -584,17 +650,29 @@ class ReportDetailScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Report successfully shared with hospital.')),
+                          const SnackBar(
+                            content: Text(
+                              'Report successfully shared with hospital.',
+                            ),
+                          ),
                         );
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF12B8A6),
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
-                      child: Text('Share Now', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: Colors.white)),
+                      child: Text(
+                        'Share Now',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -616,14 +694,30 @@ class ReportDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.business_rounded, color: Color(0xFF6B7280), size: 18),
+          const Icon(
+            Icons.business_rounded,
+            color: Color(0xFF6B7280),
+            size: 18,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold)),
-                Text(location, style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF9CA3AF))),
+                Text(
+                  name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  location,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                ),
               ],
             ),
           ),

@@ -4,7 +4,6 @@ import 'personal_information_screen.dart';
 import 'emergency_contact.dart';
 import 'insurance_information_screen.dart';
 import 'health_assesment.dart';
-import 'placeholder_screens.dart';
 import 'payment_methods_screen.dart';
 import 'change_email_screen.dart';
 import 'security_privacy_screen.dart';
@@ -34,7 +33,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: const Color(0xFF12B8A6).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.logout_rounded, color: Color(0xFF12B8A6), size: 32),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  color: Color(0xFF12B8A6),
+                  size: 32,
+                ),
               ),
               const SizedBox(height: 24),
               Text(
@@ -66,7 +69,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF12B8A6),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 0,
                   ),
                   child: Text(
@@ -109,12 +114,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
-                  child: CircularProgressIndicator(color: Color(0xFF12B8A6)));
+                child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
+              );
             }
 
             if (!snapshot.hasData) {
-              return const Center(
-                  child: Text('Failed to load profile'));
+              return const Center(child: Text('Failed to load profile'));
             }
 
             final user = snapshot.data!;
@@ -131,7 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 24),
-                
+
                       // -------- Header --------
                       Text(
                         'Profile',
@@ -141,15 +146,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           color: const Color(0xFF111827),
                         ),
                       ),
-                
+
                       const SizedBox(height: 32),
-                
+
                       // -------- Profile Card --------
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const PersonalInformationScreen()),
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const PersonalInformationScreen(),
+                            ),
                           );
                         },
                         child: Container(
@@ -159,7 +167,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF111827).withOpacity(0.04),
+                                color: const Color(
+                                  0xFF111827,
+                                ).withOpacity(0.04),
                                 blurRadius: 20,
                                 offset: const Offset(0, 4),
                               ),
@@ -171,7 +181,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 width: 56,
                                 height: 56,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF12B8A6).withOpacity(0.1),
+                                  color: const Color(
+                                    0xFF12B8A6,
+                                  ).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(16),
                                   image: user.avatarUrl != null
                                       ? DecorationImage(
@@ -181,7 +193,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       : null,
                                 ),
                                 child: user.avatarUrl == null
-                                    ? const Icon(Icons.person_rounded, color: Color(0xFF12B8A6), size: 28)
+                                    ? const Icon(
+                                        Icons.person_rounded,
+                                        color: Color(0xFF12B8A6),
+                                        size: 28,
+                                      )
                                     : null,
                               ),
                               const SizedBox(width: 16),
@@ -209,63 +225,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.chevron_right_rounded, color: Color(0xFF9CA3AF), size: 24),
+                              const Icon(
+                                Icons.chevron_right_rounded,
+                                color: Color(0xFF9CA3AF),
+                                size: 24,
+                              ),
                             ],
                           ),
                         ),
                       ),
-                
+
                       const SizedBox(height: 32),
-                
+
                       // -------- Menu Section --------
                       _menuItem(
-                        Icons.person_outline_rounded, 
+                        Icons.person_outline_rounded,
                         'Personal Information',
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PersonalInformationScreen())),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const PersonalInformationScreen(),
+                          ),
+                        ),
                       ),
                       _menuItem(
-                        Icons.emergency_outlined, 
+                        Icons.emergency_outlined,
                         'Emergency Contact',
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const EmergencyContactScreen())),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const EmergencyContactScreen(),
+                          ),
+                        ),
                       ),
                       _menuItem(
-                        Icons.shield_outlined, 
+                        Icons.shield_outlined,
                         'Insurance Information',
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const InsuranceInformationScreen())),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const InsuranceInformationScreen(),
+                          ),
+                        ),
                       ),
                       _menuItem(
-                        Icons.health_and_safety_outlined, 
+                        Icons.health_and_safety_outlined,
                         'Health Assessment',
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HealthAssessmentScreen())),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const HealthAssessmentScreen(),
+                          ),
+                        ),
                       ),
                       _menuItem(
-                        Icons.payments_outlined, 
+                        Icons.payments_outlined,
                         'Payment Methods',
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentMethodsScreen())),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PaymentMethodsScreen(),
+                          ),
+                        ),
                       ),
                       _menuItem(
-                        Icons.mail_outline_rounded, 
+                        Icons.mail_outline_rounded,
                         'Change Email',
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangeEmailScreen())),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ChangeEmailScreen(),
+                          ),
+                        ),
                       ),
                       _menuItem(
-                        Icons.lock_outline_rounded, 
+                        Icons.lock_outline_rounded,
                         'Security & Privacy',
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SecurityPrivacyScreen())),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SecurityPrivacyScreen(),
+                          ),
+                        ),
                       ),
-                      
+
                       const SizedBox(height: 8),
-                      
+
                       // Logout Button
                       _menuItem(
-                        Icons.logout_rounded, 
+                        Icons.logout_rounded,
                         'Log out',
                         isLast: true,
                         iconColor: const Color(0xFFDC2626),
                         onTap: _showLogoutDialog,
                       ),
-                
-                      const SizedBox(height: 120), // Extra padding for bottom nav
+
+                      const SizedBox(
+                        height: 120,
+                      ), // Extra padding for bottom nav
                     ],
                   ),
                 ),
@@ -277,25 +338,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _iconButton(IconData icon) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: IconButton(
-        onPressed: () {},
-        icon: Icon(icon, size: 24, color: const Color(0xFF111827)),
-        padding: EdgeInsets.zero,
-      ),
-    );
-  }
-
   // ---------- MENU ITEM ----------
-  Widget _menuItem(IconData icon, String title, {VoidCallback? onTap, bool isLast = false, Color? iconColor}) {
+  Widget _menuItem(
+    IconData icon,
+    String title, {
+    VoidCallback? onTap,
+    bool isLast = false,
+    Color? iconColor,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -322,11 +372,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: isLast ? const Color(0xFFDC2626) : const Color(0xFF1F2937),
+                  color: isLast
+                      ? const Color(0xFFDC2626)
+                      : const Color(0xFF1F2937),
                 ),
               ),
             ),
-            if (!isLast) const Icon(Icons.chevron_right_rounded, color: Color(0xFF9CA3AF), size: 22),
+            if (!isLast)
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Color(0xFF9CA3AF),
+                size: 22,
+              ),
           ],
         ),
       ),

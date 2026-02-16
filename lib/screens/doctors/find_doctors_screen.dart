@@ -16,6 +16,9 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
   String _searchQuery = '';
   final DoctorService _doctorService = DoctorService();
 
+  bool _isLoading = false;
+  String _errorMessage = '';
+
   final List<String> _specialties = [
     'All',
     'General Physician',
@@ -27,7 +30,34 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen> {
   ];
 
   Future<List<DoctorModel>> fetchDoctors() async {
-    return await _doctorService.getAllDoctors();
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = '';
+      });
+
+      final specialty = _selectedSpecialty == 'All' ? null : _selectedSpecialty;
+      final search = _searchQuery.isEmpty ? null : _searchQuery;
+
+      final response = await _doctorService.getAllDoctors(
+        specialty: specialty,
+        search: search,
+      );
+
+      // Convert response to List<DoctorModel>
+      final doctors = response
+          .map((json) => DoctorModel.fromJson(json))
+          .toList();
+
+      setState(() => _isLoading = false);
+      return doctors;
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+      });
+      return [];
+    }
   }
 
   @override

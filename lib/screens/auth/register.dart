@@ -13,7 +13,7 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   bool _agreedToPolicy = false;
   bool _isLoading = false;
-  
+
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -33,12 +33,14 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    if (_mobileController.text.trim().isEmpty || _mobileController.text.trim().length < 10) {
+    if (_mobileController.text.trim().isEmpty ||
+        _mobileController.text.trim().length < 10) {
       _showSnackBar('Please enter a valid mobile number', isError: true);
       return;
     }
 
-    if (_emailController.text.trim().isEmpty || !_emailController.text.contains('@')) {
+    if (_emailController.text.trim().isEmpty ||
+        !_emailController.text.contains('@')) {
       _showSnackBar('Please enter a valid email address', isError: true);
       return;
     }
@@ -55,9 +57,9 @@ class _SignupScreenState extends State<SignupScreen> {
     try {
       // Call signup API
       await AuthService().signup(
-        _userNameController.text.trim(),
-        '+91${_mobileController.text.trim()}', // Add country code
-        _emailController.text.trim(),
+        name: _userNameController.text.trim(),
+        phone: '+91${_mobileController.text.trim()}', // Add country code
+        email: _emailController.text.trim(),
       );
 
       if (mounted) {
@@ -66,11 +68,14 @@ class _SignupScreenState extends State<SignupScreen> {
         });
 
         // Show success message
-        _showSnackBar('Account created successfully! Please login.', isError: false);
+        _showSnackBar(
+          'Account created successfully! Please login.',
+          isError: false,
+        );
 
         // Redirect to login screen after a short delay
         await Future.delayed(const Duration(seconds: 1));
-        
+
         if (mounted) {
           Navigator.pushReplacement(
             context,
@@ -83,7 +88,10 @@ class _SignupScreenState extends State<SignupScreen> {
         setState(() {
           _isLoading = false;
         });
-        _showSnackBar(e.toString().replaceAll('Exception: ', ''), isError: true);
+        _showSnackBar(
+          e.toString().replaceAll('Exception: ', ''),
+          isError: true,
+        );
       }
     }
   }
@@ -174,14 +182,18 @@ class _SignupScreenState extends State<SignupScreen> {
 
                   // Privacy policy
                   GestureDetector(
-                    onTap: () => setState(() => _agreedToPolicy = !_agreedToPolicy),
+                    onTap: () =>
+                        setState(() => _agreedToPolicy = !_agreedToPolicy),
                     child: Row(
                       children: [
                         Checkbox(
                           value: _agreedToPolicy,
-                          onChanged: (v) => setState(() => _agreedToPolicy = v!),
+                          onChanged: (v) =>
+                              setState(() => _agreedToPolicy = v!),
                           activeColor: const Color(0xFF12B8A6),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
                         Expanded(
                           child: RichText(
@@ -248,7 +260,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   GestureDetector(
                     onTap: () => Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
                     ),
                     child: RichText(
                       text: TextSpan(
@@ -305,7 +319,10 @@ class _SignupScreenState extends State<SignupScreen> {
               style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF9CA3AF)),
+                hintStyle: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: const Color(0xFF9CA3AF),
+                ),
                 border: InputBorder.none,
               ),
             ),
@@ -328,7 +345,10 @@ class _SignupScreenState extends State<SignupScreen> {
         children: [
           const Text('🇮🇳', style: TextStyle(fontSize: 20)),
           const SizedBox(width: 8),
-          const Text('+91', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+          const Text(
+            '+91',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
           const VerticalDivider(indent: 12, endIndent: 12, width: 24),
           Expanded(
             child: TextField(
@@ -337,7 +357,10 @@ class _SignupScreenState extends State<SignupScreen> {
               style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
                 hintText: '81290 83932',
-                hintStyle: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF9CA3AF)),
+                hintStyle: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: const Color(0xFF9CA3AF),
+                ),
                 border: InputBorder.none,
               ),
             ),

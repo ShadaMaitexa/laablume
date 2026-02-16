@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'test_details_screen.dart';
+import '../../services/test_service.dart';
+import '../../models/test_model.dart';
 
 class LabTestsScreen extends StatefulWidget {
   const LabTestsScreen({super.key});
@@ -9,7 +11,8 @@ class LabTestsScreen extends StatefulWidget {
   State<LabTestsScreen> createState() => _LabTestsScreenState();
 }
 
-class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProviderStateMixin {
+class _LabTestsScreenState extends State<LabTestsScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _searchQuery = '';
 
@@ -26,57 +29,16 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
   }
 
   // API READY - Fetch lab tests
-  Future<List<LabTest>> fetchLabTests() async {
-    // TODO: Replace with actual API call
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    return [
-      LabTest(
-        id: '1',
-        name: 'Complete Blood Count (CBC)',
-        description: 'Measures different components of blood',
-        price: 299,
-        preparationTime: '8-12 hours fasting',
-        category: 'Blood Tests',
-        isPopular: true,
-      ),
-      LabTest(
-        id: '2',
-        name: 'Lipid Profile',
-        description: 'Cholesterol and triglycerides test',
-        price: 499,
-        preparationTime: '12 hours fasting',
-        category: 'Blood Tests',
-        isPopular: true,
-      ),
-      LabTest(
-        id: '3',
-        name: 'Thyroid Function Test',
-        description: 'TSH, T3, T4 levels',
-        price: 599,
-        preparationTime: 'No fasting required',
-        category: 'Hormone Tests',
-        isPopular: false,
-      ),
-      LabTest(
-        id: '4',
-        name: 'Diabetes Screening',
-        description: 'HbA1c and fasting glucose',
-        price: 399,
-        preparationTime: '8 hours fasting',
-        category: 'Blood Tests',
-        isPopular: true,
-      ),
-      LabTest(
-        id: '5',
-        name: 'Liver Function Test',
-        description: 'SGOT, SGPT, Bilirubin',
-        price: 449,
-        preparationTime: 'No fasting required',
-        category: 'Blood Tests',
-        isPopular: false,
-      ),
-    ];
+  final TestService _testService = TestService();
+
+  Future<List<Test>> fetchLabTests() async {
+    try {
+      final List<dynamic> response = await _testService.getAllTests();
+      return response.map((json) => Test.fromJson(json)).toList();
+    } catch (e) {
+      debugPrint("Error fetching tests: $e");
+      return [];
+    }
   }
 
   @override
@@ -87,7 +49,11 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
         backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Color(0xFF111827),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -122,13 +88,17 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
               ),
               child: Row(
                 children: [
-                   Container(
+                  Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF3F4F6),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.search_rounded, color: Color(0xFF111827), size: 20),
+                    child: const Icon(
+                      Icons.search_rounded,
+                      color: Color(0xFF111827),
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -202,7 +172,7 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
 
           // Test List
           Expanded(
-            child: FutureBuilder<List<LabTest>>(
+            child: FutureBuilder<List<Test>>(
               future: fetchLabTests(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -221,13 +191,19 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
                 final tests = snapshot.data!;
                 final filteredTests = _searchQuery.isEmpty
                     ? tests
-                    : tests.where((test) =>
-                        test.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+                    : tests
+                          .where(
+                            (test) => test.name.toLowerCase().contains(
+                              _searchQuery.toLowerCase(),
+                            ),
+                          )
+                          .toList();
 
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
                   itemCount: filteredTests.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     return _testCard(filteredTests[index]);
                   },
@@ -240,7 +216,7 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
     );
   }
 
-  Widget _testCard(LabTest test) {
+  Widget _testCard(Test test) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -275,7 +251,11 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
                     color: const Color(0xFF12B8A6).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(Icons.biotech_rounded, color: Color(0xFF12B8A6), size: 26),
+                  child: const Icon(
+                    Icons.biotech_rounded,
+                    color: Color(0xFF12B8A6),
+                    size: 26,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -292,7 +272,9 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        test.description,
+                        test.description ?? "No description",
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -303,7 +285,7 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
                     ],
                   ),
                 ),
-                if (test.isPopular)
+                if (test.isPopular ?? false)
                   _badge(
                     text: 'Popular',
                     color: const Color(0xFF92400E),
@@ -315,17 +297,24 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.timer_outlined, size: 14, color: Color(0xFF6B7280)),
+                      const Icon(
+                        Icons.timer_outlined,
+                        size: 14,
+                        color: Color(0xFF6B7280),
+                      ),
                       const SizedBox(width: 6),
                       Text(
-                        test.preparationTime,
+                        test.preparationInstructions ?? "No instructions",
                         style: GoogleFonts.poppins(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -337,7 +326,7 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
                 ),
                 const Spacer(),
                 Text(
-                  '₹${test.price.toInt()}',
+                  '₹${test.price?.toInt() ?? 0}',
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -352,7 +341,11 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
     );
   }
 
-  Widget _badge({required String text, required Color color, required Color bgColor}) {
+  Widget _badge({
+    required String text,
+    required Color color,
+    required Color bgColor,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -381,7 +374,11 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
               color: const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(32),
             ),
-            child: Icon(Icons.science_rounded, size: 64, color: Colors.grey.shade400),
+            child: Icon(
+              Icons.science_rounded,
+              size: 64,
+              color: Colors.grey.shade400,
+            ),
           ),
           const SizedBox(height: 24),
           Text(
@@ -410,34 +407,4 @@ class _LabTestsScreenState extends State<LabTestsScreen> with SingleTickerProvid
 // =================================================
 // MODEL (API READY)
 // =================================================
-class LabTest {
-  final String id;
-  final String name;
-  final String description;
-  final double price;
-  final String preparationTime;
-  final String category;
-  final bool isPopular;
-
-  LabTest({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.price,
-    required this.preparationTime,
-    required this.category,
-    this.isPopular = false,
-  });
-
-  factory LabTest.fromJson(Map<String, dynamic> json) {
-    return LabTest(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      price: json['price'].toDouble(),
-      preparationTime: json['preparation_time'],
-      category: json['category'],
-      isPopular: json['is_popular'] ?? false,
-    );
-  }
-}
+// Local model removed in favor of global TestModel

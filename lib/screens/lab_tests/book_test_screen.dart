@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'lab_tests_screen.dart';
+import '../../models/test_model.dart';
+import '../../services/patient_service.dart';
 
 class BookTestScreen extends StatefulWidget {
-  final LabTest test;
+  final Test test;
 
   const BookTestScreen({super.key, required this.test});
 
@@ -15,7 +17,8 @@ class _BookTestScreenState extends State<BookTestScreen> {
   String _collectionType = 'home'; // 'home' or 'lab'
   DateTime? _selectedDate;
   String? _selectedTimeSlot;
-  String? _selectedLab;
+  String? _selectedLabId;
+  final PatientService _patientService = PatientService();
 
   final List<String> _timeSlots = [
     '6:00 AM - 7:00 AM',
@@ -29,7 +32,7 @@ class _BookTestScreenState extends State<BookTestScreen> {
   Future<List<LabLocation>> fetchNearbyLabs() async {
     // TODO: Replace with actual API call
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     return [
       LabLocation(
         id: '1',
@@ -56,7 +59,11 @@ class _BookTestScreenState extends State<BookTestScreen> {
         backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Color(0xFF111827),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -119,7 +126,7 @@ class _BookTestScreenState extends State<BookTestScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '₹${widget.test.price.toInt()}',
+                              '₹${widget.test.price?.toInt() ?? 0}',
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
@@ -170,7 +177,11 @@ class _BookTestScreenState extends State<BookTestScreen> {
                     future: fetchNearbyLabs(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator(color: Color(0xFF12B8A6)));
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF12B8A6),
+                          ),
+                        );
                       }
 
                       if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -192,7 +203,10 @@ class _BookTestScreenState extends State<BookTestScreen> {
                 GestureDetector(
                   onTap: () => _selectDate(context),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 18,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -207,7 +221,9 @@ class _BookTestScreenState extends State<BookTestScreen> {
                       children: [
                         Icon(
                           Icons.calendar_month_rounded,
-                          color: _selectedDate != null ? const Color(0xFF12B8A6) : const Color(0xFF9CA3AF),
+                          color: _selectedDate != null
+                              ? const Color(0xFF12B8A6)
+                              : const Color(0xFF9CA3AF),
                           size: 22,
                         ),
                         const SizedBox(width: 16),
@@ -217,12 +233,19 @@ class _BookTestScreenState extends State<BookTestScreen> {
                               : 'Pick a Date',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            fontWeight: _selectedDate != null ? FontWeight.w700 : FontWeight.w500,
-                            color: _selectedDate != null ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
+                            fontWeight: _selectedDate != null
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: _selectedDate != null
+                                ? const Color(0xFF111827)
+                                : const Color(0xFF9CA3AF),
                           ),
                         ),
                         const Spacer(),
-                        const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFFD1D5DB)),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: Color(0xFFD1D5DB),
+                        ),
                       ],
                     ),
                   ),
@@ -236,7 +259,9 @@ class _BookTestScreenState extends State<BookTestScreen> {
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
-                  children: _timeSlots.map((slot) => _timeSlotChip(slot)).toList(),
+                  children: _timeSlots
+                      .map((slot) => _timeSlotChip(slot))
+                      .toList(),
                 ),
 
                 const SizedBox(height: 32),
@@ -297,7 +322,10 @@ class _BookTestScreenState extends State<BookTestScreen> {
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right_rounded, color: Color(0xFFD1D5DB)),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          color: Color(0xFFD1D5DB),
+                        ),
                       ],
                     ),
                   ),
@@ -317,7 +345,9 @@ class _BookTestScreenState extends State<BookTestScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(32),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFF111827).withOpacity(0.08),
@@ -375,7 +405,7 @@ class _BookTestScreenState extends State<BookTestScreen> {
     required String value,
   }) {
     final isSelected = _collectionType == value;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() => _collectionType = value);
@@ -387,23 +417,29 @@ class _BookTestScreenState extends State<BookTestScreen> {
           color: isSelected ? const Color(0xFF111827) : Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected ? const Color(0xFF111827) : const Color(0xFFE5E7EB),
+            color: isSelected
+                ? const Color(0xFF111827)
+                : const Color(0xFFE5E7EB),
             width: 2,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: const Color(0xFF111827).withOpacity(0.2),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            )
-          ] : [],
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF111827).withOpacity(0.2),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
+              : [],
         ),
         child: Column(
           children: [
             Icon(
               icon,
               size: 32,
-              color: isSelected ? const Color(0xFF12B8A6) : const Color(0xFF9CA3AF),
+              color: isSelected
+                  ? const Color(0xFF12B8A6)
+                  : const Color(0xFF9CA3AF),
             ),
             const SizedBox(height: 12),
             Text(
@@ -431,11 +467,11 @@ class _BookTestScreenState extends State<BookTestScreen> {
   }
 
   Widget _labCard(LabLocation lab) {
-    final isSelected = _selectedLab == lab.id;
-    
+    final isSelected = _selectedLabId == lab.id;
+
     return GestureDetector(
       onTap: () {
-        setState(() => _selectedLab = lab.id);
+        setState(() => _selectedLabId = lab.id);
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -445,16 +481,20 @@ class _BookTestScreenState extends State<BookTestScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected ? const Color(0xFF12B8A6) : const Color(0xFFE5E7EB),
+            color: isSelected
+                ? const Color(0xFF12B8A6)
+                : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: const Color(0xFF111827).withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
-          ] : [],
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF111827).withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
         ),
         child: Row(
           children: [
@@ -466,7 +506,9 @@ class _BookTestScreenState extends State<BookTestScreen> {
               ),
               child: Icon(
                 Icons.local_hospital_rounded,
-                color: isSelected ? const Color(0xFF12B8A6) : const Color(0xFF9CA3AF),
+                color: isSelected
+                    ? const Color(0xFF12B8A6)
+                    : const Color(0xFF9CA3AF),
                 size: 24,
               ),
             ),
@@ -495,9 +537,17 @@ class _BookTestScreenState extends State<BookTestScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      _labInfoTag(Icons.star_rounded, lab.rating.toString(), Colors.amber),
+                      _labInfoTag(
+                        Icons.star_rounded,
+                        lab.rating.toString(),
+                        Colors.amber,
+                      ),
                       const SizedBox(width: 12),
-                      _labInfoTag(Icons.location_on_rounded, '${lab.distance} km', const Color(0xFF9CA3AF)),
+                      _labInfoTag(
+                        Icons.location_on_rounded,
+                        '${lab.distance} km',
+                        const Color(0xFF9CA3AF),
+                      ),
                     ],
                   ),
                 ],
@@ -528,7 +578,7 @@ class _BookTestScreenState extends State<BookTestScreen> {
 
   Widget _timeSlotChip(String slot) {
     final isSelected = _selectedTimeSlot == slot;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() => _selectedTimeSlot = slot);
@@ -540,16 +590,20 @@ class _BookTestScreenState extends State<BookTestScreen> {
           color: isSelected ? const Color(0xFF12B8A6) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? const Color(0xFF12B8A6) : const Color(0xFFE5E7EB),
+            color: isSelected
+                ? const Color(0xFF12B8A6)
+                : const Color(0xFFE5E7EB),
             width: 1.5,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: const Color(0xFF12B8A6).withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
-          ] : [],
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF12B8A6).withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
         ),
         child: Text(
           slot,
@@ -564,7 +618,20 @@ class _BookTestScreenState extends State<BookTestScreen> {
   }
 
   String _getMonthName(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return months[month - 1];
   }
 
@@ -574,7 +641,10 @@ class _BookTestScreenState extends State<BookTestScreen> {
       child: Center(
         child: Text(
           'No nearby labs found',
-          style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF6B7280)),
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            color: const Color(0xFF6B7280),
+          ),
         ),
       ),
     );
@@ -612,9 +682,9 @@ class _BookTestScreenState extends State<BookTestScreen> {
     }
   }
 
-  void _confirmBooking() {
+  Future<void> _confirmBooking() async {
     if (_selectedDate == null) {
-       _showSnackBar('Please select a preferred date');
+      _showSnackBar('Please select a preferred date');
       return;
     }
 
@@ -623,23 +693,51 @@ class _BookTestScreenState extends State<BookTestScreen> {
       return;
     }
 
-    if (_collectionType == 'lab' && _selectedLab == null) {
+    if (_collectionType == 'lab' && _selectedLabId == null) {
       _showSnackBar('Please select a nearby lab');
       return;
     }
 
-    // TODO: API call to confirm booking
-    _showSnackBar('Appointment booked successfully!');
-    
-    // Navigate back to home or show confirmation screen
-    Navigator.pop(context);
-    Navigator.pop(context);
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
+        ),
+      );
+
+      final result = await _patientService.bookTest({
+        'testId': widget.test.id,
+        'date': _selectedDate!.toIso8601String(),
+        'slot': _selectedTimeSlot!,
+        'labId': _collectionType == 'lab' ? _selectedLabId : null,
+        'collectionType': _collectionType,
+      });
+
+      Navigator.pop(context); // Close loading dialog
+
+      if (result['success'] == true || result['id'] != null) {
+        _showSnackBar('Appointment booked successfully!');
+        Navigator.pop(context);
+        Navigator.pop(context);
+      } else {
+        _showSnackBar(result['message'] ?? 'Booking failed. Please try again.');
+      }
+    } catch (e) {
+      Navigator.pop(context); // Close loading dialog
+      debugPrint("Error booking test: $e");
+      _showSnackBar('Error booking test. Please try again.');
+    }
   }
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
         backgroundColor: const Color(0xFF111827),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

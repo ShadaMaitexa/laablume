@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import '../services/appointment_service.dart';
+import '../services/patient_service.dart';
 import '../models/appointment_model.dart';
 import '../services/doctor_service.dart';
 import '../models/doctor_model.dart';
@@ -14,9 +14,9 @@ class MyAppointmentsScreen extends StatefulWidget {
 }
 
 class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
-  final AppointmentService _appointmentService = AppointmentService();
+  final PatientService _patientService = PatientService();
   final DoctorService _doctorService = DoctorService();
-  
+
   late Future<List<AppointmentModel>> _appointmentsFuture;
   Map<String, DoctorModel> _doctorsCache = {};
 
@@ -27,20 +27,28 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   }
 
   Future<List<AppointmentModel>> _loadData() async {
-    final appointments = await _appointmentService.getMyAppointments();
-    
-    // Fetch details for all unique doctors
-    final doctorIds = appointments.map((e) => e.doctorID).toSet();
-    for (final id in doctorIds) {
-      if (!_doctorsCache.containsKey(id)) {
-        final doctor = await _doctorService.getDoctorById(id);
-        if (doctor != null) {
-          _doctorsCache[id] = doctor;
+    try {
+      final List<dynamic> response = await _patientService.getMyAppointments();
+      final appointments = response
+          .map((json) => AppointmentModel.fromJson(json))
+          .toList();
+
+      // Fetch details for all unique doctors
+      final doctorIds = appointments.map((e) => e.doctorID).toSet();
+      for (final id in doctorIds) {
+        if (id.isNotEmpty && !_doctorsCache.containsKey(id)) {
+          final doctorJson = await _doctorService.getDoctorById(id);
+          if (doctorJson != null && doctorJson.isNotEmpty) {
+            _doctorsCache[id] = DoctorModel.fromJson(doctorJson);
+          }
         }
       }
+
+      return appointments;
+    } catch (e) {
+      debugPrint("Error loading appointments: $e");
+      rethrow;
     }
-    
-    return appointments;
   }
 
   String _formatDate(DateTime date) {
@@ -80,7 +88,11 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111827), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF111827),
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -113,12 +125,12 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
             itemBuilder: (context, index) {
               final apt = appointments[index];
               final doctor = _doctorsCache[apt.doctorID];
-              
+
               return _buildAppointmentCard(
-                doctorName: doctor?.name ?? "Unknown Doctor", 
+                doctorName: doctor?.name ?? "Unknown Doctor",
                 specialty: doctor?.specialty ?? "General",
                 dateTime: _formatDate(apt.appointmentDateTime),
-                type: apt.reasonForVisit, 
+                type: apt.reasonForVisit,
                 status: apt.status,
                 statusColor: _getStatusColor(apt.status),
               );
@@ -168,7 +180,11 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   color: const Color(0xFF12B8A6).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.person_rounded, color: Color(0xFF12B8A6), size: 30),
+                child: const Icon(
+                  Icons.person_rounded,
+                  color: Color(0xFF12B8A6),
+                  size: 30,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -195,7 +211,10 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: statusColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -223,7 +242,11 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today_rounded, size: 18, color: Color(0xFF6B7280)),
+                    const Icon(
+                      Icons.calendar_today_rounded,
+                      size: 18,
+                      color: Color(0xFF6B7280),
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       dateTime,
@@ -239,7 +262,11 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.info_outline_rounded, size: 18, color: Color(0xFF6B7280)),
+                      const Icon(
+                        Icons.info_outline_rounded,
+                        size: 18,
+                        color: Color(0xFF6B7280),
+                      ),
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
@@ -264,16 +291,22 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               if (status.toLowerCase() == 'completed') ...[
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => _showReviewDialog(context, doctorName, 'doctor'),
+                    onPressed: () =>
+                        _showReviewDialog(context, doctorName, 'doctor'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
                     child: Text(
                       'Give Feedback',
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: Colors.white),
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -285,14 +318,16 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: const BorderSide(color: Color(0xFFE5E7EB)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: Text(
-                    'Details', 
+                    'Details',
                     style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w600, 
-                      color: const Color(0xFF374151)
-                    )
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF374151),
+                    ),
                   ),
                 ),
               ),
@@ -304,21 +339,23 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF12B8A6),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
                     child: Text(
-                      'Chat', 
+                      'Chat',
                       style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600, 
-                        color: Colors.white
-                      )
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
               ],
             ],
-          )
+          ),
         ],
       ),
     );
@@ -350,7 +387,10 @@ class _ReviewDialogState extends State<ReviewDialog> {
           children: [
             Text(
               'Rate your experience',
-              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -365,8 +405,12 @@ class _ReviewDialogState extends State<ReviewDialog> {
                 return IconButton(
                   onPressed: () => setState(() => _rating = index + 1.0),
                   icon: Icon(
-                    index < _rating ? Icons.star_rounded : Icons.star_outline_rounded,
-                    color: index < _rating ? Colors.amber : const Color(0xFFD1D5DB),
+                    index < _rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    color: index < _rating
+                        ? Colors.amber
+                        : const Color(0xFFD1D5DB),
                     size: 32,
                   ),
                 );
@@ -393,25 +437,43 @@ class _ReviewDialogState extends State<ReviewDialog> {
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF6B7280), fontWeight: FontWeight.w600)),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF6B7280),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _rating == 0 ? null : () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Thank you for your feedback!')),
-                      );
-                      Navigator.pop(context);
-                    },
+                    onPressed: _rating == 0
+                        ? null
+                        : () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Thank you for your feedback!'),
+                              ),
+                            );
+                            Navigator.pop(context);
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF12B8A6),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
-                    child: Text('Submit', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: Colors.white)),
+                    child: Text(
+                      'Submit',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ],

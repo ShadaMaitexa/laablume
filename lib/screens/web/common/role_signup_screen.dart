@@ -90,9 +90,9 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
     try {
       // Call signup API
       await AuthService().signup(
-        _nameController.text.trim(),
-        mobileNumber,
-        _emailController.text.trim(),
+        name: _nameController.text.trim(),
+        phone: mobileNumber,
+        email: _emailController.text.trim(),
         role: widget.role.toLowerCase(),
       );
 

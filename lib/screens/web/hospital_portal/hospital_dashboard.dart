@@ -92,18 +92,17 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
             child: ListView(
               children: [
                 _sidebarItem(0, Icons.insights_rounded, 'Facility Analytics'),
-                _sidebarItem(1, Icons.assignment_rounded, 'Patient Reports'),
                 _sidebarItem(
-                  2,
+                  1,
                   Icons.event_note_rounded,
                   'Affiliated Bookings',
                 ),
                 _sidebarItem(
-                  3,
+                  2,
                   Icons.medical_services_rounded,
                   'Staff Directory',
                 ),
-                _sidebarItem(4, Icons.settings_rounded, 'Portal Configuration'),
+                _sidebarItem(3, Icons.settings_rounded, 'Portal Configuration'),
               ],
             ),
           ),
@@ -227,10 +226,8 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
       case 0:
         return _buildAnalytics(isDesktop);
       case 1:
-        return _buildSharedReports(isDesktop);
-      case 2:
         return _buildBookings(isDesktop);
-      case 3:
+      case 2:
         return _buildStaffDirectory(isDesktop);
       default:
         return _buildPlaceholder('Module');
@@ -238,26 +235,35 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
   }
 
   Widget _buildAnalytics(bool isDesktop) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          'Health Analytics Dashboard',
-          'Aggregated medical data for facility-level insights.',
-        ),
-        const SizedBox(height: 32),
-        _buildStatsGrid(isDesktop),
-        const SizedBox(height: 40),
-        Row(
+    return FutureBuilder<Map<String, dynamic>>(
+      future: HospitalService().getDashboard(),
+      builder: (context, snapshot) {
+        final data = snapshot.data ?? {};
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(flex: 2, child: _inventoryStatus()),
-            if (isDesktop) const SizedBox(width: 32),
-            if (isDesktop) Expanded(flex: 1, child: _patientDemographics()),
+            _buildSectionHeader(
+              'Health Analytics Dashboard',
+              'Aggregated medical data for facility-level insights.',
+            ),
+            const SizedBox(height: 32),
+            _buildStatsGrid(isDesktop, data),
+            const SizedBox(height: 40),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 2, child: _inventoryStatus()),
+                if (isDesktop) const SizedBox(width: 32),
+                if (isDesktop) Expanded(flex: 1, child: _patientDemographics()),
+              ],
+            ),
+            if (!isDesktop) ...[
+              const SizedBox(height: 32),
+              _patientDemographics(),
+            ],
           ],
-        ),
-        if (!isDesktop) ...[const SizedBox(height: 32), _patientDemographics()],
-      ],
+        );
+      },
     );
   }
 
@@ -284,7 +290,7 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
     );
   }
 
-  Widget _buildStatsGrid(bool isDesktop) {
+  Widget _buildStatsGrid(bool isDesktop, Map<String, dynamic> data) {
     double screenWidth = MediaQuery.of(context).size.width;
     int crossAxisCount = screenWidth > 1200 ? 4 : (screenWidth > 800 ? 2 : 1);
 
@@ -298,25 +304,25 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
       children: [
         _statCard(
           'Total Admissions',
-          '1,284',
+          '${data['totalAdmissions'] ?? "1,284"}',
           Icons.people_outline,
           Colors.blue,
         ),
         _statCard(
           'Critical Cases',
-          '12',
+          '${data['criticalCases'] ?? "12"}',
           Icons.warning_amber_rounded,
           Colors.red,
         ),
         _statCard(
           'Referral Efficiency',
-          '92%',
+          '${data['efficiency'] ?? "92%"}',
           Icons.trending_up,
           Colors.green,
         ),
         _statCard(
           'In-house Docs',
-          '86',
+          '${data['doctorCount'] ?? "86"}',
           Icons.medical_services_rounded,
           Colors.teal,
         ),
@@ -496,134 +502,133 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
     );
   }
 
-  Widget _buildSharedReports(bool isDesktop) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          'Reports with Consent',
-          'Medical data shared by patients for diagnostic assistance.',
-        ),
-        const SizedBox(height: 32),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 6,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) => ListTile(
-              contentPadding: const EdgeInsets.all(24),
-              leading: const CircleAvatar(child: Icon(Icons.person_rounded)),
-              title: Text(
-                'Patient: XYZ-102${index + 1}',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-              ),
-              subtitle: const Text('Shared on: 12 Jan 2026 • Status: Analyzed'),
-              trailing: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _primaryColor,
-                  elevation: 0,
-                ),
-                child: const Text('Open Folder'),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildBookings(bool isDesktop) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          'Referred Appointments',
-          'Linkages between facility care and diagnostic testings.',
-        ),
-        const SizedBox(height: 32),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: isDesktop
-                ? 3
-                : (MediaQuery.of(context).size.width > 600 ? 2 : 1),
-            mainAxisSpacing: 20,
-            crossAxisSpacing: 20,
-            childAspectRatio: 1.1,
-          ),
-          itemCount: 9,
-          itemBuilder: (context, index) => Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
+    return FutureBuilder<List<dynamic>>(
+      future: HospitalService().getAllAppointments(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final appointments = snapshot.data ?? [];
+        if (appointments.isEmpty) {
+          return Center(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'APPT-7${index + 1}2',
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: _primaryColor,
-                        ),
-                      ),
-                    ),
-                    const Icon(Icons.more_horiz),
-                  ],
+                const SizedBox(height: 60),
+                Icon(
+                  Icons.calendar_today_outlined,
+                  size: 64,
+                  color: Colors.grey[300],
                 ),
-                const Spacer(),
+                const SizedBox(height: 16),
                 Text(
-                  'Cardiac Follow-up',
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Referred: 10 Jan 2026',
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
-                ),
-                const Spacer(),
-                const Divider(),
-                Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 12,
-                      child: Icon(Icons.person, size: 14),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Patient MD-${index + 1}',
-                      style: GoogleFonts.poppins(fontSize: 12),
-                    ),
-                  ],
+                  'No appointments scheduled',
+                  style: GoogleFonts.poppins(color: Colors.grey),
                 ),
               ],
             ),
-          ),
-        ),
-      ],
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionHeader(
+              'Referred Appointments',
+              'Linkages between facility care and diagnostic testings.',
+            ),
+            const SizedBox(height: 32),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isDesktop
+                    ? 3
+                    : (MediaQuery.of(context).size.width > 600 ? 2 : 1),
+                mainAxisSpacing: 20,
+                crossAxisSpacing: 20,
+                childAspectRatio: 1.1,
+              ),
+              itemCount: appointments.length,
+              itemBuilder: (context, index) {
+                final appt = appointments[index];
+                return Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              appt['id']?.toString().toUpperCase() ?? 'APPT',
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: _primaryColor,
+                              ),
+                            ),
+                          ),
+                          const Icon(Icons.more_horiz),
+                        ],
+                      ),
+                      const Spacer(),
+                      Text(
+                        appt['purpose'] ?? appt['reason'] ?? 'Medical Consult',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Date: ${appt['date'] ?? 'TBD'}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const Spacer(),
+                      const Divider(),
+                      Row(
+                        children: [
+                          const CircleAvatar(
+                            radius: 12,
+                            child: Icon(Icons.person, size: 14),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              appt['patientName'] ?? 'Unknown Patient',
+                              style: GoogleFonts.poppins(fontSize: 12),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -724,7 +729,54 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
                             Icons.delete_outline_rounded,
                             color: Colors.red,
                           ),
-                          onPressed: () {},
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Remove Doctor'),
+                                content: Text(
+                                  'Are you sure you want to remove ${doc['name']} from the staff directory?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: const Text(
+                                      'Remove',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              try {
+                                await HospitalService().removeDoctor(
+                                  doc['id'] ?? doc['_id'],
+                                );
+                                setState(() {});
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Doctor removed'),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error: $e')),
+                                  );
+                                }
+                              }
+                            }
+                          },
                         ),
                       ],
                     ),

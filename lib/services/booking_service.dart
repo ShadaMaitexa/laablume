@@ -5,24 +5,32 @@ class BookingService extends ApiBaseService {
   factory BookingService() => _instance;
   BookingService._internal();
 
+  // Create a new booking
   Future<Map<String, dynamic>> createBooking(
     Map<String, dynamic> bookingData,
   ) async {
     final response = await post('/bookings', bookingData);
-    return response is Map<String, dynamic> ? response : {};
+    return response;
   }
 
+  // Get my bookings
   Future<List<dynamic>> getMyBookings() async {
     final response = await get('/bookings/my');
-    return response is List ? response : [];
+    return response['bookings'] ?? response['data'] ?? [];
   }
 
-  Future<void> cancelBooking(String bookingId) async {
-    await patch('/bookings/$bookingId/cancel', {});
+  // Get visit summaries
+  Future<List<dynamic>> getVisitSummaries() async {
+    final response = await get('/bookings/summaries');
+    return response['summaries'] ?? response['data'] ?? [];
   }
 
-  Future<Map<String, dynamic>> getBookingDetails(String bookingId) async {
-    final response = await get('/bookings/$bookingId');
-    return response is Map<String, dynamic> ? response : {};
+  // Update visit summary
+  Future<Map<String, dynamic>> updateVisitSummary(
+    String id,
+    Map<String, dynamic> summaryData,
+  ) async {
+    final response = await put('/bookings/$id/summary', summaryData);
+    return response;
   }
 }

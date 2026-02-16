@@ -82,9 +82,9 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
 
     try {
       await AuthService().signup(
-        _nameController.text.trim(),
-        mobileNumber,
-        _emailController.text.trim(),
+        name: _nameController.text.trim(),
+        phone: mobileNumber,
+        email: _emailController.text.trim(),
         role: _selectedRole.toLowerCase(),
       );
 

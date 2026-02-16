@@ -1,65 +1,98 @@
 import 'api_base_service.dart';
-import '../models/doctor_model.dart';
 
 class DoctorService extends ApiBaseService {
   static final DoctorService _instance = DoctorService._internal();
   factory DoctorService() => _instance;
   DoctorService._internal();
 
-  Future<DoctorModel?> getDoctorById(String doctorId) async {
-    try {
-      final response = await get('/doctors/$doctorId');
-      if (response != null && response is Map<String, dynamic>) {
-        return DoctorModel.fromJson(response);
-      }
-      return null;
-    } catch (e) {
-      print('Error fetching doctor by ID: $e');
-      return null;
-    }
+  // Get doctor's daily schedule
+  Future<List<dynamic>> getAppointments({String? status, String? date}) async {
+    final queryParams = <String, String>{};
+    if (status != null) queryParams['status'] = status;
+    if (date != null) queryParams['date'] = date;
+
+    final response = await get(
+      '/doctor/appointments',
+      queryParams: queryParams.isNotEmpty ? queryParams : null,
+    );
+    return response['appointments'] ?? response['data'] ?? [];
   }
 
-  Future<List<DoctorModel>> getAllDoctors() async {
-    try {
-      final response = await get('/doctors');
-      if (response != null && response is List) {
-        return response
-            .map((json) => DoctorModel.fromJson(json as Map<String, dynamic>))
-            .toList();
-      }
-      return [];
-    } catch (e) {
-      print('Error fetching all doctors: $e');
-      return [];
-    }
+  // Get doctor's patient list
+  Future<List<dynamic>> getPatients({String? search}) async {
+    final queryParams = search != null ? {'search': search} : null;
+    final response = await get('/doctor/patients', queryParams: queryParams);
+    return response['patients'] ?? response['data'] ?? [];
   }
 
-  Future<List<dynamic>> getAppointments() async {
-    final response = await get('/doctors/appointments');
-    return response is List ? response : [];
+  // Update appointment status (Accept/Complete/Cancel)
+  Future<Map<String, dynamic>> updateAppointmentStatus(
+    String id,
+    String status, {
+    String? reason,
+  }) async {
+    final response = await patch('/doctor/appointments/$id/status', {
+      'status': status,
+      if (reason != null) 'reason': reason,
+    });
+    return response;
   }
 
-  Future<List<dynamic>> getPatients() async {
-    final response = await get('/doctors/patients');
-    return response is List ? response : [];
+  // Get detailed appointment view
+  Future<Map<String, dynamic>> getAppointmentDetails(String id) async {
+    final response = await get('/doctor/appointments/$id');
+    return response;
   }
 
-  Future<Map<String, dynamic>> getPatientHistory(String patientId) async {
-    final response = await get('/doctors/patients/$patientId/history');
-    return response is Map<String, dynamic> ? response : {};
+  // Get authorized patient medical history
+  Future<Map<String, dynamic>> getPatientHistory(String id) async {
+    final response = await get('/doctor/patients/$id/history');
+    return response;
   }
 
-  Future<void> updateAppointmentStatus(
+  // Save diagnosis and clinical notes
+  Future<Map<String, dynamic>> saveConsultationRecords(
     String appointmentId,
-    String status,
+    Map<String, dynamic> records,
   ) async {
-    await patch('/doctors/appointments/$appointmentId', {'status': status});
+    final response = await post(
+      '/doctor/consultations/$appointmentId/records',
+      records,
+    );
+    return response;
   }
 
-  Future<void> addConsultationNotes(
+  // Issue digital prescription
+  Future<Map<String, dynamic>> issuePrescription(
     String appointmentId,
-    Map<String, dynamic> notes,
+    List<Map<String, dynamic>> prescriptions,
   ) async {
-    await post('/doctors/appointments/$appointmentId/notes', notes);
+    final response = await post(
+      '/doctor/consultations/$appointmentId/prescribe',
+      {'prescriptions': prescriptions},
+    );
+    return response;
+  }
+
+  // Get list of all doctors (for patient view)
+  Future<List<dynamic>> getAllDoctors({
+    String? specialty,
+    String? search,
+  }) async {
+    final queryParams = <String, String>{};
+    if (specialty != null) queryParams['specialty'] = specialty;
+    if (search != null) queryParams['search'] = search;
+
+    final response = await get(
+      '/patients/doctors',
+      queryParams: queryParams.isNotEmpty ? queryParams : null,
+    );
+    return response['doctors'] ?? response['data'] ?? [];
+  }
+
+  // Get doctor by ID
+  Future<Map<String, dynamic>> getDoctorById(String id) async {
+    final response = await get('/patients/doctors/$id');
+    return response;
   }
 }
