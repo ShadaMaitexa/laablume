@@ -14,7 +14,7 @@ class AdminService extends ApiBaseService {
   // Approve/Enable a hospital entity
   Future<Map<String, dynamic>> approveHospital(String id) async {
     final response = await post('/admin/approve-hospital/$id', {});
-    return response;
+    return Map<String, dynamic>.from(response);
   }
 
   // Get list of diagnostic centers awaiting verification
@@ -26,7 +26,7 @@ class AdminService extends ApiBaseService {
   // Approve/Enable a lab entity
   Future<Map<String, dynamic>> approveLab(String id) async {
     final response = await post('/admin/approve-lab/$id', {});
-    return response;
+    return Map<String, dynamic>.from(response);
   }
 
   // Search and manage all platform users
@@ -44,12 +44,24 @@ class AdminService extends ApiBaseService {
     final response = await patch('/admin/users/$id/status', {
       'isActive': isActive,
     });
-    return response;
+    return Map<String, dynamic>.from(response);
   }
 
   // Platform-wide usage and growth analytics
   Future<Map<String, dynamic>> getSystemReports() async {
     final response = await get('/admin/reports/system');
-    return response;
+    return Map<String, dynamic>.from(response);
+  }
+
+  // Get all bookings (appointments/tests) across the platform
+  Future<List<dynamic>> getAllBookings() async {
+    final response = await get('/admin/bookings');
+    return response['bookings'] ?? response['data'] ?? [];
+  }
+
+  // Get booking-specific analytics
+  Future<Map<String, dynamic>> getBookingStats() async {
+    final response = await get('/admin/reports/bookings');
+    return Map<String, dynamic>.from(response);
   }
 }

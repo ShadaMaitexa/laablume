@@ -337,37 +337,38 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
                       ),
                       const SizedBox(height: 16),
                       // Signup Link
-                      Center(
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    RoleSignupScreen(role: widget.role),
-                              ),
-                            );
-                          },
-                          child: RichText(
-                            text: TextSpan(
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                color: const Color(0xFF6B7280),
-                              ),
-                              children: [
-                                const TextSpan(text: 'New User? '),
-                                TextSpan(
-                                  text: 'Register Now',
-                                  style: GoogleFonts.poppins(
-                                    color: _primaryColor,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                      if (widget.role != 'Admin')
+                        Center(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      RoleSignupScreen(role: widget.role),
                                 ),
-                              ],
+                              );
+                            },
+                            child: RichText(
+                              text: TextSpan(
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  color: const Color(0xFF6B7280),
+                                ),
+                                children: [
+                                  const TextSpan(text: 'New User? '),
+                                  TextSpan(
+                                    text: 'Register Now',
+                                    style: GoogleFonts.poppins(
+                                      color: _primaryColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),

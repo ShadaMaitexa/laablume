@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/user_provider.dart';
-import '../../auth/login.dart';
+import 'package:laablume/screens/web/common/landing_page.dart';
 
 class LabWebDashboard extends StatefulWidget {
   const LabWebDashboard({super.key});
@@ -118,7 +118,7 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
               context.read<UserProvider>().logout();
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                MaterialPageRoute(builder: (_) => const LandingPage()),
                 (route) => false,
               );
             },

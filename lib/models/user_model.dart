@@ -19,14 +19,25 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // If the response is wrapped in 'user' or 'data', unwrap it
+    final Map<String, dynamic> userData = json['user'] ?? json['data'] ?? json;
+
     return UserModel(
-      id: json['id'] ?? json['_id'] ?? '',
-      name: json['name'] ?? json['userName'] ?? json['fullName'] ?? '',
-      email: json['email'] ?? '',
-      mobileNumber: json['phone'] ?? json['mobileNumber'] ?? '',
-      role: json['role'] ?? 'patient',
-      isApproved: json['isApproved'] ?? true,
-      profileImageUrl: json['profileImageUrl'],
+      id: userData['id']?.toString() ?? userData['_id']?.toString() ?? '',
+      name:
+          (userData['name'] ??
+                  userData['userName'] ??
+                  userData['fullName'] ??
+                  '')
+              .toString(),
+      email: userData['email']?.toString() ?? '',
+      mobileNumber:
+          userData['phone']?.toString() ??
+          userData['mobileNumber']?.toString() ??
+          '',
+      role: userData['role']?.toString() ?? 'patient',
+      isApproved: userData['isApproved'] ?? true,
+      profileImageUrl: userData['profileImageUrl']?.toString(),
     );
   }
 

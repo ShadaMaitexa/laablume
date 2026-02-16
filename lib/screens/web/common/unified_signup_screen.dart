@@ -46,8 +46,7 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
         return 'Laboratory Name';
       case 'Hospital':
         return 'Hospital Name';
-      case 'Admin':
-        return 'Admin Name';
+
       default:
         return 'Name';
     }
@@ -254,7 +253,7 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
                           child: DropdownButton<String>(
                             value: _selectedRole,
                             isExpanded: true,
-                            items: ['Doctor', 'Lab', 'Hospital', 'Admin']
+                            items: ['Doctor', 'Lab', 'Hospital']
                                 .map(
                                   (e) => DropdownMenuItem(
                                     value: e,

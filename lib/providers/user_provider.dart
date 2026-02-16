@@ -25,7 +25,17 @@ class UserProvider extends ChangeNotifier {
         role: role,
       );
       if (response != null) {
-        _currentUser = UserModel.fromJson(response);
+        final user = UserModel.fromJson(response);
+
+        // Enforce approval check for medical providers
+        if ((role == 'doctor' || role == 'lab' || role == 'hospital') &&
+            !user.isApproved) {
+          throw Exception(
+            'Your account is awaiting admin approval. Please try again later.',
+          );
+        }
+
+        _currentUser = user;
       }
     } catch (e) {
       rethrow;

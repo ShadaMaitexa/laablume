@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/user_provider.dart';
-import '../../auth/login.dart';
+import 'package:laablume/screens/web/common/landing_page.dart';
 import 'package:laablume/services/hospital_service.dart';
 
 class HospitalWebDashboard extends StatefulWidget {
@@ -114,7 +114,7 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
               context.read<UserProvider>().logout();
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                MaterialPageRoute(builder: (_) => const LandingPage()),
                 (route) => false,
               );
             },
@@ -222,16 +222,111 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
   }
 
   Widget _buildContent(bool isDesktop) {
-    switch (_selectedIndex) {
-      case 0:
-        return _buildAnalytics(isDesktop);
-      case 1:
-        return _buildBookings(isDesktop);
-      case 2:
-        return _buildStaffDirectory(isDesktop);
-      default:
-        return _buildPlaceholder('Module');
-    }
+    if (_selectedIndex == 0) return _buildAnalytics(isDesktop);
+    if (_selectedIndex == 1) return _buildBookings(isDesktop);
+    if (_selectedIndex == 2) return _buildStaffDirectory(isDesktop);
+    if (_selectedIndex == 3) return _buildConfiguration(isDesktop);
+    return _buildPlaceholder('Module');
+  }
+
+  Widget _buildConfiguration(bool isDesktop) {
+    final user = context.watch<UserProvider>().currentUser;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          'Portal Configuration',
+          'Manage facility details and platform preferences.',
+        ),
+        const SizedBox(height: 32),
+        Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _configRow(
+                'Facility Name',
+                user?.name ?? 'St. Mary Medical Center',
+              ),
+              const Divider(height: 48),
+              _configRow('Contact Email', user?.email ?? 'stmary@hospital.com'),
+              const Divider(height: 48),
+              _configRow(
+                'Phone Support',
+                user?.mobileNumber ?? '+91 98765 43210',
+              ),
+              const Divider(height: 48),
+              _configRow('Portal Access', 'Active', isStatus: true),
+              const SizedBox(height: 48),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _primaryColor,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Edit Facility Profile'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _configRow(String label, String value, {bool isStatus = false}) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 1,
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              color: const Color(0xFF6B7280),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: isStatus
+              ? Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    value,
+                    style: GoogleFonts.poppins(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                )
+              : Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1F2937),
+                  ),
+                ),
+        ),
+      ],
+    );
   }
 
   Widget _buildAnalytics(bool isDesktop) {
@@ -252,14 +347,15 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(flex: 2, child: _inventoryStatus()),
+                Expanded(flex: 2, child: _inventoryStatus(data)),
                 if (isDesktop) const SizedBox(width: 32),
-                if (isDesktop) Expanded(flex: 1, child: _patientDemographics()),
+                if (isDesktop)
+                  Expanded(flex: 1, child: _patientDemographics(data)),
               ],
             ),
             if (!isDesktop) ...[
               const SizedBox(height: 32),
-              _patientDemographics(),
+              _patientDemographics(data),
             ],
           ],
         );
@@ -383,7 +479,27 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
     );
   }
 
-  Widget _inventoryStatus() {
+  Widget _inventoryStatus(Map<String, dynamic> data) {
+    final inventory =
+        data['inventory'] as List? ??
+        [
+          {
+            'name': 'Blood Sugar Test Kits',
+            'progress': 0.85,
+            'label': 'Stable',
+          },
+          {
+            'name': 'Oxygen Supply Level',
+            'progress': 0.40,
+            'label': 'Refill Soon',
+          },
+          {
+            'name': 'Emergency Bed Capacity',
+            'progress': 0.92,
+            'label': 'Critical',
+          },
+        ];
+
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
@@ -401,9 +517,15 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
             ),
           ),
           const SizedBox(height: 32),
-          _inventoryItem('Blood Sugar Test Kits', 0.85, 'Stable'),
-          _inventoryItem('Oxygen Supply Level', 0.40, 'Refill Soon'),
-          _inventoryItem('Emergency Bed Capacity', 0.92, 'Critical'),
+          ...inventory
+              .map(
+                (item) => _inventoryItem(
+                  item['name'] ?? 'Medical Supply',
+                  (item['progress'] ?? 0.0).toDouble(),
+                  item['label'] ?? (item['progress'] < 0.5 ? 'Low' : 'Stable'),
+                ),
+              )
+              .toList(),
         ],
       ),
     );
@@ -449,7 +571,8 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
     );
   }
 
-  Widget _patientDemographics() {
+  Widget _patientDemographics(Map<String, dynamic> data) {
+    final occupancy = data['occupancy'] ?? 78;
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
@@ -481,7 +604,7 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
               ),
               child: Center(
                 child: Text(
-                  '78%',
+                  '$occupancy%',
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -856,12 +979,20 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
                           phoneController.text.isEmpty)
                         return;
                       setDialogState(() => isSaving = true);
+                      final userProvider = context.read<UserProvider>();
+                      final hospitalId = userProvider.currentUser?.id;
+
                       try {
                         await HospitalService().addDoctor({
                           'name': nameController.text.trim(),
+                          'doctorName': nameController.text.trim(),
                           'phone': phoneController.text.trim(),
+                          'mobileNumber': phoneController.text.trim(),
                           'specialty': specialtyController.text.trim(),
+                          'specialization': specialtyController.text.trim(),
                           'email': emailController.text.trim(),
+                          'hospital': hospitalId,
+                          'hospitalId': hospitalId,
                         });
                         if (context.mounted) {
                           Navigator.pop(context);

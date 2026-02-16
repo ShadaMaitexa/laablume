@@ -37,8 +37,7 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
         return 'Laboratory Name';
       case 'Hospital':
         return 'Hospital Name';
-      case 'Admin':
-        return 'Admin Name';
+
       default:
         return 'Name';
     }
@@ -52,8 +51,7 @@ class _RoleSignupScreenState extends State<RoleSignupScreen> {
         return 'e.g. Kochi Central Lab';
       case 'Hospital':
         return 'e.g. St. Mary Medical Center';
-      case 'Admin':
-        return 'e.g. System Admin';
+
       default:
         return 'Enter name';
     }

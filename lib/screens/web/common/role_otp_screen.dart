@@ -99,43 +99,51 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
             return;
           }
 
-          // Success - navigate to dashboard based on role
-          switch (widget.role) {
-            case 'Patient':
+          // Success - navigate to dashboard based on actual user role
+          final String userRole = user.role.toLowerCase();
+
+          if (userRole == 'admin') {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminWebPortal()),
+              (route) => false,
+            );
+            return;
+          }
+
+          switch (userRole) {
+            case 'patient':
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const PatientHomeScreen()),
                 (route) => false,
               );
               break;
-            case 'Doctor':
+            case 'doctor':
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const DoctorWebDashboard()),
                 (route) => false,
               );
               break;
-            case 'Lab':
+            case 'lab':
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LabWebDashboard()),
                 (route) => false,
               );
               break;
-            case 'Hospital':
+            case 'hospital':
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const HospitalWebDashboard()),
                 (route) => false,
               );
               break;
-            case 'Admin':
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const AdminWebPortal()),
-                (route) => false,
-              );
-              break;
+            default:
+              setState(() {
+                _otpError = 'Access Denied: Unrecognized role "$userRole".';
+              });
           }
         }
       }
