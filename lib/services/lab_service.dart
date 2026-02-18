@@ -51,20 +51,48 @@ class LabService extends ApiBaseService {
     return response['staff'] ?? response['data'] ?? [];
   }
 
-  // Register new staff member
-  Future<Map<String, dynamic>> registerStaff(
-    Map<String, dynamic> staffData,
-  ) async {
-    final response = await post('/lab/staff', staffData);
-    return response;
-  }
-
   // Update lab configuration
   Future<Map<String, dynamic>> updateSettings(
     Map<String, dynamic> settings,
   ) async {
     final response = await patch('/lab/settings', settings);
     return response;
+  }
+
+  // Manage Test Catalog
+  Future<List<dynamic>> getTests() async {
+    final response = await get('/lab/tests');
+    return response['tests'] ?? response['data'] ?? [];
+  }
+
+  Future<Map<String, dynamic>> addTest(Map<String, dynamic> testData) async {
+    final response = await post('/lab/tests', testData);
+    return response;
+  }
+
+  Future<Map<String, dynamic>> updateTest(
+    String id,
+    Map<String, dynamic> testData,
+  ) async {
+    final response = await patch('/lab/tests/$id', testData);
+    return response;
+  }
+
+  Future<Map<String, dynamic>> deleteTest(String id) async {
+    final response = await delete('/lab/tests/$id');
+    return response;
+  }
+
+  // Feedbacks
+  Future<List<dynamic>> getFeedbacks() async {
+    final response = await get('/lab/feedbacks');
+    return response['feedbacks'] ?? response['data'] ?? [];
+  }
+
+  // Lab Profile
+  Future<Map<String, dynamic>> getProfile() async {
+    final response = await get('/lab/profile');
+    return response['profile'] ?? response['data'] ?? {};
   }
 
   // Get list of all labs (for patient view)

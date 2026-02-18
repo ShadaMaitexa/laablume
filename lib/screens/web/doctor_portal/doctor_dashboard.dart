@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/user_provider.dart';
 import 'package:laablume/screens/web/common/landing_page.dart';
+import 'doctor_subsections.dart';
 
 class DoctorWebDashboard extends StatefulWidget {
   const DoctorWebDashboard({super.key});
@@ -97,8 +98,8 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
                   'Patient Schedule',
                 ),
                 _sidebarItem(2, Icons.people_alt_rounded, 'My Patients'),
-                _sidebarItem(3, Icons.psychology_rounded, 'AI Recommendations'),
-                _sidebarItem(4, Icons.rate_review_rounded, 'Client Feedback'),
+                _sidebarItem(3, Icons.analytics_rounded, 'Lab Reports'),
+                _sidebarItem(4, Icons.chat_bubble_rounded, 'Communication'),
                 _sidebarItem(5, Icons.settings_rounded, 'Practice Settings'),
               ],
             ),
@@ -225,9 +226,15 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
       case 0:
         return _buildDoctorOverview(isDesktop);
       case 1:
-        return _buildSchedule(isDesktop);
+        return const DoctorAppointmentsScreen();
+      case 2:
+        return const DoctorPatientsScreen();
+      case 3:
+        return const DoctorReportsScreen();
       case 4:
-        return _buildFeedbackView(isDesktop);
+        return const DoctorConsultationsScreen();
+      case 5:
+        return _buildPlaceholder('Practice Settings');
       default:
         return _buildPlaceholder('Module');
     }
@@ -567,98 +574,6 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSchedule(bool isDesktop) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          'Patient Schedule',
-          'Keep track of all your upcoming medical sessions.',
-        ),
-        const SizedBox(height: 32),
-        Container(
-          height: 400,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Center(
-            child: Text(
-              'Clinical Calendar View',
-              style: GoogleFonts.poppins(color: Colors.grey),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFeedbackView(bool isDesktop) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          'Client Feedback',
-          'Insights into patient satisfaction and service quality.',
-        ),
-        const SizedBox(height: 32),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20),
-            ],
-          ),
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 5,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) => ListTile(
-              contentPadding: const EdgeInsets.all(32),
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFFF3F4F6),
-                child: Icon(Icons.person_outline, color: Color(0xFF1F2937)),
-              ),
-              title: Row(
-                children: [
-                  Text(
-                    'Patient #PT-770${index + 1}',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(width: 12),
-                  ...List.generate(
-                    5,
-                    (s) =>
-                        Icon(Icons.star_rounded, color: Colors.amber, size: 16),
-                  ),
-                ],
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  'Great experience! The AI analysis was very helpful and the doctor explained everything clearly.',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: const Color(0xFF4B5563),
-                  ),
-                ),
-              ),
-              trailing: Text(
-                '12 Jan 2026',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: const Color(0xFF9CA3AF),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 

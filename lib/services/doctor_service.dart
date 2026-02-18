@@ -74,6 +74,18 @@ class DoctorService extends ApiBaseService {
     return response;
   }
 
+  // Get lab reports for doctor's patients
+  Future<List<dynamic>> getLabReports() async {
+    final response = await get('/doctor/lab-reports');
+    return response['reports'] ?? response['data'] ?? [];
+  }
+
+  // Get patient reviews for the doctor
+  Future<List<dynamic>> getReviews() async {
+    final response = await get('/doctor/reviews');
+    return response['reviews'] ?? response['data'] ?? [];
+  }
+
   // Get list of all doctors (for patient view)
   Future<List<dynamic>> getAllDoctors({
     String? specialty,

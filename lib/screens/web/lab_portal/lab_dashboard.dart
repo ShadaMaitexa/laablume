@@ -93,17 +93,16 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
               children: [
                 _sidebarItem(0, Icons.event_note_rounded, 'Booked Tests'),
                 _sidebarItem(1, Icons.cloud_upload_rounded, 'Upload Reports'),
-                _sidebarItem(2, Icons.list_alt_rounded, 'Manage Test Catalog'),
-                _sidebarItem(
-                  3,
-                  Icons.event_available_rounded,
-                  'Update Availability',
-                ),
+                _sidebarItem(2, Icons.verified_user_rounded, 'Sign & Validate'),
+                _sidebarItem(3, Icons.list_alt_rounded, 'Manage Test Catalog'),
+                _sidebarItem(4, Icons.people_rounded, 'Manage Staff'),
+                _sidebarItem(5, Icons.reviews_rounded, 'Patient Feedback'),
+                _sidebarItem(6, Icons.business_rounded, 'Lab Profile'),
               ],
             ),
           ),
           _sidebarItem(
-            5,
+            99,
             Icons.logout_rounded,
             'Secure Sign Out',
             onTap: () {
@@ -225,173 +224,18 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
       case 1:
         return const LabReportUploadScreen();
       case 2:
-        return _buildTestCatalog(isDesktop);
+        return const LabResultsApprovalScreen();
       case 3:
-        return _buildAvailability(isDesktop);
+        return const LabTestCatalogScreen();
+      case 4:
+        return const LabTechniciansScreen();
+      case 5:
+        return const LabFeedbackScreen();
+      case 6:
+        return const LabProfileScreen();
       default:
         return _buildPlaceholder('Module');
     }
-  }
-
-  Widget _buildSectionHeader(String title, String sub) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF1F2937),
-          ),
-        ),
-        Text(
-          sub,
-          style: GoogleFonts.poppins(
-            fontSize: 15,
-            color: const Color(0xFF6B7280),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _statusBadge(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.poppins(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          color: color,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTestCatalog(bool isDesktop) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          'Service Catalog',
-          'Manage the types of tests and diagnostics offered by this facility.',
-        ),
-        const SizedBox(height: 32),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: isDesktop ? 3 : 1,
-            mainAxisSpacing: 20,
-            crossAxisSpacing: 20,
-            childAspectRatio: 2.5,
-          ),
-          itemCount: 6,
-          itemBuilder: (context, index) => Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.biotech_rounded, color: _primaryColor),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Blood Glucose Profile',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '₹499 • 24h Turnaround',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Switch(
-                  value: true,
-                  onChanged: (v) {},
-                  activeColor: _primaryColor,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAvailability(bool isDesktop) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          'Operating Hours',
-          'Set and update your facility’s diagnostic service hours.',
-        ),
-        const SizedBox(height: 32),
-        Container(
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            children: List.generate(
-              7,
-              (index) => Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 100,
-                      child: Text(
-                        [
-                          'Mon',
-                          'Tue',
-                          'Wed',
-                          'Thu',
-                          'Fri',
-                          'Sat',
-                          'Sun',
-                        ][index],
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '08:00 AM - 08:00 PM',
-                      style: GoogleFonts.poppins(color: Colors.grey),
-                    ),
-                    const SizedBox(width: 40),
-                    _statusBadge('Active', Colors.green),
-                    const SizedBox(width: 20),
-                    IconButton(
-                      icon: const Icon(Icons.edit_note_rounded),
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
   }
 
   Widget _buildPlaceholder(String title) {
