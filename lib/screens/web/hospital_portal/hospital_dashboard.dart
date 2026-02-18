@@ -195,29 +195,8 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
             ],
           ),
           const Spacer(),
-          _headerAction(Icons.notifications_none_rounded),
-          const SizedBox(width: 20),
-          const CircleAvatar(
-            backgroundColor: Color(0xFFF3F4F6),
-            child: Icon(
-              Icons.business_rounded,
-              color: Color(0xFF1F2937),
-              size: 20,
-            ),
-          ),
         ],
       ),
-    );
-  }
-
-  Widget _headerAction(IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(icon, size: 20, color: const Color(0xFF6B7280)),
     );
   }
 

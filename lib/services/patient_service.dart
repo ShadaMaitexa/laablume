@@ -94,6 +94,26 @@ class PatientService extends ApiBaseService {
     return response['labs'] ?? response['data'] ?? [];
   }
 
+  // Get tests provided by a specific lab
+  Future<List<dynamic>> getLabTestsByLab(String labId) async {
+    final response = await get('/patients/labs/$labId/tests');
+    return response['tests'] ?? response['data'] ?? [];
+  }
+
+  // Find popular hospitals
+  Future<List<dynamic>> getPopularHospitals() async {
+    final response = await get('/patients/hospitals/popular');
+    return response['hospitals'] ?? response['data'] ?? [];
+  }
+
+  // Submit feedback for lab, doctor, or hospital
+  Future<Map<String, dynamic>> submitFeedback(
+    Map<String, dynamic> feedbackData,
+  ) async {
+    final response = await post('/patients/feedback', feedbackData);
+    return response;
+  }
+
   // Access and download finalized lab reports
   Future<List<dynamic>> getReports() async {
     final response = await get('/patients/reports');

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'test_details_screen.dart';
+import '../../services/patient_service.dart';
 import '../../services/test_service.dart';
 import '../../models/test_model.dart';
+import '../../models/lab_model.dart';
+import 'lab_tests_by_lab_screen.dart';
 
 class LabTestsScreen extends StatefulWidget {
   const LabTestsScreen({super.key});
@@ -28,12 +31,22 @@ class _LabTestsScreenState extends State<LabTestsScreen>
     super.dispose();
   }
 
-  // API READY - Fetch lab tests
-  final TestService _testService = TestService();
+  // API READY - Fetch labs
+  final PatientService _patientService = PatientService();
+
+  Future<List<LabModel>> fetchLabs() async {
+    try {
+      final List<dynamic> response = await _patientService.searchLabs();
+      return response.map((json) => LabModel.fromJson(json)).toList();
+    } catch (e) {
+      debugPrint("Error fetching labs: $e");
+      return [];
+    }
+  }
 
   Future<List<Test>> fetchLabTests() async {
     try {
-      final List<dynamic> response = await _testService.getAllTests();
+      final List<dynamic> response = await TestService().getAllTests();
       return response.map((json) => Test.fromJson(json)).toList();
     } catch (e) {
       debugPrint("Error fetching tests: $e");
@@ -161,54 +174,29 @@ class _LabTestsScreenState extends State<LabTestsScreen>
                 fontWeight: FontWeight.w600,
               ),
               tabs: const [
+                Tab(text: 'Registered Labs'),
                 Tab(text: 'All Tests'),
                 Tab(text: 'Popular'),
-                Tab(text: 'Packages'),
               ],
             ),
           ),
 
           const SizedBox(height: 8),
 
-          // Test List
+          // Content
           Expanded(
-            child: FutureBuilder<List<Test>>(
-              future: fetchLabTests(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF12B8A6),
-                      strokeWidth: 3,
-                    ),
-                  );
-                }
-
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return _emptyState();
-                }
-
-                final tests = snapshot.data!;
-                final filteredTests = _searchQuery.isEmpty
-                    ? tests
-                    : tests
-                          .where(
-                            (test) => test.name.toLowerCase().contains(
-                              _searchQuery.toLowerCase(),
-                            ),
-                          )
-                          .toList();
-
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-                  itemCount: filteredTests.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    return _testCard(filteredTests[index]);
-                  },
-                );
-              },
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // Registered Labs
+                _buildLabsList(),
+                // All Tests
+                _buildTestsList(fetchLabTests()),
+                // Popular
+                _buildTestsList(
+                  fetchLabTests(),
+                ), // Filter for popular in real app
+              ],
             ),
           ),
         ],
@@ -363,7 +351,155 @@ class _LabTestsScreenState extends State<LabTestsScreen>
     );
   }
 
-  Widget _emptyState() {
+  Widget _buildLabsList() {
+    return FutureBuilder<List<LabModel>>(
+      future: fetchLabs(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
+          );
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return _emptyState("No Labs Found");
+        }
+        final labs = snapshot.data!;
+        final filteredLabs = _searchQuery.isEmpty
+            ? labs
+            : labs
+                  .where(
+                    (l) => l.labName.toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
+                    ),
+                  )
+                  .toList();
+
+        if (filteredLabs.isEmpty) {
+          return _emptyState("No Labs Found");
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+          itemCount: filteredLabs.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 16),
+          itemBuilder: (context, index) => _labCard(filteredLabs[index]),
+        );
+      },
+    );
+  }
+
+  Widget _buildTestsList(Future<List<Test>> future) {
+    return FutureBuilder<List<Test>>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
+          );
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return _emptyState("No Tests Found");
+        }
+        final tests = snapshot.data!;
+        final filteredTests = _searchQuery.isEmpty
+            ? tests
+            : tests
+                  .where(
+                    (t) => t.name.toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
+                    ),
+                  )
+                  .toList();
+
+        if (filteredTests.isEmpty) {
+          return _emptyState("No Tests Found");
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+          itemCount: filteredTests.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 16),
+          itemBuilder: (context, index) => _testCard(filteredTests[index]),
+        );
+      },
+    );
+  }
+
+  Widget _labCard(LabModel lab) {
+    return GestureDetector(
+      onTap: () {
+        // Navigate to tests for this specific lab
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LabTestsScreenByLab(lab: lab),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF111827).withOpacity(0.04),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF12B8A6).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(
+                Icons.local_hospital_rounded,
+                color: Color(0xFF12B8A6),
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lab.labName,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    lab.location,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _badge(
+              text: lab.rating.toString(),
+              color: const Color(0xFF92400E),
+              bgColor: const Color(0xFFFEF3C7),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyState(String message) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -382,20 +518,11 @@ class _LabTestsScreenState extends State<LabTestsScreen>
           ),
           const SizedBox(height: 24),
           Text(
-            'No Tests Found',
+            message,
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w800,
               color: const Color(0xFF111827),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'We couldn\'t find any tests matching your search',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF6B7280),
             ),
           ),
         ],

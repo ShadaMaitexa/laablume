@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'model/message_model.dart';
 import '../utils/responsive_layout.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -15,23 +14,28 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<List<MessageModel>> fetchConversations() async {
     // TODO: Replace with real API call
     await Future.delayed(const Duration(seconds: 1));
-    
+
     return [
       MessageModel(
         id: '1',
         name: 'Dr. Sarah Wilson',
-        lastMessage: 'Your test results look good. Let\'s schedule a follow-up.',
+        lastMessage:
+            'Your test results look good. Let\'s schedule a follow-up.',
         time: '2:30 PM',
         unread: true,
         avatarUrl: null,
+        appointmentDate: DateTime.now().subtract(const Duration(days: 1)),
       ),
       MessageModel(
-        id: '2', 
+        id: '2',
         name: 'Dr. Michael Chen',
         lastMessage: 'Please take the medication twice daily.',
         time: '11:45 AM',
         unread: false,
         avatarUrl: null,
+        appointmentDate: DateTime.now().subtract(
+          const Duration(days: 8),
+        ), // Expired
       ),
       MessageModel(
         id: '3',
@@ -40,6 +44,7 @@ class _ChatScreenState extends State<ChatScreen> {
         time: '9:15 AM',
         unread: true,
         avatarUrl: null,
+        appointmentDate: DateTime.now().subtract(const Duration(days: 2)),
       ),
     ];
   }
@@ -63,10 +68,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildSplitView(BuildContext context) {
     return Row(
       children: [
-        SizedBox(
-          width: 400,
-          child: _buildList(context),
-        ),
+        SizedBox(width: 400, child: _buildList(context)),
         const VerticalDivider(width: 1, color: Color(0xFFE5E7EB)),
         Expanded(
           child: _selectedMessage == null
@@ -122,7 +124,11 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.search_rounded, color: Color(0xFF9CA3AF), size: 22),
+                const Icon(
+                  Icons.search_rounded,
+                  color: Color(0xFF9CA3AF),
+                  size: 22,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
@@ -150,9 +156,7 @@ class _ChatScreenState extends State<ChatScreen> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF12B8A6),
-                  ),
+                  child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
                 );
               }
 
@@ -161,11 +165,12 @@ class _ChatScreenState extends State<ChatScreen> {
               }
 
               final conversations = snapshot.data!;
-              
+
               return ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 itemCount: conversations.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 16),
                 itemBuilder: (context, index) {
                   final conversation = conversations[index];
                   return _conversationItem(conversation);
@@ -193,7 +198,10 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               CircleAvatar(
                 backgroundColor: const Color(0xFF12B8A6).withOpacity(0.1),
-                child: const Icon(Icons.person_rounded, color: Color(0xFF12B8A6)),
+                child: const Icon(
+                  Icons.person_rounded,
+                  color: Color(0xFF12B8A6),
+                ),
               ),
               const SizedBox(width: 16),
               Text(
@@ -285,7 +293,11 @@ class _ChatScreenState extends State<ChatScreen> {
               color: const Color(0xFFF3F4F6),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.chat_bubble_outline_rounded, size: 48, color: Colors.grey.shade400),
+            child: Icon(
+              Icons.chat_bubble_outline_rounded,
+              size: 48,
+              color: Colors.grey.shade400,
+            ),
           ),
           const SizedBox(height: 20),
           Text(
@@ -322,9 +334,13 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF12B8A6).withOpacity(0.05) : Colors.white,
+          color: isSelected
+              ? const Color(0xFF12B8A6).withOpacity(0.05)
+              : Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: isSelected ? Border.all(color: const Color(0xFF12B8A6), width: 1.5) : null,
+          border: isSelected
+              ? Border.all(color: const Color(0xFF12B8A6), width: 1.5)
+              : null,
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF111827).withOpacity(0.02),
@@ -351,7 +367,11 @@ class _ChatScreenState extends State<ChatScreen> {
                         : null,
                   ),
                   child: conversation.avatarUrl == null
-                      ? const Icon(Icons.person_rounded, color: Color(0xFF12B8A6), size: 28)
+                      ? const Icon(
+                          Icons.person_rounded,
+                          color: Color(0xFF12B8A6),
+                          size: 28,
+                        )
                       : null,
                 ),
                 if (conversation.unread)
@@ -382,7 +402,9 @@ class _ChatScreenState extends State<ChatScreen> {
                         conversation.name,
                         style: GoogleFonts.poppins(
                           fontSize: 15,
-                          fontWeight: conversation.unread ? FontWeight.w700 : FontWeight.w600,
+                          fontWeight: conversation.unread
+                              ? FontWeight.w700
+                              : FontWeight.w600,
                           color: const Color(0xFF111827),
                         ),
                       ),
@@ -390,8 +412,12 @@ class _ChatScreenState extends State<ChatScreen> {
                         conversation.time,
                         style: GoogleFonts.poppins(
                           fontSize: 11,
-                          fontWeight: conversation.unread ? FontWeight.w600 : FontWeight.w400,
-                          color: conversation.unread ? const Color(0xFF12B8A6) : const Color(0xFF9CA3AF),
+                          fontWeight: conversation.unread
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                          color: conversation.unread
+                              ? const Color(0xFF12B8A6)
+                              : const Color(0xFF9CA3AF),
                         ),
                       ),
                     ],
@@ -401,8 +427,12 @@ class _ChatScreenState extends State<ChatScreen> {
                     conversation.lastMessage,
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      color: conversation.unread ? const Color(0xFF1F2937) : const Color(0xFF6B7280),
-                      fontWeight: conversation.unread ? FontWeight.w500 : FontWeight.w400,
+                      color: conversation.unread
+                          ? const Color(0xFF1F2937)
+                          : const Color(0xFF6B7280),
+                      fontWeight: conversation.unread
+                          ? FontWeight.w500
+                          : FontWeight.w400,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -429,7 +459,11 @@ class ChatDetailScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111827), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF111827),
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
@@ -437,7 +471,11 @@ class ChatDetailScreen extends StatelessWidget {
             CircleAvatar(
               radius: 18,
               backgroundColor: const Color(0xFF12B8A6).withOpacity(0.1),
-              child: const Icon(Icons.person_rounded, color: Color(0xFF12B8A6), size: 20),
+              child: const Icon(
+                Icons.person_rounded,
+                color: Color(0xFF12B8A6),
+                size: 20,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -445,7 +483,7 @@ class ChatDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                   Text(
+                  Text(
                     message.name,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
@@ -453,9 +491,17 @@ class ChatDetailScreen extends StatelessWidget {
                       color: const Color(0xFF111827),
                     ),
                   ),
-                   Text(
-                    'Appointment Completed',
-                    style: GoogleFonts.poppins(fontSize: 10, color: const Color(0xFF12B8A6), fontWeight: FontWeight.w600),
+                  Text(
+                    message.isChatExpired
+                        ? 'Chat Expired'
+                        : 'Appointment Completed',
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      color: message.isChatExpired
+                          ? Colors.red
+                          : const Color(0xFF12B8A6),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -466,7 +512,9 @@ class ChatDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.videocam_rounded, color: Color(0xFF12B8A6)),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Starting video consultation...')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Starting video consultation...')),
+              );
             },
           ),
           const SizedBox(width: 8),
@@ -491,17 +539,39 @@ class ChatDetailScreen extends StatelessWidget {
               ],
             ),
           ),
-          _buildChatInput(context),
+          if (message.isChatExpired)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              color: Colors.red.withOpacity(0.05),
+              child: Text(
+                'This chat has expired (7 days post-appointment). Please book a new consultation for further interaction.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: Colors.red.shade700,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            )
+          else
+            _buildChatInput(context),
         ],
       ),
     );
   }
 
-  Widget _buildMessageBubble({required String message, required bool isMe, required String time}) {
+  Widget _buildMessageBubble({
+    required String message,
+    required bool isMe,
+    required String time,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -554,9 +624,16 @@ class ChatDetailScreen extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.description_outlined, color: Color(0xFF12B8A6)),
+            icon: const Icon(
+              Icons.description_outlined,
+              color: Color(0xFF12B8A6),
+            ),
             onPressed: () {
-               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Opening prescription shared by doctor...')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Opening prescription shared by doctor...'),
+                ),
+              );
             },
             tooltip: 'View Prescription',
           ),
@@ -571,7 +648,9 @@ class ChatDetailScreen extends StatelessWidget {
                 style: GoogleFonts.poppins(fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Type a message...',
-                  hintStyle: GoogleFonts.poppins(color: const Color(0xFF9CA3AF)),
+                  hintStyle: GoogleFonts.poppins(
+                    color: const Color(0xFF9CA3AF),
+                  ),
                   border: InputBorder.none,
                 ),
               ),
@@ -584,7 +663,11 @@ class ChatDetailScreen extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              icon: const Icon(
+                Icons.send_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               onPressed: () {},
             ),
           ),
@@ -604,6 +687,7 @@ class MessageModel {
   final String time;
   final bool unread;
   final String? avatarUrl;
+  final DateTime appointmentDate;
 
   MessageModel({
     required this.id,
@@ -612,7 +696,14 @@ class MessageModel {
     required this.time,
     this.unread = false,
     this.avatarUrl,
+    required this.appointmentDate,
   });
+
+  bool get isChatExpired {
+    final now = DateTime.now();
+    final difference = now.difference(appointmentDate).inDays;
+    return difference > 7;
+  }
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
@@ -622,6 +713,9 @@ class MessageModel {
       time: json['time'],
       unread: json['unread'] ?? false,
       avatarUrl: json['avatar'],
+      appointmentDate: json['appointment_date'] != null
+          ? DateTime.parse(json['appointment_date'])
+          : DateTime.now().subtract(const Duration(days: 3)),
     );
   }
 }

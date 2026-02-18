@@ -330,6 +330,44 @@ class _BookTestScreenState extends State<BookTestScreen> {
                     ),
                   ),
                 ],
+                const SizedBox(height: 32),
+
+                // Bill Summary
+                _sectionTitle('Bill Summary'),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF111827).withOpacity(0.04),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      _priceRow(
+                        'Test Amount',
+                        '₹${widget.test.price?.toInt() ?? 0}',
+                      ),
+                      const SizedBox(height: 12),
+                      _priceRow('Platform Fee', '₹50', isFee: true),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Divider(color: Color(0xFFE5E7EB)),
+                      ),
+                      _priceRow(
+                        'Total Payable',
+                        '₹${(widget.test.price ?? 0) + 50}',
+                        isTotal: true,
+                      ),
+                    ],
+                  ),
+                ),
 
                 const SizedBox(height: 120),
               ],
@@ -576,6 +614,39 @@ class _BookTestScreenState extends State<BookTestScreen> {
     );
   }
 
+  Widget _priceRow(
+    String label,
+    String value, {
+    bool isFee = false,
+    bool isTotal = false,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: isTotal ? 16 : 14,
+            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+            color: isTotal ? const Color(0xFF111827) : const Color(0xFF6B7280),
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: isTotal ? 20 : 15,
+            fontWeight: isTotal ? FontWeight.w800 : FontWeight.w700,
+            color: isTotal
+                ? const Color(0xFF12B8A6)
+                : isFee
+                ? Colors.orange.shade700
+                : const Color(0xFF111827),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _timeSlotChip(String slot) {
     final isSelected = _selectedTimeSlot == slot;
 
@@ -713,6 +784,8 @@ class _BookTestScreenState extends State<BookTestScreen> {
         'slot': _selectedTimeSlot!,
         'labId': _collectionType == 'lab' ? _selectedLabId : null,
         'collectionType': _collectionType,
+        'amount': (widget.test.price ?? 0) + 50,
+        'platformFee': 50,
       });
 
       Navigator.pop(context); // Close loading dialog

@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/patient_service.dart';
 
 class FeedbackScreen extends StatefulWidget {
-  const FeedbackScreen({super.key});
+  final String targetId;
+  final String targetName;
+  final String targetType; // 'lab', 'doctor', or 'hospital'
+
+  const FeedbackScreen({
+    super.key,
+    required this.targetId,
+    required this.targetName,
+    required this.targetType,
+  });
 
   @override
   State<FeedbackScreen> createState() => _FeedbackScreenState();
@@ -10,13 +20,33 @@ class FeedbackScreen extends StatefulWidget {
 
 class _FeedbackScreenState extends State<FeedbackScreen> {
   double _rating = 5;
-  final TextEditingController _feedbackController = TextEditingController();
-  final Color _primaryColor = const Color(0xFF12B8A6);
+  final TextEditingController _commentController = TextEditingController();
+  bool _isLoading = false;
 
-  @override
-  void dispose() {
-    _feedbackController.dispose();
-    super.dispose();
+  Future<void> _submitFeedback() async {
+    setState(() => _isLoading = true);
+    try {
+      await PatientService().submitFeedback({
+        'targetId': widget.targetId,
+        'targetType': widget.targetType,
+        'rating': _rating,
+        'comment': _commentController.text,
+      });
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Thank you for your feedback!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -24,10 +54,21 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        title: Text('Give Feedback', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
-        foregroundColor: const Color(0xFF1F2937),
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded, color: Color(0xFF111827)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Give Feedback',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF111827),
+          ),
+        ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -35,88 +76,89 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'How was your experience?',
-              style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF1F2937)),
+              'How was your experience with ${widget.targetName}?',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF111827),
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Your feedback helps us improve our services for everyone.',
-              style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF6B7280)),
-            ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
             Center(
               child: Column(
                 children: [
                   Text(
                     _rating.toInt().toString(),
-                    style: GoogleFonts.poppins(fontSize: 48, fontWeight: FontWeight.bold, color: _primaryColor),
-                  ),
-                  Slider(
-                    value: _rating,
-                    min: 1,
-                    max: 5,
-                    divisions: 4,
-                    activeColor: _primaryColor,
-                    inactiveColor: _primaryColor.withOpacity(0.2),
-                    onChanged: (v) => setState(() => _rating = v),
+                    style: GoogleFonts.poppins(
+                      fontSize: 48,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF12B8A6),
+                    ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(5, (index) {
-                      return Icon(
-                        index < _rating.toInt() ? Icons.star_rounded : Icons.star_outline_rounded,
-                        color: Colors.amber,
-                        size: 40,
+                      return IconButton(
+                        icon: Icon(
+                          index < _rating
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: const Color(0xFFF59E0B),
+                          size: 40,
+                        ),
+                        onPressed: () => setState(() => _rating = index + 1.0),
                       );
                     }),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 40),
             Text(
-              'Tell us more',
-              style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: const Color(0xFF1F2937)),
+              'Add your comments',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF111827),
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
-              controller: _feedbackController,
+              controller: _commentController,
               maxLines: 5,
               decoration: InputDecoration(
-                hintText: 'What can we do better? Any specific doctor or lab service you liked?',
+                hintText: 'Describe your experience...',
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: _primaryColor, width: 2),
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
                 ),
               ),
-              style: GoogleFonts.poppins(fontSize: 14),
             ),
             const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Thank you for your valuable feedback!')),
-                  );
-                  Navigator.pop(context);
-                },
+                onPressed: _isLoading ? null : _submitFeedback,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _primaryColor,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  backgroundColor: const Color(0xFF12B8A6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   elevation: 0,
                 ),
-                child: Text(
-                  'Submit Feedback',
-                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                        'Submit Feedback',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ],

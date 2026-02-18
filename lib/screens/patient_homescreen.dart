@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
+import '../services/patient_service.dart';
 import '../utils/responsive_layout.dart';
+import 'common/feedback_screen.dart';
 import 'lab_tests/lab_tests_screen.dart';
 import 'reports/lab_reports_screen.dart';
 import 'reports/upload_report_screen.dart';
@@ -11,8 +13,6 @@ import 'chat_screen.dart';
 import 'my_appointments_screen.dart';
 import 'health_metrics/health_metrics_screen.dart';
 import 'common/notifications_screen.dart';
-import 'common/feedback_screen.dart';
-
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -36,7 +36,9 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
       builder: (context, provider, child) {
         if (provider.isLoading && provider.user == null) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator(color: Color(0xFF12B8A6))),
+            body: Center(
+              child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
+            ),
           );
         }
 
@@ -65,8 +67,9 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       _buildServicesSection(context),
                       const SizedBox(height: 36),
                       _buildAIBanner(),
-                      const SizedBox(height: 40),
                       _buildHealthInsightsSection(),
+                      const SizedBox(height: 40),
+                      _buildPopularHospitalsSection(),
                       const SizedBox(height: 140),
                     ],
                   ),
@@ -97,7 +100,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 color: const Color(0xFF111827).withOpacity(0.05),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
-              )
+              ),
             ],
           ),
         ),
@@ -126,12 +129,20 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         const Spacer(),
         _iconButton(
           Icons.chat_bubble_outline_rounded,
-          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen())),
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ChatScreen()),
+          ),
         ),
         const SizedBox(width: 12),
         _iconButton(
-          Icons.notifications_none_rounded, 
-          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen())),
+          Icons.notifications_none_rounded,
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const NotificationsScreen(),
+            ),
+          ),
         ),
       ],
     );
@@ -168,7 +179,10 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
   Widget _buildSearch() {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FindDoctorsScreen())),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const FindDoctorsScreen()),
+      ),
       child: Container(
         height: 60,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -185,7 +199,11 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.search_rounded, color: Color(0xFF9CA3AF), size: 24),
+            const Icon(
+              Icons.search_rounded,
+              color: Color(0xFF9CA3AF),
+              size: 24,
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
@@ -203,8 +221,12 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 color: const Color(0xFF12B8A6),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
-            )
+              child: const Icon(
+                Icons.tune_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
           ],
         ),
       ),
@@ -234,18 +256,43 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MyAppointmentsScreen())),
-            child: _statItem('Appointments', '${data?.upcomingAppointments ?? 0}', Icons.calendar_today_rounded),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const MyAppointmentsScreen(),
+              ),
+            ),
+            child: _statItem(
+              'Appointments',
+              '${data?.upcomingAppointments ?? 0}',
+              Icons.calendar_today_rounded,
+            ),
           ),
           Container(width: 1, height: 40, color: Colors.white.withOpacity(0.2)),
           GestureDetector(
-             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LabReportsScreen())),
-             child: _statItem('Pending', '${data?.pendingReports ?? 0}', Icons.description_outlined),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LabReportsScreen()),
+            ),
+            child: _statItem(
+              'Pending',
+              '${data?.pendingReports ?? 0}',
+              Icons.description_outlined,
+            ),
           ),
           Container(width: 1, height: 40, color: Colors.white.withOpacity(0.2)),
           GestureDetector(
-             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HealthMetricsScreen())),
-             child: _statItem('Health Score', '${data?.healthScore ?? 0}%', Icons.favorite_border_rounded),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HealthMetricsScreen(),
+              ),
+            ),
+            child: _statItem(
+              'Health Score',
+              '${data?.healthScore ?? 0}%',
+              Icons.favorite_border_rounded,
+            ),
           ),
         ],
       ),
@@ -288,28 +335,50 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               title: 'Book Lab Test',
               subtitle: 'Accurate results',
               color: const Color(0xFF12B8A6),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LabTestsScreen())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LabTestsScreen()),
+              ),
             ),
             _serviceCard(
               icon: Icons.people_outline_rounded,
               title: 'Find Doctors',
               subtitle: 'Top specialists',
               color: const Color(0xFFF59E0B),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FindDoctorsScreen())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FindDoctorsScreen(),
+                ),
+              ),
             ),
             _serviceCard(
               icon: Icons.upload_file_outlined,
               title: 'Upload Report',
               subtitle: 'AI Analysis',
               color: const Color(0xFF6366F1),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const UploadReportScreen())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const UploadReportScreen(),
+                ),
+              ),
             ),
             _serviceCard(
               icon: Icons.rate_review_outlined,
               title: 'Give Feedback',
               subtitle: 'Share experience',
               color: Colors.orange,
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FeedbackScreen())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FeedbackScreen(
+                    targetId: 'app',
+                    targetName: 'App',
+                    targetType: 'app',
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -328,7 +397,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             color: const Color(0xFF12B8A6).withOpacity(0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
-          )
+          ),
         ],
         border: Border.all(color: const Color(0xFF12B8A6).withOpacity(0.1)),
       ),
@@ -338,13 +407,20 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [const Color(0xFF12B8A6).withOpacity(0.2), const Color(0xFF12B8A6).withOpacity(0.05)],
+                colors: [
+                  const Color(0xFF12B8A6).withOpacity(0.2),
+                  const Color(0xFF12B8A6).withOpacity(0.05),
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF12B8A6), size: 32),
+            child: const Icon(
+              Icons.auto_awesome_rounded,
+              color: Color(0xFF12B8A6),
+              size: 32,
+            ),
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -405,17 +481,171 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     );
   }
 
+  Widget _buildPopularHospitalsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _sectionHeader('Popular Hospitals'),
+            TextButton(
+              onPressed: () {},
+              child: Text(
+                'View All',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF12B8A6),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        FutureBuilder<List<dynamic>>(
+          future: PatientService().getPopularHospitals(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
+              );
+            }
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              // Show some mock data if API is empty
+              final mockHospitals = [
+                {
+                  'name': 'City General Hospital',
+                  'location': 'Downtown',
+                  'rating': '4.8',
+                },
+                {
+                  'name': 'Green Valley Medical',
+                  'location': 'South Side',
+                  'rating': '4.6',
+                },
+              ];
+              return _buildHospitalList(mockHospitals);
+            }
+            return _buildHospitalList(snapshot.data!);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHospitalList(List<dynamic> hospitals) {
+    return SizedBox(
+      height: 140,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
+        itemCount: hospitals.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 16),
+        itemBuilder: (context, index) {
+          final h = hospitals[index];
+          return _hospitalCard(
+            h['name'],
+            h['location'],
+            h['rating'].toString(),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _hospitalCard(String name, String location, String rating) {
+    return Container(
+      width: 260,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF111827).withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: const Color(0xFF12B8A6).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.local_hospital_rounded,
+              color: Color(0xFF12B8A6),
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF111827),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  location,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xFFF59E0B),
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      rating,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _iconButton(IconData icon, VoidCallback onTap) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-           BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-           )
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: IconButton(
@@ -465,8 +695,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             fontWeight: FontWeight.w500,
             color: Colors.white.withOpacity(0.8),
           ),
-           maxLines: 1,
-           overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -533,9 +763,18 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     );
   }
 
-  Widget _healthInsightCard(BuildContext context, String title, String description, IconData icon, Color color) {
+  Widget _healthInsightCard(
+    BuildContext context,
+    String title,
+    String description,
+    IconData icon,
+    Color color,
+  ) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HealthMetricsScreen())),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const HealthMetricsScreen()),
+      ),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(

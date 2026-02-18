@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/doctor_model.dart';
 import 'book_consultation_screen.dart';
 import '../common/reviews_list_screen.dart';
+import '../common/feedback_screen.dart';
 
 class DoctorDetailScreen extends StatelessWidget {
   final DoctorModel doctor;
@@ -38,7 +39,10 @@ class DoctorDetailScreen extends StatelessWidget {
                       children: [
                         // App Bar
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -51,7 +55,11 @@ class DoctorDetailScreen extends StatelessWidget {
                                     color: Colors.white.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
-                                  child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                                  child: const Icon(
+                                    Icons.arrow_back_ios_new_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                               GestureDetector(
@@ -63,7 +71,11 @@ class DoctorDetailScreen extends StatelessWidget {
                                     color: Colors.white.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
-                                  child: const Icon(Icons.favorite_rounded, color: Colors.white, size: 20),
+                                  child: const Icon(
+                                    Icons.favorite_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                             ],
@@ -77,11 +89,18 @@ class DoctorDetailScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(28),
-                            border: Border.all(color: Colors.white.withOpacity(0.2), width: 4),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                              width: 4,
+                            ),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(24),
-                            child: const Icon(Icons.person_rounded, size: 60, color: Color(0xFF12B8A6)),
+                            child: const Icon(
+                              Icons.person_rounded,
+                              size: 60,
+                              color: Color(0xFF12B8A6),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -95,7 +114,10 @@ class DoctorDetailScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF12B8A6).withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
@@ -173,15 +195,29 @@ class DoctorDetailScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _infoRow(Icons.school_rounded, 'Education', doctor.education),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Divider(height: 1, color: Color(0xFFF3F4F6)),
+                            _infoRow(
+                              Icons.school_rounded,
+                              'Education',
+                              doctor.education,
                             ),
-                            _infoRow(Icons.local_hospital_rounded, 'Hospital', doctor.hospital),
                             const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Divider(height: 1, color: Color(0xFFF3F4F6)),
+                              child: Divider(
+                                height: 1,
+                                color: Color(0xFFF3F4F6),
+                              ),
+                            ),
+                            _infoRow(
+                              Icons.local_hospital_rounded,
+                              'Hospital',
+                              doctor.hospital,
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              child: Divider(
+                                height: 1,
+                                color: Color(0xFFF3F4F6),
+                              ),
                             ),
                             _infoRow(
                               Icons.language_rounded,
@@ -231,6 +267,29 @@ class DoctorDetailScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
+                                  builder: (context) => FeedbackScreen(
+                                    targetId: doctor.id,
+                                    targetName: doctor.name,
+                                    targetType: 'doctor',
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              'Write a review',
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF12B8A6),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
                                   builder: (context) => ReviewsListScreen(
                                     title: doctor.name,
                                     reviews: [
@@ -238,19 +297,22 @@ class DoctorDetailScreen extends StatelessWidget {
                                         'name': 'Emily Thompson',
                                         'rating': 5.0,
                                         'date': '2 days ago',
-                                        'comment': 'One of the best experiences I\'ve had with a specialist. Very thorough and patient.',
+                                        'comment':
+                                            'One of the best experiences I\'ve had with a specialist. Very thorough and patient.',
                                       },
                                       {
                                         'name': 'Marcus Chen',
                                         'rating': 4.5,
                                         'date': '1 week ago',
-                                        'comment': 'Very professional and the AI integration to my reports was seamless during the session.',
+                                        'comment':
+                                            'Very professional and the AI integration to my reports was seamless during the session.',
                                       },
                                       {
                                         'name': 'Sophia Rodriguez',
                                         'rating': 5.0,
                                         'date': '2 weeks ago',
-                                        'comment': 'Dr. ${doctor.name} explained everything in great detail. I felt very comfortable.',
+                                        'comment':
+                                            'Dr. ${doctor.name} explained everything in great detail. I felt very comfortable.',
                                       },
                                     ],
                                   ),
@@ -273,14 +335,16 @@ class DoctorDetailScreen extends StatelessWidget {
                         name: 'Emily Thompson',
                         rating: 5.0,
                         date: '2 days ago',
-                        comment: 'One of the best experiences I\'ve had with a specialist. Very thorough and patient.',
+                        comment:
+                            'One of the best experiences I\'ve had with a specialist. Very thorough and patient.',
                       ),
                       const SizedBox(height: 12),
                       _reviewCard(
                         name: 'Marcus Chen',
                         rating: 4.5,
                         date: '1 week ago',
-                        comment: 'Very professional and the AI integration to my reports was seamless during the session.',
+                        comment:
+                            'Very professional and the AI integration to my reports was seamless during the session.',
                       ),
 
                       const SizedBox(height: 120),
@@ -322,7 +386,8 @@ class DoctorDetailScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => BookConsultationScreen(doctor: doctor),
+                              builder: (context) =>
+                                  BookConsultationScreen(doctor: doctor),
                             ),
                           );
                         },
@@ -492,13 +557,15 @@ class DoctorDetailScreen extends StatelessWidget {
               : Colors.transparent,
           width: 2,
         ),
-        boxShadow: isAvailable ? [
-          BoxShadow(
-            color: const Color(0xFF111827).withOpacity(0.04),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ] : null,
+        boxShadow: isAvailable
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF111827).withOpacity(0.04),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         children: [
@@ -515,7 +582,9 @@ class DoctorDetailScreen extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: isAvailable ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
+              color: isAvailable
+                  ? const Color(0xFF111827)
+                  : const Color(0xFF9CA3AF),
             ),
           ),
           const SizedBox(height: 2),
@@ -524,7 +593,9 @@ class DoctorDetailScreen extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: isAvailable ? const Color(0xFF12B8A6) : const Color(0xFF9CA3AF),
+              color: isAvailable
+                  ? const Color(0xFF12B8A6)
+                  : const Color(0xFF9CA3AF),
             ),
           ),
         ],
