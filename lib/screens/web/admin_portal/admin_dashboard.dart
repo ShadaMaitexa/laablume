@@ -694,6 +694,11 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                 itemBuilder: (c, i) {
                   final user = users[i];
                   bool isActive = user['isActive'] ?? true;
+                  bool isApproved =
+                      user['privacyPolicyAccepted'] ??
+                      user['isApproved'] ??
+                      true;
+
                   return Padding(
                     padding: const EdgeInsets.all(20),
                     child: Row(
@@ -729,6 +734,27 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                             ],
                           ),
                         ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isApproved
+                                ? Colors.blue.withOpacity(0.1)
+                                : Colors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            isApproved ? 'VERIFIED' : 'PENDING',
+                            style: TextStyle(
+                              color: isApproved ? Colors.blue : Colors.orange,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -1242,6 +1268,10 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                 try {
                   if (_approvalTypeIndex == 0) {
                     await AdminService().approveHospital(
+                      partner['id'] ?? partner['_id'],
+                    );
+                  } else if (_approvalTypeIndex == 1) {
+                    await AdminService().approveDoctor(
                       partner['id'] ?? partner['_id'],
                     );
                   } else {

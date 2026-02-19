@@ -5,6 +5,28 @@ class AdminService extends ApiBaseService {
   factory AdminService() => _instance;
   AdminService._internal();
 
+  // Request OTP for admin login
+  Future<Map<String, dynamic>> requestOtp(String phone) async {
+    final response = await post('/admin/request-otp', {'phone': phone});
+    return Map<String, dynamic>.from(response);
+  }
+
+  // Verify OTP and get admin access token
+  Future<Map<String, dynamic>> verifyOtp(String phone, String otp) async {
+    final response = await post('/admin/verify-otp', {
+      'phone': phone,
+      'otp': otp,
+    });
+    // Store token if available
+    if (response != null && response is Map<String, dynamic>) {
+      String? token = response['token'] ?? response['accessToken'];
+      if (token != null) {
+        await setToken(token);
+      }
+    }
+    return Map<String, dynamic>.from(response);
+  }
+
   // Get list of hospitals awaiting verification
   Future<List<dynamic>> getPendingHospitals() async {
     final response = await get('/admin/pending-hospitals');

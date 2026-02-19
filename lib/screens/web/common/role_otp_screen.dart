@@ -148,6 +148,7 @@ class _RoleOtpScreenState extends State<RoleOtpScreen> {
         }
       }
     } catch (e) {
+      print('RoleOtpScreen Error: $e');
       if (mounted) {
         setState(() {
           _isVerifying = false;

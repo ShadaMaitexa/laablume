@@ -40,7 +40,8 @@ class UserModel {
           userData['mobileNumber']?.toString() ??
           '',
       role: userData['role']?.toString() ?? 'patient',
-      isApproved: userData['isApproved'] ?? true,
+      isApproved:
+          userData['privacyPolicyAccepted'] ?? userData['isApproved'] ?? true,
       profileImageUrl: userData['profileImageUrl']?.toString(),
       hospitalId: userData['hospitalId']?.toString(),
       hospitalName: userData['hospitalName']?.toString(),

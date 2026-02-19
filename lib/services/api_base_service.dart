@@ -38,8 +38,11 @@ class ApiBaseService {
   String? get refreshToken => _refreshToken;
 
   Map<String, String> get _headers {
-    final headers = {'Content-Type': 'application/json'};
-    if (_token != null) {
+    final headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    if (_token != null && _token!.isNotEmpty) {
       headers['Authorization'] = 'Bearer $_token';
     }
     return headers;
@@ -61,6 +64,9 @@ class ApiBaseService {
 
   // POST request
   Future<dynamic> post(String endpoint, Map<String, dynamic> data) async {
+    print('Sending POST to $endpoint');
+    print('Payload: $data');
+    print('Headers: $_headers');
     final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),
       headers: _headers,
@@ -100,10 +106,12 @@ class ApiBaseService {
 
   // Response processing
   dynamic _processResponse(http.Response response) {
+    print('API Response [${response.request?.url}]: ${response.statusCode}');
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (response.body.isEmpty) return {};
       return jsonDecode(response.body);
     } else {
+      print('API Error Body: ${response.body}');
       String errorMessage = 'Error: ${response.statusCode}';
       try {
         final body = jsonDecode(response.body);

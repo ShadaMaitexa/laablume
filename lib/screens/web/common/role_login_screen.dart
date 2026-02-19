@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'role_otp_screen.dart';
 import 'role_signup_screen.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/admin_service.dart';
 
 class RoleLoginScreen extends StatefulWidget {
   final String role; // 'Doctor' or 'Lab'
@@ -38,10 +39,28 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
 
     setState(() => _isLoading = true);
 
-    final mobileNumber = '$_selectedCountryCode${_phoneController.text.trim()}';
+    // Clear any existing tokens before fresh login
+    await AuthService().clearTokens();
+
+    String mobileNumber =
+        '$_selectedCountryCode${_phoneController.text.trim()}';
+
+    // For Admin, use the last 10 digits of the raw phone number as per backend expectation
+    if (widget.role.toLowerCase() == 'admin') {
+      String digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+      if (digits.length >= 10) {
+        mobileNumber = digits.substring(digits.length - 10);
+      } else {
+        mobileNumber = digits;
+      }
+    }
 
     try {
-      await AuthService().requestOtp(mobileNumber);
+      if (widget.role.toLowerCase() == 'admin') {
+        await AdminService().requestOtp(mobileNumber);
+      } else {
+        await AuthService().requestOtp(mobileNumber);
+      }
 
       if (mounted) {
         setState(() => _isLoading = false);
@@ -56,6 +75,7 @@ class _RoleLoginScreenState extends State<RoleLoginScreen> {
         );
       }
     } catch (e) {
+      print('RoleLoginScreen Error: $e');
       if (mounted) {
         setState(() => _isLoading = false);
         _showSnackBar(
