@@ -85,14 +85,6 @@ class _OtpScreenState extends State<OtpScreen> {
               response['isApproved'] ??
               true;
 
-          if (role != 'patient') {
-            setState(() {
-              _otpError =
-                  'This app is for patients only. Please use the Web Portal for $role role.';
-            });
-            return;
-          }
-
           if (!isApproved) {
             setState(() {
               _otpError =

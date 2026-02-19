@@ -58,7 +58,13 @@ class AdminService extends ApiBaseService {
 
   // Approve/Enable a hospital entity
   Future<Map<String, dynamic>> approveHospital(String id) async {
-    final response = await post('/admin/approve-hospital/$id', {});
+    // First approve the hospital entity
+    await post('/admin/approve-hospital/$id', {});
+    // Then ensure the user status is updated for login
+    final response = await patch('/admin/users/$id/status', {
+      'privacyPolicyAccepted': true,
+      'isActive': true,
+    });
     return Map<String, dynamic>.from(response is Map ? response : {});
   }
 
@@ -75,7 +81,13 @@ class AdminService extends ApiBaseService {
 
   // Approve/Enable a doctor entity
   Future<Map<String, dynamic>> approveDoctor(String id) async {
-    final response = await post('/admin/approve-doctor/$id', {});
+    // First approve the doctor entity
+    await post('/admin/approve-doctor/$id', {});
+    // Then ensure the user status is updated for login
+    final response = await patch('/admin/users/$id/status', {
+      'privacyPolicyAccepted': true,
+      'isActive': true,
+    });
     return Map<String, dynamic>.from(response is Map ? response : {});
   }
 
@@ -92,7 +104,13 @@ class AdminService extends ApiBaseService {
 
   // Approve/Enable a lab entity
   Future<Map<String, dynamic>> approveLab(String id) async {
-    final response = await post('/admin/approve-lab/$id', {});
+    // First approve the lab entity
+    await post('/admin/approve-lab/$id', {});
+    // Then ensure the user status is updated for login
+    final response = await patch('/admin/users/$id/status', {
+      'privacyPolicyAccepted': true,
+      'isActive': true,
+    });
     return Map<String, dynamic>.from(response is Map ? response : {});
   }
 
