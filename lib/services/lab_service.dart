@@ -5,6 +5,8 @@ class LabService extends ApiBaseService {
   factory LabService() => _instance;
   LabService._internal();
 
+  // --- Booking Management ---
+
   // List test bookings by status or date
   Future<List<dynamic>> getBookings({String? status}) async {
     final queryParams = status != null ? {'status': status} : null;
@@ -20,7 +22,13 @@ class LabService extends ApiBaseService {
     return response;
   }
 
-  // Update sample status (Collected/In-Lab/etc.)
+  // List upcoming/pending test bookings
+  Future<List<dynamic>> getPendingBookings() async {
+    final response = await get('/lab/bookings/pending');
+    return response['bookings'] ?? response['data'] ?? [];
+  }
+
+  // Update booking status (Completed / Test Not Done)
   Future<Map<String, dynamic>> updateBookingStatus(
     String id,
     String status,
@@ -31,11 +39,28 @@ class LabService extends ApiBaseService {
     return response;
   }
 
-  // Upload digitized report file
+  // --- Report Operations ---
+
+  // Upload digital report for a specific booking (after completion)
+  Future<Map<String, dynamic>> uploadReportForBooking(
+    String id,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await post('/lab/bookings/$id/upload-report', data);
+    return response;
+  }
+
+  // Upload digitized report file (legacy)
   Future<Map<String, dynamic>> uploadReport(
     Map<String, dynamic> reportData,
   ) async {
     final response = await post('/lab/reports/upload', reportData);
+    return response;
+  }
+
+  // Download finalized PDF report
+  Future<Map<String, dynamic>> downloadReport(String bookingId) async {
+    final response = await get('/lab/reports/$bookingId/download');
     return response;
   }
 
@@ -45,10 +70,47 @@ class LabService extends ApiBaseService {
     return response;
   }
 
+  // --- Test Catalog Management ---
+
+  // Get lab test catalog
+  Future<List<dynamic>> getCatalog() async {
+    final response = await get('/lab/catalog');
+    return response['catalog'] ?? response['data'] ?? [];
+  }
+
+  // Add test to lab catalog
+  Future<Map<String, dynamic>> addToCatalog(Map<String, dynamic> data) async {
+    final response = await post('/lab/catalog', data);
+    return response;
+  }
+
+  // Update price/turnaround for a test in catalog
+  Future<Map<String, dynamic>> updateCatalogItem(
+    String testEntryId,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await patch('/lab/catalog/$testEntryId', data);
+    return response;
+  }
+
+  // Remove test from lab catalog
+  Future<Map<String, dynamic>> deleteCatalogItem(String testEntryId) async {
+    final response = await delete('/lab/catalog/$testEntryId');
+    return response;
+  }
+
+  // --- Staff & Settings ---
+
   // List lab technicians and pathologists
   Future<List<dynamic>> getStaff() async {
     final response = await get('/lab/staff');
     return response['staff'] ?? response['data'] ?? [];
+  }
+
+  // Register new staff member
+  Future<Map<String, dynamic>> registerStaff(Map<String, dynamic> data) async {
+    final response = await post('/lab/staff', data);
+    return response;
   }
 
   // Update lab configuration
@@ -59,46 +121,25 @@ class LabService extends ApiBaseService {
     return response;
   }
 
-  // Manage Test Catalog
-  Future<List<dynamic>> getTests() async {
-    final response = await get('/lab/tests');
-    return response['tests'] ?? response['data'] ?? [];
-  }
+  // --- Legacy / Misc ---
 
-  Future<Map<String, dynamic>> addTest(Map<String, dynamic> testData) async {
-    final response = await post('/lab/tests', testData);
-    return response;
-  }
-
-  Future<Map<String, dynamic>> updateTest(
-    String id,
-    Map<String, dynamic> testData,
-  ) async {
-    final response = await patch('/lab/tests/$id', testData);
-    return response;
-  }
-
-  Future<Map<String, dynamic>> deleteTest(String id) async {
-    final response = await delete('/lab/tests/$id');
-    return response;
-  }
-
-  // Feedbacks
   Future<List<dynamic>> getFeedbacks() async {
     final response = await get('/lab/feedbacks');
     return response['feedbacks'] ?? response['data'] ?? [];
   }
 
-  // Lab Profile
   Future<Map<String, dynamic>> getProfile() async {
     final response = await get('/lab/profile');
     return response['profile'] ?? response['data'] ?? {};
   }
 
-  // Get list of all labs (for patient view)
-  Future<List<dynamic>> getAllLabs({String? city}) async {
-    final queryParams = city != null ? {'city': city} : null;
-    final response = await get('/patients/labs', queryParams: queryParams);
-    return response['labs'] ?? response['data'] ?? [];
-  }
+  // --- Compatibility Aliases ---
+  Future<List<dynamic>> getTests() => getCatalog();
+  Future<Map<String, dynamic>> addTest(Map<String, dynamic> data) =>
+      addToCatalog(data);
+  Future<Map<String, dynamic>> updateTest(
+    String id,
+    Map<String, dynamic> data,
+  ) => updateCatalogItem(id, data);
+  Future<Map<String, dynamic>> deleteTest(String id) => deleteCatalogItem(id);
 }

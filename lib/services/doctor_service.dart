@@ -5,6 +5,8 @@ class DoctorService extends ApiBaseService {
   factory DoctorService() => _instance;
   DoctorService._internal();
 
+  // --- Doctor Portal Endpoints ---
+
   // Get doctor's daily schedule
   Future<List<dynamic>> getAppointments({String? status, String? date}) async {
     final queryParams = <String, String>{};
@@ -28,12 +30,10 @@ class DoctorService extends ApiBaseService {
   // Update appointment status (Accept/Complete/Cancel)
   Future<Map<String, dynamic>> updateAppointmentStatus(
     String id,
-    String status, {
-    String? reason,
-  }) async {
+    String status,
+  ) async {
     final response = await patch('/doctor/appointments/$id/status', {
       'status': status,
-      if (reason != null) 'reason': reason,
     });
     return response;
   }
@@ -74,6 +74,8 @@ class DoctorService extends ApiBaseService {
     return response;
   }
 
+  // --- Legacy / Compatibility ---
+
   // Get lab reports for doctor's patients
   Future<List<dynamic>> getLabReports() async {
     final response = await get('/doctor/lab-reports');
@@ -105,6 +107,56 @@ class DoctorService extends ApiBaseService {
   // Get doctor by ID
   Future<Map<String, dynamic>> getDoctorById(String id) async {
     final response = await get('/patients/doctors/$id');
+    return response;
+  }
+
+  // --- Public Doctors Search & Discovery ---
+
+  // Get all doctors (V2 path)
+  Future<List<dynamic>> getDoctorsPublic() async {
+    final response = await get('/doctors');
+    return response['doctors'] ?? response['data'] ?? [];
+  }
+
+  // Search doctors by name, specialty, or hospital
+  Future<List<dynamic>> searchDoctors({
+    String? query,
+    String? specialty,
+    String? hospital,
+  }) async {
+    final queryParams = <String, String>{};
+    if (query != null) queryParams['name'] = query;
+    if (specialty != null) queryParams['specialty'] = specialty;
+    if (hospital != null) queryParams['hospital'] = hospital;
+
+    final response = await get(
+      '/doctors/search',
+      queryParams: queryParams.isNotEmpty ? queryParams : null,
+    );
+    return response['doctors'] ?? response['data'] ?? [];
+  }
+
+  // Seed sample doctors (Dev only)
+  Future<Map<String, dynamic>> seedDoctors() async {
+    final response = await post('/doctors/seed', {});
+    return response;
+  }
+
+  // Get doctor bio, experience, consultation fee, and patient reviews
+  Future<Map<String, dynamic>> getDoctorDetails(String id) async {
+    final response = await get('/doctors/$id/details');
+    return response;
+  }
+
+  // Get available time slots for a doctor
+  Future<List<dynamic>> getDoctorSlots(String id) async {
+    final response = await get('/doctors/$id/slots');
+    return response['slots'] ?? response['data'] ?? [];
+  }
+
+  // Get doctor by ID (V2 path)
+  Future<Map<String, dynamic>> getDoctorByIdPublic(String id) async {
+    final response = await get('/doctors/$id');
     return response;
   }
 }

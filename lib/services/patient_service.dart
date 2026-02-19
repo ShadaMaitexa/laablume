@@ -114,6 +114,15 @@ class PatientService extends ApiBaseService {
     return response;
   }
 
+  // Get reviews for a specific entity
+  Future<List<dynamic>> getReviews(String targetId) async {
+    final response = await get(
+      '/patients/reviews',
+      queryParams: {'targetId': targetId},
+    );
+    return response['reviews'] ?? response['data'] ?? [];
+  }
+
   // Access and download finalized lab reports
   Future<List<dynamic>> getReports() async {
     final response = await get('/patients/reports');
@@ -124,5 +133,21 @@ class PatientService extends ApiBaseService {
   Future<List<dynamic>> getPrescriptions() async {
     final response = await get('/patients/prescriptions');
     return response['prescriptions'] ?? response['data'] ?? [];
+  }
+
+  // View specific slots assigned by the hospital for a doctor
+  Future<List<dynamic>> getDoctorSlots(String doctorId) async {
+    final response = await get('/patients/doctors/$doctorId/slots');
+    return response['slots'] ?? response['data'] ?? [];
+  }
+
+  // Upload profile image
+  Future<Map<String, dynamic>> uploadProfileImage(
+    Map<String, dynamic> imageData,
+  ) async {
+    // Note: If this is an actual file upload, might need multipart.
+    // Assuming backend takes base64 or URL for now based on post() implementation.
+    final response = await post('/patients/upload-profile-image', imageData);
+    return response;
   }
 }

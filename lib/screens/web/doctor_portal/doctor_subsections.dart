@@ -1,6 +1,7 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/doctor_service.dart';
+import '../../../utils/responsive_layout.dart';
 
 class DoctorAppointmentsScreen extends StatefulWidget {
   const DoctorAppointmentsScreen({super.key});
@@ -53,15 +54,16 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = ResponsiveLayout.isMobile(context);
     return Container(
-      padding: const EdgeInsets.all(40),
+      padding: EdgeInsets.all(isMobile ? 16 : 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Patient Appointments',
             style: GoogleFonts.poppins(
-              fontSize: 28,
+              fontSize: isMobile ? 22 : 28,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF1F2937),
             ),
@@ -82,12 +84,15 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
               ),
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      _tabItem('Upcoming', 0),
-                      _tabItem('Completed', 1),
-                      _tabItem('Cancelled', 2),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _tabItem('Upcoming', 0),
+                        _tabItem('Completed', 1),
+                        _tabItem('Cancelled', 2),
+                      ],
+                    ),
                   ),
                   const Divider(height: 40),
                   Expanded(
@@ -148,126 +153,227 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
         ? Colors.blue
         : (status == 'Cancelled' ? Colors.red : Colors.green);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: const Color(0xFF12B8A6).withOpacity(0.1),
-            child: const Icon(Icons.person, color: Color(0xFF12B8A6)),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            flex: 2,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        bool isNarrow = constraints.maxWidth < 600;
+
+        if (isNarrow) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  appt['userName'] ?? appt['patient_name'] ?? 'Patient',
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: const Color(0xFF12B8A6).withOpacity(0.1),
+                      child: const Icon(Icons.person, color: Color(0xFF12B8A6)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            appt['userName'] ??
+                                appt['patient_name'] ??
+                                'Patient',
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'ID: #$id',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: const Color(0xFF9CA3AF),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _statusBadge(status, statusColor),
+                  ],
                 ),
-                Text(
-                  'ID: #$id',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: const Color(0xFF9CA3AF),
-                  ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          appt['consultationType'] ?? 'General',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          appt['time'] ?? 'Today',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF9CA3AF),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        if (status != 'Completed' && status != 'Cancelled')
+                          IconButton(
+                            onPressed: () => _updateStatus(id, 'Completed'),
+                            icon: const Icon(
+                              Icons.check_circle_outline,
+                              color: Color(0xFF12B8A6),
+                            ),
+                            tooltip: 'Complete',
+                          ),
+                        PopupMenuButton(
+                          icon: const Icon(Icons.more_vert),
+                          itemBuilder: (context) => _popupItems(status),
+                          onSelected: (value) =>
+                              _handlePopupSelection(value, appt, id),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  appt['consultationType'] ?? 'General',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  appt['time'] ?? 'Today',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: const Color(0xFF9CA3AF),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              status,
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: statusColor,
+          );
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: const Color(0xFF12B8A6).withOpacity(0.1),
+                child: const Icon(Icons.person, color: Color(0xFF12B8A6)),
               ),
-            ),
-          ),
-          const SizedBox(width: 20),
-          if (status != 'Completed' && status != 'Cancelled')
-            ElevatedButton(
-              onPressed: () => _updateStatus(id, 'Completed'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF12B8A6),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+              const SizedBox(width: 20),
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      appt['userName'] ?? appt['patient_name'] ?? 'Patient',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'ID: #$id',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: const Text('Complete', style: TextStyle(fontSize: 11)),
-            ),
-          const SizedBox(width: 12),
-          PopupMenuButton(
-            icon: const Icon(Icons.more_vert),
-            itemBuilder: (context) => [
-              const PopupMenuItem(value: 'view', child: Text('View Details')),
-              if (status != 'Completed') ...[
-                const PopupMenuItem(
-                  value: 'consultation',
-                  child: Text(
-                    'Add Notes',
-                    style: TextStyle(color: Color(0xFF10B981)),
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      appt['consultationType'] ?? 'General',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      appt['time'] ?? 'Today',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _statusBadge(status, statusColor),
+              const SizedBox(width: 20),
+              if (status != 'Completed' && status != 'Cancelled')
+                ElevatedButton(
+                  onPressed: () => _updateStatus(id, 'Completed'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF12B8A6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Complete',
+                    style: TextStyle(fontSize: 11, color: Colors.white),
                   ),
                 ),
-                const PopupMenuItem(
-                  value: 'cancel',
-                  child: Text('Cancel', style: TextStyle(color: Colors.red)),
-                ),
-              ],
-              if (status == 'Completed') ...[
-                const PopupMenuItem(
-                  value: 'chat',
-                  child: Text('Message Patient'),
-                ),
-              ],
+              const SizedBox(width: 12),
+              PopupMenuButton(
+                icon: const Icon(Icons.more_vert),
+                itemBuilder: (context) => _popupItems(status),
+                onSelected: (value) => _handlePopupSelection(value, appt, id),
+              ),
             ],
-            onSelected: (value) {
-              if (value == 'consultation') {
-                _showConsultationDialog(context, appt);
-              } else if (value == 'cancel') {
-                _updateStatus(id, 'Cancelled');
-              }
-            },
           ),
-        ],
+        );
+      },
+    );
+  }
+
+  Widget _statusBadge(String status, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        status,
+        style: GoogleFonts.poppins(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
       ),
     );
+  }
+
+  List<PopupMenuEntry<String>> _popupItems(String status) {
+    return [
+      const PopupMenuItem(value: 'view', child: Text('View Details')),
+      if (status != 'Completed') ...[
+        const PopupMenuItem(
+          value: 'consultation',
+          child: Text('Add Notes', style: TextStyle(color: Color(0xFF10B981))),
+        ),
+        const PopupMenuItem(
+          value: 'cancel',
+          child: Text('Cancel', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+      if (status == 'Completed') ...[
+        const PopupMenuItem(value: 'chat', child: Text('Message Patient')),
+      ],
+    ];
+  }
+
+  void _handlePopupSelection(String value, dynamic appt, String id) {
+    if (value == 'consultation') {
+      _showConsultationDialog(context, appt);
+    } else if (value == 'cancel') {
+      _updateStatus(id, 'Cancelled');
+    }
   }
 
   void _showConsultationDialog(BuildContext context, dynamic appt) {
@@ -286,261 +392,270 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setLocalState) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(32),
-            width: 700,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Consultation Records - $patientName',
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1F2937),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  TextField(
-                    controller: diagnosisController,
-                    decoration: InputDecoration(
-                      labelText: 'Diagnosis',
-                      labelStyle: GoogleFonts.poppins(fontSize: 14),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF12B8A6),
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: notesController,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      labelText: 'Clinical Notes / Treatment Plan',
-                      alignLabelWithHint: true,
-                      labelStyle: GoogleFonts.poppins(fontSize: 14),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF12B8A6),
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  Text(
-                    'Digital Prescription',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1F2937),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
+      builder: (context) {
+        bool isMobile = ResponsiveLayout.isMobile(context);
+        return StatefulBuilder(
+          builder: (context, setLocalState) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Container(
+              padding: EdgeInsets.all(isMobile ? 16 : 32),
+              width: isMobile ? MediaQuery.of(context).size.width * 0.9 : 700,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: _miniField(medController, 'Medicine Name'),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _miniField(doseController, 'Dosage'),
-                            ),
-                          ],
+                        Text(
+                          'Consultation Records - $patientName',
+                          style: GoogleFonts.poppins(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1F2937),
+                          ),
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _miniField(freqController, 'Frequency'),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _miniField(durController, 'Duration'),
-                            ),
-                            const SizedBox(width: 12),
-                            ElevatedButton(
-                              onPressed: () {
-                                if (medController.text.isNotEmpty) {
-                                  setLocalState(() {
-                                    prescriptions.add({
-                                      'medicine': medController.text,
-                                      'dosage': doseController.text,
-                                      'frequency': freqController.text,
-                                      'duration': durController.text,
-                                    });
-                                    medController.clear();
-                                    doseController.clear();
-                                    freqController.clear();
-                                    durController.clear();
-                                  });
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF12B8A6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Icon(Icons.add, color: Colors.white),
-                            ),
-                          ],
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
                         ),
                       ],
                     ),
-                  ),
-                  if (prescriptions.isNotEmpty) ...[
-                    const SizedBox(height: 20),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: prescriptions.length,
-                        separatorBuilder: (context, index) =>
-                            const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final p = prescriptions[index];
-                          return ListTile(
-                            title: Text(
-                              p['medicine']!,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${p['dosage']} • ${p['frequency']} • ${p['duration']}',
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                              ),
-                              onPressed: () => setLocalState(
-                                () => prescriptions.removeAt(index),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 32),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            'Cancel',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                            ),
+                    const SizedBox(height: 24),
+                    TextField(
+                      controller: diagnosisController,
+                      decoration: InputDecoration(
+                        labelText: 'Diagnosis',
+                        labelStyle: GoogleFonts.poppins(fontSize: 14),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF12B8A6),
+                            width: 2,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            try {
-                              await _doctorService
-                                  .saveConsultationRecords(appointmentId, {
-                                    'diagnosis': diagnosisController.text,
-                                    'notes': notesController.text,
-                                  });
-
-                              if (prescriptions.isNotEmpty) {
-                                await _doctorService.issuePrescription(
-                                  appointmentId,
-                                  prescriptions.cast<Map<String, dynamic>>(),
-                                );
-                              }
-
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Medical records finalized successfully',
-                                  ),
-                                  backgroundColor: Colors.green,
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: notesController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        labelText: 'Clinical Notes / Treatment Plan',
+                        alignLabelWithHint: true,
+                        labelStyle: GoogleFonts.poppins(fontSize: 14),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF12B8A6),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    Text(
+                      'Digital Prescription',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1F2937),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: _miniField(
+                                  medController,
+                                  'Medicine Name',
                                 ),
-                              );
-                              _fetchAppointments();
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error: $e')),
-                              );
-                            }
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _miniField(doseController, 'Dosage'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _miniField(freqController, 'Frequency'),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _miniField(durController, 'Duration'),
+                              ),
+                              const SizedBox(width: 12),
+                              ElevatedButton(
+                                onPressed: () {
+                                  if (medController.text.isNotEmpty) {
+                                    setLocalState(() {
+                                      prescriptions.add({
+                                        'medicine': medController.text,
+                                        'dosage': doseController.text,
+                                        'frequency': freqController.text,
+                                        'duration': durController.text,
+                                      });
+                                      medController.clear();
+                                      doseController.clear();
+                                      freqController.clear();
+                                      durController.clear();
+                                    });
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF12B8A6),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (prescriptions.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: prescriptions.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final p = prescriptions[index];
+                            return ListTile(
+                              title: Text(
+                                p['medicine']!,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text(
+                                '${p['dosage']} • ${p['frequency']} • ${p['duration']}',
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () => setLocalState(
+                                  () => prescriptions.removeAt(index),
+                                ),
+                              ),
+                            );
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF12B8A6),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            'Finalize & Complete',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
                         ),
                       ),
                     ],
-                  ),
-                ],
+                    const SizedBox(height: 32),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              try {
+                                await _doctorService
+                                    .saveConsultationRecords(appointmentId, {
+                                      'diagnosis': diagnosisController.text,
+                                      'notes': notesController.text,
+                                    });
+
+                                if (prescriptions.isNotEmpty) {
+                                  await _doctorService.issuePrescription(
+                                    appointmentId,
+                                    prescriptions.cast<Map<String, dynamic>>(),
+                                  );
+                                }
+
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Medical records finalized successfully',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                                _fetchAppointments();
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: $e')),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF12B8A6),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Finalize & Complete',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -595,15 +710,18 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = ResponsiveLayout.isMobile(context);
+    bool isTablet = ResponsiveLayout.isTablet(context);
+
     return Container(
-      padding: const EdgeInsets.all(40),
+      padding: EdgeInsets.all(isMobile ? 16 : 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'My Patients',
             style: GoogleFonts.poppins(
-              fontSize: 28,
+              fontSize: isMobile ? 22 : 28,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF1F2937),
             ),
@@ -615,13 +733,12 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
                 : _patients.isEmpty
                 ? const Center(child: Text('No patients found'))
                 : GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 24,
-                          mainAxisSpacing: 24,
-                          childAspectRatio: 2.5,
-                        ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: isMobile ? 1 : (isTablet ? 2 : 3),
+                      crossAxisSpacing: 24,
+                      mainAxisSpacing: 24,
+                      childAspectRatio: isMobile ? 3.5 : 2.5,
+                    ),
                     itemCount: _patients.length,
                     itemBuilder: (context, index) =>
                         _patientGridCard(_patients[index]),
@@ -717,15 +834,16 @@ class _DoctorReportsScreenState extends State<DoctorReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = ResponsiveLayout.isMobile(context);
     return Container(
-      padding: const EdgeInsets.all(40),
+      padding: EdgeInsets.all(isMobile ? 16 : 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Patient Lab Reports',
             style: GoogleFonts.poppins(
-              fontSize: 28,
+              fontSize: isMobile ? 22 : 28,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF1F2937),
             ),
@@ -739,7 +857,7 @@ class _DoctorReportsScreenState extends State<DoctorReportsScreen> {
                 : ListView.separated(
                     itemCount: _reports.length,
                     separatorBuilder: (context, index) =>
-                        const Divider(height: 32),
+                        Divider(height: isMobile ? 24 : 32),
                     itemBuilder: (context, index) =>
                         _reportRow(_reports[index]),
                   ),
@@ -750,68 +868,66 @@ class _DoctorReportsScreenState extends State<DoctorReportsScreen> {
   }
 
   Widget _reportRow(dynamic report) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10),
-        ],
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.description, color: Color(0xFF12B8A6), size: 32),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  report['test_name'] ?? 'Lab Test',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Patient: ${report['patient_name'] ?? report['userId']?['name'] ?? 'Unknown'}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: const Color(0xFF6B7280),
-                  ),
-                ),
-                Text(
-                  'Status: ${report['status'] ?? 'N/A'}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: const Color(0xFF9CA3AF),
-                  ),
-                ),
-              ],
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        bool isNarrow = constraints.maxWidth < 600;
+        return Container(
+          padding: EdgeInsets.all(isNarrow ? 12 : 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10),
+            ],
           ),
-          if (report['report_url'] != null)
-            ElevatedButton(
-              onPressed: () {
-                // TODO: View report PDF/details
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF12B8A6).withOpacity(0.1),
-                foregroundColor: const Color(0xFF12B8A6),
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          child: Row(
+            children: [
+              Icon(
+                Icons.description,
+                color: const Color(0xFF12B8A6),
+                size: isNarrow ? 24 : 32,
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      report['test_name'] ?? 'Lab Test',
+                      style: GoogleFonts.poppins(
+                        fontSize: isNarrow ? 14 : 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Patient: ${report['patient_name'] ?? report['userId']?['name'] ?? 'Unknown'}',
+                      style: GoogleFonts.poppins(
+                        fontSize: isNarrow ? 11 : 13,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                    Text(
+                      'Status: ${report['status'] ?? 'N/A'}',
+                      style: GoogleFonts.poppins(
+                        fontSize: isNarrow ? 10 : 12,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: const Text('View Report'),
-            ),
-        ],
-      ),
+              if (report['report_url'] != null)
+                IconButton(
+                  onPressed: () {
+                    // TODO: View report PDF/details
+                  },
+                  icon: const Icon(Icons.visibility),
+                  color: const Color(0xFF12B8A6),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -826,6 +942,7 @@ class DoctorConsultationsScreen extends StatefulWidget {
 
 class _DoctorConsultationsScreenState extends State<DoctorConsultationsScreen> {
   int _activeChatIndex = 0;
+  bool _showChatList = true;
   final List<Map<String, dynamic>> _mockChats = [
     {
       'name': 'Alice Brown',
@@ -852,125 +969,137 @@ class _DoctorConsultationsScreenState extends State<DoctorConsultationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = ResponsiveLayout.isMobile(context);
+    bool isTablet = ResponsiveLayout.isTablet(context);
+    bool useNarrowLayout = isMobile || isTablet;
+
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(isMobile ? 16 : 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Communication Hub',
-                style: GoogleFonts.poppins(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1F2937),
+              if (useNarrowLayout && !_showChatList)
+                IconButton(
+                  onPressed: () => setState(() => _showChatList = true),
+                  icon: const Icon(Icons.arrow_back),
+                ),
+              Expanded(
+                child: Text(
+                  'Communication Hub',
+                  style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 22 : 28,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1F2937),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF12B8A6).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.videocam_rounded,
-                      color: Color(0xFF12B8A6),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Start Instant Meeting',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF12B8A6),
+              if (!isMobile)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF12B8A6).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.videocam_rounded,
+                        color: Color(0xFF12B8A6),
+                        size: 20,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Text(
+                        'Instant Meeting',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF12B8A6),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: isMobile ? 20 : 32),
           Expanded(
-            child: Row(
-              children: [
-                // Chat List
-                Container(
-                  width: 350,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
-                        blurRadius: 20,
-                      ),
-                    ],
-                  ),
-                  child: Column(
+            child: useNarrowLayout
+                ? (_showChatList ? _buildChatList(true) : _buildChatView())
+                : Row(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Search patients...',
-                            prefixIcon: const Icon(Icons.search, size: 20),
-                            filled: true,
-                            fillColor: const Color(0xFFF9FAFB),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: _mockChats.length,
-                          itemBuilder: (context, index) {
-                            final chat = _mockChats[index];
-                            bool isSelected = _activeChatIndex == index;
-                            return _buildChatListItem(chat, index, isSelected);
-                          },
-                        ),
-                      ),
+                      SizedBox(width: 320, child: _buildChatList(false)),
+                      const SizedBox(width: 24),
+                      Expanded(child: _buildChatView()),
                     ],
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatList(bool isNarrow) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20),
+        ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search patients...',
+                prefixIcon: const Icon(Icons.search, size: 20),
+                filled: true,
+                fillColor: const Color(0xFFF9FAFB),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
-                const SizedBox(width: 24),
-                // Main Chat View
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
-                          blurRadius: 20,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        _buildChatHeader(_mockChats[_activeChatIndex]),
-                        Expanded(child: _buildMessageList()),
-                        _buildChatInput(),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _mockChats.length,
+              itemBuilder: (context, index) {
+                final chat = _mockChats[index];
+                bool isSelected = _activeChatIndex == index;
+                return _buildChatListItem(chat, index, isSelected, isNarrow);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatView() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20),
+        ],
+      ),
+      child: Column(
+        children: [
+          _buildChatHeader(_mockChats[_activeChatIndex]),
+          Expanded(child: _buildMessageList()),
+          _buildChatInput(),
         ],
       ),
     );
@@ -980,9 +1109,15 @@ class _DoctorConsultationsScreenState extends State<DoctorConsultationsScreen> {
     Map<String, dynamic> chat,
     int index,
     bool isSelected,
+    bool isNarrow,
   ) {
     return InkWell(
-      onTap: () => setState(() => _activeChatIndex = index),
+      onTap: () {
+        setState(() {
+          _activeChatIndex = index;
+          if (isNarrow) _showChatList = false;
+        });
+      },
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -1302,8 +1437,10 @@ class _DoctorSettingsScreenState extends State<DoctorSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = ResponsiveLayout.isMobile(context);
+
     return Container(
-      padding: const EdgeInsets.all(40),
+      padding: EdgeInsets.all(isMobile ? 12 : 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1314,28 +1451,32 @@ class _DoctorSettingsScreenState extends State<DoctorSettingsScreen> {
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => setState(() => _currentView = 0),
                 ),
-              Text(
-                _currentView == 0
-                    ? 'Account Settings'
-                    : _currentView == 1
-                    ? 'Profile Information'
-                    : _currentView == 2
-                    ? 'Security & Password'
-                    : _currentView == 3
-                    ? 'Professional Credentials'
-                    : _currentView == 4
-                    ? 'Consultation Fees'
-                    : _currentView == 5
-                    ? 'Availability & Hours'
-                    : 'Notifications',
-                style: GoogleFonts.poppins(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  _currentView == 0
+                      ? 'Account Settings'
+                      : _currentView == 1
+                      ? 'Profile Information'
+                      : _currentView == 2
+                      ? 'Security & Password'
+                      : _currentView == 3
+                      ? 'Professional Credentials'
+                      : _currentView == 4
+                      ? 'Consultation Fees'
+                      : _currentView == 5
+                      ? 'Availability & Hours'
+                      : 'Notifications',
+                  style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 22 : 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isMobile ? 16 : 24),
           Expanded(child: _buildMainContent()),
         ],
       ),
@@ -1362,9 +1503,10 @@ class _DoctorSettingsScreenState extends State<DoctorSettingsScreen> {
   }
 
   Widget _buildSettingsList() {
+    bool isMobile = ResponsiveLayout.isMobile(context);
     return SingleChildScrollView(
       child: Container(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(isMobile ? 16 : 32),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -1408,50 +1550,53 @@ class _DoctorSettingsScreenState extends State<DoctorSettingsScreen> {
   }
 
   Widget _buildNotificationSettings() {
+    bool isMobile = ResponsiveLayout.isMobile(context);
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(isMobile ? 16 : 32),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        children: [
-          _notificationToggle(
-            'Appointment Reminders',
-            'Get notified about upcoming visits',
-            true,
-          ),
-          _notificationToggle(
-            'New Patient Message',
-            'Direct messages from patients',
-            true,
-          ),
-          _notificationToggle(
-            'Report Ready Alert',
-            'AI Analysis completion alerts',
-            false,
-          ),
-          _notificationToggle(
-            'Portal Security',
-            'Login alerts from new devices',
-            true,
-          ),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => setState(() => _currentView = 0),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF12B8A6),
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Save Preferences'),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            _notificationToggle(
+              'Appointment Reminders',
+              'Get notified about upcoming visits',
+              true,
             ),
-          ),
-        ],
+            _notificationToggle(
+              'New Patient Message',
+              'Direct messages from patients',
+              true,
+            ),
+            _notificationToggle(
+              'Report Ready Alert',
+              'AI Analysis completion alerts',
+              false,
+            ),
+            _notificationToggle(
+              'Portal Security',
+              'Login alerts from new devices',
+              true,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => setState(() => _currentView = 0),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF12B8A6),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Save Preferences'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1810,60 +1955,68 @@ class DoctorHelpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = ResponsiveLayout.isMobile(context);
+
     return Container(
-      padding: const EdgeInsets.all(40),
+      padding: EdgeInsets.all(isMobile ? 12 : 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Help & Support',
             style: GoogleFonts.poppins(
-              fontSize: 28,
+              fontSize: isMobile ? 22 : 28,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isMobile ? 16 : 24),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(32),
+              padding: EdgeInsets.all(isMobile ? 20 : 32),
               decoration: BoxDecoration(
                 color: const Color(0xFF12B8A6).withOpacity(0.05),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.headset_mic_outlined,
-                    size: 64,
-                    color: Color(0xFF12B8A6),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Need help with the platform?',
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.headset_mic_outlined,
+                      size: isMobile ? 48 : 64,
+                      color: const Color(0xFF12B8A6),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Our support team is available 24/7 for technical assistance.',
-                    style: GoogleFonts.poppins(color: const Color(0xFF6B7280)),
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B8A6),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
-                        vertical: 20,
+                    const SizedBox(height: 24),
+                    Text(
+                      'Need help with the platform?',
+                      style: GoogleFonts.poppins(
+                        fontSize: isMobile ? 18 : 20,
+                        fontWeight: FontWeight.bold,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    child: const Text('Contact Support'),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    Text(
+                      'Our support team is available 24/7 for technical assistance.',
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF6B7280),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF12B8A6),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isMobile ? 24 : 40,
+                          vertical: 20,
+                        ),
+                      ),
+                      child: const Text('Contact Support'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
