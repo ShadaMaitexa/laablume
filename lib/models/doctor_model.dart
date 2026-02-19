@@ -10,7 +10,7 @@ class DoctorModel {
   final bool isOnline; // Not in API list, default false
   final List<String> languages; // Not in API list, default empty
   final String education; // Not in API list, default empty
-  final String hospital; // Not in API list, default empty
+  final String? hospitalName;
   final String? imageUrl;
 
   DoctorModel({
@@ -25,7 +25,7 @@ class DoctorModel {
     this.isOnline = false,
     this.languages = const [],
     this.education = '',
-    this.hospital = '',
+    this.hospitalName,
     this.imageUrl,
   });
 
@@ -38,11 +38,15 @@ class DoctorModel {
       rating: (json['rating'] ?? 0).toDouble(),
       reviewCount: json['reviewCount'] ?? 0,
       consultationFee: (json['consultationFee'] ?? 0).toDouble(),
-      nextAvailable: json['nextAvailable'] != null ? DateTime.tryParse(json['nextAvailable']) : null,
+      nextAvailable: json['nextAvailable'] != null
+          ? DateTime.tryParse(json['nextAvailable'])
+          : null,
       isOnline: json['isOnline'] ?? false,
-      languages: json['languages'] != null ? List<String>.from(json['languages']) : [],
+      languages: json['languages'] != null
+          ? List<String>.from(json['languages'])
+          : [],
       education: json['education'] ?? '',
-      hospital: json['hospital'] ?? '',
+      hospitalName: json['hospitalName'] ?? json['hospital'] ?? '',
       imageUrl: json['profilePictureURL'],
     );
   }

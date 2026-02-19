@@ -131,6 +131,29 @@ class DoctorDetailScreen extends StatelessWidget {
                             ),
                           ),
                         ),
+                        if (doctor.hospitalName != null &&
+                            doctor.hospitalName!.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.local_hospital_rounded,
+                                color: Colors.white70,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                doctor.hospitalName!,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -210,7 +233,10 @@ class DoctorDetailScreen extends StatelessWidget {
                             _infoRow(
                               Icons.local_hospital_rounded,
                               'Hospital',
-                              doctor.hospital,
+                              doctor.hospitalName != null &&
+                                      doctor.hospitalName!.isNotEmpty
+                                  ? doctor.hospitalName!
+                                  : 'Independent Practice',
                             ),
                             const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),

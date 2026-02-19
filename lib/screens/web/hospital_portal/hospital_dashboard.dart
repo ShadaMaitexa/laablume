@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/user_provider.dart';
 import 'package:laablume/screens/web/common/landing_page.dart';
 import 'package:laablume/services/hospital_service.dart';
+import 'package:laablume/services/doctor_service.dart';
 
 class HospitalWebDashboard extends StatefulWidget {
   const HospitalWebDashboard({super.key});
@@ -899,9 +900,10 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
   }
 
   void _showAddDoctorDialog(BuildContext context) {
-    final doctorIdController = TextEditingController();
+    String? selectedDoctorId;
     final departmentController = TextEditingController();
     bool isSaving = false;
+    Future<List<dynamic>>? doctorsFuture = DoctorService().getDoctorsPublic();
 
     showDialog(
       context: context,
@@ -922,22 +924,106 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Enter the Doctor ID to associate them with this facility.',
+                    'Select a registered doctor and assign them to a department.',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: Colors.grey,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  _dialogField(
-                    'Doctor ID',
-                    doctorIdController,
-                    Icons.badge_outlined,
+                  const SizedBox(height: 24),
+                  Text(
+                    'Select Doctor',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF374151),
+                    ),
                   ),
-                  _dialogField(
+                  const SizedBox(height: 8),
+                  FutureBuilder<List<dynamic>>(
+                    future: doctorsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+                      if (snapshot.hasError) {
+                        return Text(
+                          'Error loading doctors',
+                          style: TextStyle(color: Colors.red),
+                        );
+                      }
+                      final doctors = (snapshot.data ?? []).where((doc) {
+                        // Filter doctors who are not already associated with any hospital
+                        return doc['hospitalId'] == null ||
+                            doc['hospitalId'].toString().isEmpty;
+                      }).toList();
+
+                      if (doctors.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            'No available (unassigned) doctors found.',
+                            style: GoogleFonts.poppins(
+                              color: Colors.orange,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      }
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: selectedDoctorId,
+                            isExpanded: true,
+                            hint: const Text('Choose an Available Doctor'),
+                            items: doctors.map((doc) {
+                              final id =
+                                  doc['id']?.toString() ??
+                                  doc['_id']?.toString() ??
+                                  '';
+                              return DropdownMenuItem<String>(
+                                value: id,
+                                child: Text(
+                                  '${doc['name']} (${doc['specialty'] ?? 'General'})',
+                                  style: GoogleFonts.poppins(fontSize: 14),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (v) =>
+                                setDialogState(() => selectedDoctorId = v),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
                     'Department',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF374151),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _dialogField(
+                    'e.g. Cardiology, Neurology',
                     departmentController,
                     Icons.medical_services_outlined,
                   ),
@@ -954,15 +1040,22 @@ class _HospitalWebDashboardState extends State<HospitalWebDashboard> {
               onPressed: isSaving
                   ? null
                   : () async {
-                      if (doctorIdController.text.isEmpty ||
+                      if (selectedDoctorId == null ||
                           departmentController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please select a doctor and department',
+                            ),
+                          ),
+                        );
                         return;
                       }
                       setDialogState(() => isSaving = true);
 
                       try {
                         await HospitalService().addDoctor({
-                          'doctorId': doctorIdController.text.trim(),
+                          'doctorId': selectedDoctorId,
                           'department': departmentController.text.trim(),
                         });
                         if (context.mounted) {

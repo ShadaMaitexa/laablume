@@ -184,7 +184,9 @@ class _DoctorWebDashboardState extends State<DoctorWebDashboard> {
                 ),
               ),
               Text(
-                user?.email ?? 'Clinical Hub: Cardiology',
+                user?.hospitalName != null && user!.hospitalName!.isNotEmpty
+                    ? 'Hospital: ${user.hospitalName}'
+                    : user?.email ?? 'Independent Practice',
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   color: const Color(0xFF6B7280),
