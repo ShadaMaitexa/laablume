@@ -17,6 +17,18 @@ class AdminService extends ApiBaseService {
     return Map<String, dynamic>.from(response);
   }
 
+  // Get list of doctors awaiting verification
+  Future<List<dynamic>> getPendingDoctors() async {
+    final response = await get('/admin/pending-doctors');
+    return response['doctors'] ?? response['data'] ?? [];
+  }
+
+  // Approve/Enable a doctor entity
+  Future<Map<String, dynamic>> approveDoctor(String id) async {
+    final response = await post('/admin/approve-doctor/$id', {});
+    return Map<String, dynamic>.from(response);
+  }
+
   // Get list of diagnostic centers awaiting verification
   Future<List<dynamic>> getPendingLabs() async {
     final response = await get('/admin/pending-labs');

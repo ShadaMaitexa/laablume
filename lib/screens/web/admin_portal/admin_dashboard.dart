@@ -15,7 +15,7 @@ class AdminWebPortal extends StatefulWidget {
 
 class _AdminWebPortalState extends State<AdminWebPortal> {
   int _selectedIndex = 0;
-  int _approvalTypeIndex = 0; // 0 for Hospitals, 1 for Labs
+  int _approvalTypeIndex = 0; // 0 for Hospitals, 1 for Doctors, 2 for Labs
   final Color _primaryColor = const Color(0xFF12B8A6);
   final Color _sidebarBg = const Color(0xFF111827);
   final Color _bgColor = const Color(0xFFF9FAFB);
@@ -445,7 +445,11 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                 border: Border.all(color: _primaryColor.withOpacity(0.2)),
               ),
               child: Row(
-                children: [_tabBtn('Hospitals', 0), _tabBtn('Labs', 1)],
+                children: [
+                  _tabBtn('Hospitals', 0),
+                  _tabBtn('Doctors', 1),
+                  _tabBtn('Labs', 2),
+                ],
               ),
             ),
           ],
@@ -454,6 +458,8 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
         FutureBuilder<List<dynamic>>(
           future: _approvalTypeIndex == 0
               ? AdminService().getPendingHospitals()
+              : _approvalTypeIndex == 1
+              ? AdminService().getPendingDoctors()
               : AdminService().getPendingLabs(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -469,7 +475,11 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
 
             if (pending.isEmpty) {
               return _emptyState(
-                'No pending ${_approvalTypeIndex == 0 ? "hospitals" : "labs"} found.',
+                'No pending ${_approvalTypeIndex == 0
+                    ? "hospitals"
+                    : _approvalTypeIndex == 1
+                    ? "doctors"
+                    : "labs"} found.',
               );
             }
 
@@ -506,6 +516,8 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                           child: Icon(
                             _approvalTypeIndex == 0
                                 ? Icons.business_rounded
+                                : _approvalTypeIndex == 1
+                                ? Icons.local_hospital_rounded
                                 : Icons.science_rounded,
                             color: _primaryColor,
                           ),
@@ -545,6 +557,10 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                                   try {
                                     if (_approvalTypeIndex == 0) {
                                       await AdminService().approveHospital(
+                                        partner['id'] ?? partner['_id'],
+                                      );
+                                    } else if (_approvalTypeIndex == 1) {
+                                      await AdminService().approveDoctor(
                                         partner['id'] ?? partner['_id'],
                                       );
                                     } else {

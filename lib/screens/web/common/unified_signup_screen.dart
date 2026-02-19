@@ -89,11 +89,125 @@ class _UnifiedSignupScreenState extends State<UnifiedSignupScreen> {
 
       if (mounted) {
         setState(() => _isLoading = false);
-        _showSnackBar(
-          'Account created successfully! Please login.',
-          isError: false,
-        );
-        await Future.delayed(const Duration(seconds: 1));
+
+        final bool requiresApproval =
+            _selectedRole == 'Doctor' ||
+            _selectedRole == 'Lab' ||
+            _selectedRole == 'Hospital';
+
+        if (requiresApproval) {
+          // Show a dialog explaining the approval process
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.hourglass_top_rounded,
+                      color: Color(0xFFD97706),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Pending Approval',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your ${_selectedRole} account has been created successfully.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: const Color(0xFF111827),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Before you can log in, an administrator must verify and approve your account. You will be able to access the portal once approved.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: const Color(0xFF6B7280),
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFD1FAE5)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.tips_and_updates_outlined,
+                          size: 16,
+                          color: Color(0xFF059669),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Approvals typically take 24-48 hours.',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: const Color(0xFF059669),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF12B8A6),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Got it',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          _showSnackBar(
+            'Account created successfully! Please login.',
+            isError: false,
+          );
+          await Future.delayed(const Duration(seconds: 1));
+        }
 
         if (mounted) {
           Navigator.pushReplacement(
