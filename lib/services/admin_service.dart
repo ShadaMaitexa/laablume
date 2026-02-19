@@ -27,47 +27,106 @@ class AdminService extends ApiBaseService {
     return Map<String, dynamic>.from(response);
   }
 
+  // Helper to safely parse List from API response
+  List<dynamic> _parseList(dynamic response, String key) {
+    if (response == null) return [];
+    if (response is List) return response;
+    if (response is Map) {
+      final data =
+          response[key] ??
+          response['data'] ??
+          response['users'] ??
+          response['hospitals'] ??
+          response['doctors'] ??
+          response['labs'] ??
+          response['bookings'];
+      if (data is List) return data;
+    }
+    return [];
+  }
+
   // Get list of hospitals awaiting verification
   Future<List<dynamic>> getPendingHospitals() async {
-    final response = await get('/admin/pending-hospitals');
-    return response['hospitals'] ?? response['data'] ?? [];
+    try {
+      final response = await get('/admin/pending-hospitals');
+      return _parseList(response, 'hospitals');
+    } catch (e) {
+      print('Error fetching pending hospitals: $e');
+      return [];
+    }
   }
 
   // Approve/Enable a hospital entity
   Future<Map<String, dynamic>> approveHospital(String id) async {
     final response = await post('/admin/approve-hospital/$id', {});
-    return Map<String, dynamic>.from(response);
+    return Map<String, dynamic>.from(response is Map ? response : {});
   }
 
   // Get list of doctors awaiting verification
   Future<List<dynamic>> getPendingDoctors() async {
-    final response = await get('/admin/pending-doctors');
-    return response['doctors'] ?? response['data'] ?? [];
+    try {
+      final response = await get('/admin/pending-doctors');
+      return _parseList(response, 'doctors');
+    } catch (e) {
+      print('Error fetching pending doctors: $e');
+      return [];
+    }
   }
 
   // Approve/Enable a doctor entity
   Future<Map<String, dynamic>> approveDoctor(String id) async {
     final response = await post('/admin/approve-doctor/$id', {});
-    return Map<String, dynamic>.from(response);
+    return Map<String, dynamic>.from(response is Map ? response : {});
   }
 
   // Get list of diagnostic centers awaiting verification
   Future<List<dynamic>> getPendingLabs() async {
-    final response = await get('/admin/pending-labs');
-    return response['labs'] ?? response['data'] ?? [];
+    try {
+      final response = await get('/admin/pending-labs');
+      return _parseList(response, 'labs');
+    } catch (e) {
+      print('Error fetching pending labs: $e');
+      return [];
+    }
   }
 
   // Approve/Enable a lab entity
   Future<Map<String, dynamic>> approveLab(String id) async {
     final response = await post('/admin/approve-lab/$id', {});
-    return Map<String, dynamic>.from(response);
+    return Map<String, dynamic>.from(response is Map ? response : {});
+  }
+
+  // Get list of users awaiting verification (privacyPolicyAccepted: false)
+  Future<List<dynamic>> getPendingUsers() async {
+    try {
+      final allUsers = await getUsers();
+      return allUsers
+          .where((u) => u['privacyPolicyAccepted'] == false)
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Approve a user account
+  Future<Map<String, dynamic>> approveUser(String id) async {
+    final response = await patch('/admin/users/$id/status', {
+      'privacyPolicyAccepted': true,
+      'isActive': true,
+    });
+    return Map<String, dynamic>.from(response is Map ? response : {});
   }
 
   // Search and manage all platform users
   Future<List<dynamic>> getUsers({String? search}) async {
-    final queryParams = search != null ? {'search': search} : null;
-    final response = await get('/admin/users', queryParams: queryParams);
-    return response['users'] ?? response['data'] ?? [];
+    try {
+      final queryParams = search != null ? {'search': search} : null;
+      final response = await get('/admin/users', queryParams: queryParams);
+      return _parseList(response, 'users');
+    } catch (e) {
+      print('Error fetching users: $e');
+      return [];
+    }
   }
 
   // Suspend or deactivate accounts
@@ -78,25 +137,40 @@ class AdminService extends ApiBaseService {
     final response = await patch('/admin/users/$id/status', {
       'isActive': isActive,
     });
-    return Map<String, dynamic>.from(response);
+    return Map<String, dynamic>.from(response is Map ? response : {});
   }
 
   // Platform-wide usage and growth analytics
   Future<Map<String, dynamic>> getSystemReports() async {
-    final response = await get('/admin/reports/system');
-    return Map<String, dynamic>.from(response);
+    try {
+      final response = await get('/admin/reports/system');
+      return Map<String, dynamic>.from(response is Map ? response : {});
+    } catch (e) {
+      print('Error fetching system reports: $e');
+      return {};
+    }
   }
 
   // Get all bookings (appointments/tests) across the platform
   Future<List<dynamic>> getAllBookings() async {
-    final response = await get('/admin/bookings');
-    return response['bookings'] ?? response['data'] ?? [];
+    try {
+      final response = await get('/admin/bookings');
+      return _parseList(response, 'bookings');
+    } catch (e) {
+      print('Error fetching all bookings: $e');
+      return [];
+    }
   }
 
   // Get booking-specific analytics
   Future<Map<String, dynamic>> getBookingStats() async {
-    final response = await get('/admin/reports/bookings');
-    return Map<String, dynamic>.from(response);
+    try {
+      final response = await get('/admin/reports/bookings');
+      return Map<String, dynamic>.from(response is Map ? response : {});
+    } catch (e) {
+      print('Error fetching booking stats: $e');
+      return {};
+    }
   }
 
   // Get patient feedback
@@ -104,27 +178,7 @@ class AdminService extends ApiBaseService {
     // Return mock data if API fails or for demonstration
     try {
       final response = await get('/admin/feedback');
-      return response['feedback'] ?? response['data'] ?? [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  // Get registration growth trends for charts
-  Future<Map<String, dynamic>> getGrowthTrends() async {
-    try {
-      final response = await get('/admin/reports/growth');
-      return Map<String, dynamic>.from(response);
-    } catch (e) {
-      return {};
-    }
-  }
-
-  // Get system security logs
-  Future<List<dynamic>> getSecurityLogs() async {
-    try {
-      final response = await get('/admin/logs/security');
-      return response['logs'] ?? response['data'] ?? [];
+      return _parseList(response, 'feedback');
     } catch (e) {
       return [];
     }

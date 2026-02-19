@@ -80,10 +80,23 @@ class _OtpScreenState extends State<OtpScreen> {
 
         if (response != null) {
           final role = response['role'] ?? 'patient';
+          final bool isApproved =
+              response['privacyPolicyAccepted'] ??
+              response['isApproved'] ??
+              true;
+
           if (role != 'patient') {
             setState(() {
               _otpError =
                   'This app is for patients only. Please use the Web Portal for $role role.';
+            });
+            return;
+          }
+
+          if (!isApproved) {
+            setState(() {
+              _otpError =
+                  'Your account is awaiting admin approval. Please try again later.';
             });
             return;
           }

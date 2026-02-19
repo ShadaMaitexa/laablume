@@ -20,6 +20,29 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
   final Color _sidebarBg = const Color(0xFF111827);
   final Color _bgColor = const Color(0xFFF9FAFB);
 
+  // Cache futures to prevent rebuild loops
+  Future<List<dynamic>>? _hospitalsFuture;
+  Future<List<dynamic>>? _doctorsFuture;
+  Future<List<dynamic>>? _labsFuture;
+  Future<List<dynamic>>? _usersFuture;
+  Future<Map<String, dynamic>>? _reportsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshData();
+  }
+
+  void _refreshData() {
+    setState(() {
+      _hospitalsFuture = AdminService().getPendingHospitals();
+      _doctorsFuture = AdminService().getPendingDoctors();
+      _labsFuture = AdminService().getPendingLabs();
+      _usersFuture = AdminService().getUsers();
+      _reportsFuture = AdminService().getSystemReports();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isDesktop = MediaQuery.of(context).size.width >= 1100;
@@ -132,7 +155,14 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
-        onTap: onTap ?? () => setState(() => _selectedIndex = index),
+        onTap:
+            onTap ??
+            () {
+              if (_selectedIndex != index) {
+                setState(() => _selectedIndex = index);
+                _refreshData();
+              }
+            },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         leading: Icon(
           icon,
@@ -258,7 +288,7 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
 
   Widget _buildOverview(bool isDesktop) {
     return FutureBuilder<Map<String, dynamic>>(
-      future: AdminService().getSystemReports(),
+      future: _reportsFuture,
       builder: (context, snapshot) {
         final data = snapshot.data ?? {};
         final stats = Map<String, dynamic>.from(
@@ -275,23 +305,7 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
             const SizedBox(height: 32),
             _buildStatsGrid(isDesktop, stats),
             const SizedBox(height: 40),
-            if (isDesktop)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(flex: 2, child: _buildRegistrationTrends()),
-                  const SizedBox(width: 32),
-                  Expanded(flex: 1, child: _buildSecurityAlerts()),
-                ],
-              )
-            else
-              Column(
-                children: [
-                  _buildRegistrationTrends(),
-                  const SizedBox(height: 32),
-                  _buildSecurityAlerts(),
-                ],
-              ),
+            // Registration trends and Security alerts removed due to 404 errors
           ],
         );
       },
@@ -457,10 +471,10 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
         const SizedBox(height: 32),
         FutureBuilder<List<dynamic>>(
           future: _approvalTypeIndex == 0
-              ? AdminService().getPendingHospitals()
+              ? _hospitalsFuture
               : _approvalTypeIndex == 1
-              ? AdminService().getPendingDoctors()
-              : AdminService().getPendingLabs(),
+              ? _doctorsFuture
+              : _labsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
@@ -472,15 +486,14 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
             }
 
             final pending = snapshot.data ?? [];
+            final roleFilter = _approvalTypeIndex == 0
+                ? 'hospital'
+                : _approvalTypeIndex == 1
+                ? 'doctor'
+                : 'lab';
 
             if (pending.isEmpty) {
-              return _emptyState(
-                'No pending ${_approvalTypeIndex == 0
-                    ? "hospitals"
-                    : _approvalTypeIndex == 1
-                    ? "doctors"
-                    : "labs"} found.',
-              );
+              return _emptyState('No pending ${roleFilter}s found.');
             }
 
             return Container(
@@ -505,7 +518,13 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                       partner['hospitalName'] ??
                       partner['labName'] ??
                       partner['name'] ??
+                      partner['userName'] ??
                       'Unnamed Partner';
+                  final role =
+                      partner['role']?.toString().toUpperCase() ?? 'USER';
+                  final phone =
+                      partner['mobileNumber'] ?? partner['phone'] ?? 'N/A';
+
                   return Padding(
                     padding: const EdgeInsets.all(24),
                     child: Row(
@@ -513,13 +532,13 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                         CircleAvatar(
                           radius: 28,
                           backgroundColor: _primaryColor.withOpacity(0.1),
-                          child: Icon(
-                            _approvalTypeIndex == 0
-                                ? Icons.business_rounded
-                                : _approvalTypeIndex == 1
-                                ? Icons.local_hospital_rounded
-                                : Icons.science_rounded,
-                            color: _primaryColor,
+                          child: Text(
+                            name[0].toUpperCase(),
+                            style: TextStyle(
+                              color: _primaryColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 20),
@@ -536,10 +555,11 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Email: ${partner['email']} • Phone: ${partner['mobileNumber'] ?? partner['phone']}',
+                                '$role • $phone',
                                 style: GoogleFonts.poppins(
                                   fontSize: 13,
                                   color: const Color(0xFF6B7280),
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
@@ -549,8 +569,27 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'PENDING',
+                                  style: TextStyle(
+                                    color: Colors.orange,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
                               _actionBtn(
-                                'Approve Partner',
+                                'Approve',
                                 _primaryColor,
                                 true,
                                 () async {
@@ -563,8 +602,12 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                                       await AdminService().approveDoctor(
                                         partner['id'] ?? partner['_id'],
                                       );
-                                    } else {
+                                    } else if (_approvalTypeIndex == 2) {
                                       await AdminService().approveLab(
+                                        partner['id'] ?? partner['_id'],
+                                      );
+                                    } else {
+                                      await AdminService().approveUser(
                                         partner['id'] ?? partner['_id'],
                                       );
                                     }
@@ -574,11 +617,11 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                                       ).showSnackBar(
                                         const SnackBar(
                                           content: Text(
-                                            'Partner approved successfully',
+                                            'Approved successfully',
                                           ),
                                         ),
                                       );
-                                      setState(() {});
+                                      _refreshData();
                                     }
                                   } catch (e) {
                                     if (mounted) {
@@ -614,7 +657,10 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
   Widget _tabBtn(String label, int index) {
     bool isSelected = _approvalTypeIndex == index;
     return GestureDetector(
-      onTap: () => setState(() => _approvalTypeIndex = index),
+      onTap: () {
+        setState(() => _approvalTypeIndex = index);
+        _refreshData();
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
@@ -666,12 +712,21 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
         ),
         const SizedBox(height: 32),
         FutureBuilder<List<dynamic>>(
-          future: AdminService().getUsers(),
+          future: _usersFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
-            final users = snapshot.data ?? [];
+            if (snapshot.hasError) {
+              return _emptyState('Error: ${snapshot.error}');
+            }
+            final allUsers = snapshot.data ?? [];
+            final allowedRoles = ['patient', 'doctor', 'lab', 'hospital'];
+            final users = allUsers.where((u) {
+              final role = u['role']?.toString().toLowerCase();
+              return allowedRoles.contains(role);
+            }).toList();
+
             if (users.isEmpty)
               return _emptyState('No users found in the system.');
 
@@ -776,6 +831,21 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                           ),
                         ),
                         const SizedBox(width: 16),
+                        if (!isApproved) ...[
+                          _actionBtn('Approve', _primaryColor, true, () async {
+                            try {
+                              await AdminService().approveUser(
+                                user['id'] ?? user['_id'],
+                              );
+                              _refreshData();
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error: $e')),
+                              );
+                            }
+                          }),
+                          const SizedBox(width: 8),
+                        ],
                         _actionBtn(
                           isActive ? 'Suspend' : 'Activate',
                           isActive ? Colors.red : Colors.green,
@@ -786,7 +856,7 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                                 user['id'] ?? user['_id'],
                                 !isActive,
                               );
-                              setState(() {});
+                              _refreshData();
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Error: $e')),
@@ -1260,7 +1330,7 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                 color: Colors.green,
               ),
               title: const Text(
-                'Approve Partner',
+                'Approve',
                 style: TextStyle(color: Colors.green),
               ),
               onTap: () async {
@@ -1274,8 +1344,12 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                     await AdminService().approveDoctor(
                       partner['id'] ?? partner['_id'],
                     );
-                  } else {
+                  } else if (_approvalTypeIndex == 2) {
                     await AdminService().approveLab(
+                      partner['id'] ?? partner['_id'],
+                    );
+                  } else {
+                    await AdminService().approveUser(
                       partner['id'] ?? partner['_id'],
                     );
                   }
@@ -1323,197 +1397,6 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
       child: Text(
         label,
         style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
-  Widget _buildRegistrationTrends() {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: AdminService().getGrowthTrends(),
-      builder: (context, snapshot) {
-        final data = snapshot.data ?? {};
-        final growth = data['growth'] ?? '+0%';
-        final newUsers = data['newUsers'] ?? 0;
-        final period = data['period'] ?? 'This Month';
-
-        return Container(
-          height: 400,
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Growth Analytics',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                '$newUsers New Users',
-                style: GoogleFonts.poppins(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: _primaryColor,
-                ),
-              ),
-              Text(
-                'Growth: $growth ($period)',
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey),
-              ),
-              const Spacer(),
-              // Simple Visual Bar Chart Placeholder using Containers
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: List.generate(7, (index) {
-                  // Mock visual height based on index if data not granular
-                  final height = 50.0 + (index * 20) % 150;
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        width: 30,
-                        height: height,
-                        decoration: BoxDecoration(
-                          color: _primaryColor.withOpacity(0.2 + (index * 0.1)),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Day ${index + 1}',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  );
-                }),
-              ),
-              const Spacer(),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSecurityAlerts() {
-    return FutureBuilder<List<dynamic>>(
-      future: AdminService().getSecurityLogs(),
-      builder: (context, snapshot) {
-        final logs = snapshot.data ?? [];
-
-        return Container(
-          height: 400,
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F2937),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Security Log',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 24),
-              if (logs.isEmpty)
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.security,
-                          color: Colors.green,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No active threats.',
-                          style: GoogleFonts.poppins(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: logs.length,
-                    itemBuilder: (context, index) {
-                      final log = logs[index];
-                      final msg = log['message'] ?? 'System Event';
-                      final sub = log['details'] ?? 'No details';
-                      final type = log['type'] ?? 'info';
-
-                      Color color = Colors.blue;
-                      if (type == 'warning') color = Colors.orange;
-                      if (type == 'critical' || type == 'error')
-                        color = Colors.red;
-                      if (type == 'success') color = Colors.green;
-
-                      return _securityItem(msg, sub, color);
-                    },
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _securityItem(String msg, String sub, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  msg,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  sub,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white60,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
