@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../providers/patient_provider.dart';
 import '../../models/doctor_model.dart';
 
 class BookConsultationScreen extends StatefulWidget {
@@ -41,7 +43,11 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
         backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Color(0xFF111827),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -84,7 +90,11 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                           color: const Color(0xFF12B8A6).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(18),
                         ),
-                        child: const Icon(Icons.person_rounded, size: 36, color: Color(0xFF12B8A6)),
+                        child: const Icon(
+                          Icons.person_rounded,
+                          size: 36,
+                          color: Color(0xFF12B8A6),
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -111,7 +121,11 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                const Icon(Icons.star_rounded, size: 16, color: Colors.amber),
+                                const Icon(
+                                  Icons.star_rounded,
+                                  size: 16,
+                                  color: Colors.amber,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '${widget.doctor.rating}',
@@ -125,7 +139,10 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                                 Container(
                                   width: 4,
                                   height: 4,
-                                  decoration: const BoxDecoration(color: Color(0xFFE5E7EB), shape: BoxShape.circle),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFE5E7EB),
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -202,7 +219,11 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                             color: const Color(0xFF12B8A6).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.calendar_month_rounded, color: Color(0xFF12B8A6), size: 22),
+                          child: const Icon(
+                            Icons.calendar_month_rounded,
+                            color: Color(0xFF12B8A6),
+                            size: 22,
+                          ),
                         ),
                         const SizedBox(width: 16),
                         Text(
@@ -211,12 +232,19 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                               : 'Select available date',
                           style: GoogleFonts.poppins(
                             fontSize: 15,
-                            fontWeight: _selectedDate != null ? FontWeight.w700 : FontWeight.w500,
-                            color: _selectedDate != null ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
+                            fontWeight: _selectedDate != null
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: _selectedDate != null
+                                ? const Color(0xFF111827)
+                                : const Color(0xFF9CA3AF),
                           ),
                         ),
                         const Spacer(),
-                        const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF9CA3AF)),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: Color(0xFF9CA3AF),
+                        ),
                       ],
                     ),
                   ),
@@ -230,7 +258,9 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
-                  children: _timeSlots.map((slot) => _timeSlotChip(slot)).toList(),
+                  children: _timeSlots
+                      .map((slot) => _timeSlotChip(slot))
+                      .toList(),
                 ),
 
                 const SizedBox(height: 32),
@@ -289,7 +319,10 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                   ),
                   child: Column(
                     children: [
-                      _paymentRow('Consultation Fee', '₹${widget.doctor.consultationFee}'),
+                      _paymentRow(
+                        'Consultation Fee',
+                        '₹${widget.doctor.consultationFee}',
+                      ),
                       const SizedBox(height: 12),
                       _paymentRow('Service Fee', '₹50'),
                       const Padding(
@@ -412,7 +445,20 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
   }
 
   String _getMonthName(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return months[month - 1];
   }
 
@@ -424,7 +470,7 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
     required bool isAvailable,
   }) {
     final isSelected = _consultationType == value;
-    
+
     return GestureDetector(
       onTap: isAvailable
           ? () {
@@ -434,7 +480,9 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected && isAvailable ? Colors.white : (isAvailable ? Colors.white : const Color(0xFFF3F4F6)),
+          color: isSelected && isAvailable
+              ? Colors.white
+              : (isAvailable ? Colors.white : const Color(0xFFF3F4F6)),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isSelected && isAvailable
@@ -442,13 +490,15 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                 : (isAvailable ? const Color(0xFFE5E7EB) : Colors.transparent),
             width: isSelected && isAvailable ? 2 : 1,
           ),
-          boxShadow: isSelected && isAvailable ? [
-            BoxShadow(
-              color: const Color(0xFF12B8A6).withOpacity(0.1),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
-            ),
-          ] : null,
+          boxShadow: isSelected && isAvailable
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF12B8A6).withOpacity(0.1),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           children: [
@@ -466,7 +516,9 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: isAvailable ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
+                color: isAvailable
+                    ? const Color(0xFF111827)
+                    : const Color(0xFF9CA3AF),
               ),
             ),
             const SizedBox(height: 2),
@@ -486,7 +538,7 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
 
   Widget _timeSlotChip(String slot) {
     final isSelected = _selectedTimeSlot == slot;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() => _selectedTimeSlot = slot);
@@ -503,13 +555,15 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
                 : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: const Color(0xFF12B8A6).withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ] : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF12B8A6).withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           slot,
@@ -556,7 +610,7 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
     }
   }
 
-  void _confirmBooking() {
+  Future<void> _confirmBooking() async {
     if (_selectedDate == null) {
       _showSnackBar('Please select a date');
       return;
@@ -572,16 +626,50 @@ class _BookConsultationScreenState extends State<BookConsultationScreen> {
       return;
     }
 
-    _showSnackBar('Booking successful!');
-    
-    Navigator.pop(context);
-    Navigator.pop(context);
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
+      ),
+    );
+
+    try {
+      final success = await context.read<PatientProvider>().bookAppointment({
+        'doctorId': widget.doctor.id,
+        'date': _selectedDate!.toIso8601String(),
+        'time': _selectedTimeSlot,
+        'consultationType': _consultationType,
+        'reasonForVisit': _symptomsController.text.trim(),
+        'platformFee': 50,
+        'consultationFee': widget.doctor.consultationFee,
+        'totalAmount': widget.doctor.consultationFee + 50,
+      });
+
+      // Pop loading dialog
+      Navigator.pop(context);
+
+      if (success) {
+        _showSnackBar('Booking successful!');
+        Navigator.pop(context);
+        Navigator.pop(context);
+      } else {
+        _showSnackBar('Booking failed. Please try again.');
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      _showSnackBar('An error occurred: $e');
+    }
   }
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
         backgroundColor: const Color(0xFF111827),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

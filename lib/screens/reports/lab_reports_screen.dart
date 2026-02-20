@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:laablume/providers/patient_provider.dart';
+import 'package:provider/provider.dart';
 import 'upload_report_screen.dart';
 import 'report_detail_screen.dart';
 import '../../services/patient_service.dart';
@@ -24,6 +26,14 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
       debugPrint("Error fetching reports: $e");
       return [];
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+   context.read<PatientProvider>().loadReports();
+    });
   }
 
   @override
@@ -135,10 +145,9 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
 
           // Reports List
           Expanded(
-            child: FutureBuilder<List<Report>>(
-              future: fetchLabReports(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+            child: Consumer<PatientProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading && provider.reports.isEmpty) {
                   return const Center(
                     child: CircularProgressIndicator(
                       color: Color(0xFF12B8A6),
@@ -147,11 +156,11 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                   );
                 }
 
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                if (provider.reports.isEmpty) {
                   return _emptyState();
                 }
 
-                final reports = snapshot.data!;
+                final reports = provider.reports;
 
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),

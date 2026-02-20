@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import '../services/patient_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/patient_provider.dart';
 import '../models/appointment_model.dart';
 import '../services/doctor_service.dart';
 import '../models/doctor_model.dart';
@@ -14,40 +15,33 @@ class MyAppointmentsScreen extends StatefulWidget {
 }
 
 class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
-  final PatientService _patientService = PatientService();
   final DoctorService _doctorService = DoctorService();
-
-  late Future<List<AppointmentModel>> _appointmentsFuture;
-  Map<String, DoctorModel> _doctorsCache = {};
+  final Map<String, DoctorModel> _doctorsCache = {};
 
   @override
   void initState() {
     super.initState();
-    _appointmentsFuture = _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PatientProvider>().loadAppointments();
+    });
   }
 
-  Future<List<AppointmentModel>> _loadData() async {
-    try {
-      final List<dynamic> response = await _patientService.getMyAppointments();
-      final appointments = response
-          .map((json) => AppointmentModel.fromJson(json))
-          .toList();
-
-      // Fetch details for all unique doctors
-      final doctorIds = appointments.map((e) => e.doctorID).toSet();
-      for (final id in doctorIds) {
-        if (id.isNotEmpty && !_doctorsCache.containsKey(id)) {
+  Future<void> _loadDoctorData(List<AppointmentModel> appointments) async {
+    // Fetch details for all unique doctors
+    final doctorIds = appointments.map((e) => e.doctorID).toSet();
+    for (final id in doctorIds) {
+      if (id.isNotEmpty && !_doctorsCache.containsKey(id)) {
+        try {
           final doctorJson = await _doctorService.getDoctorById(id);
           if (doctorJson != null && doctorJson.isNotEmpty) {
-            _doctorsCache[id] = DoctorModel.fromJson(doctorJson);
+            setState(() {
+              _doctorsCache[id] = DoctorModel.fromJson(doctorJson);
+            });
           }
+        } catch (e) {
+          debugPrint("Error loading doctor $id: $e");
         }
       }
-
-      return appointments;
-    } catch (e) {
-      debugPrint("Error loading appointments: $e");
-      rethrow;
     }
   }
 
@@ -96,19 +90,15 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: FutureBuilder<List<AppointmentModel>>(
-        future: _appointmentsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error loading appointments',
-                style: GoogleFonts.poppins(color: Colors.red),
-              ),
+      body: Consumer<PatientProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading && provider.appointments.isEmpty) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
             );
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          }
+
+          if (provider.appointments.isEmpty) {
             return Center(
               child: Text(
                 'No appointments found',
@@ -117,7 +107,9 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
             );
           }
 
-          final appointments = snapshot.data!;
+          final appointments = provider.appointments;
+          _loadDoctorData(appointments);
+
           return ListView.separated(
             padding: const EdgeInsets.all(24),
             itemCount: appointments.length,
@@ -127,8 +119,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               final doctor = _doctorsCache[apt.doctorID];
 
               return _buildAppointmentCard(
-                doctorName: doctor?.name ?? "Unknown Doctor",
-                specialty: doctor?.specialty ?? "General",
+                doctorName: doctor?.name ?? "Loading...",
+                specialty: doctor?.specialty ?? "Please wait",
                 dateTime: _formatDate(apt.appointmentDateTime),
                 type: apt.reasonForVisit,
                 status: apt.status,
