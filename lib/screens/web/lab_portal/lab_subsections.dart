@@ -696,7 +696,7 @@ class _LabSettingsScreenState extends State<LabSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1703,7 +1703,7 @@ class _LabProfileScreenState extends State<LabProfileScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
 
-    return Container(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -40,7 +40,7 @@ class _LabWebDashboardState extends State<LabWebDashboard> {
               children: [
                 _buildHeader(!isDesktop),
                 Expanded(
-                  child: SingleChildScrollView(
+                  child: Padding(
                     padding: EdgeInsets.all(isDesktop ? 40 : 20),
                     child: _buildContent(isDesktop),
                   ),

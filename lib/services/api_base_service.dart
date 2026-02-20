@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -58,17 +59,20 @@ class ApiBaseService {
       uri = uri.replace(queryParameters: queryParams);
     }
 
+    debugPrint('Sending GET to $uri');
+    debugPrint('Headers: $_headers');
     final response = await http.get(uri, headers: _headers);
     return _processResponse(response);
   }
 
   // POST request
   Future<dynamic> post(String endpoint, Map<String, dynamic> data) async {
-    print('Sending POST to $endpoint');
-    print('Payload: $data');
-    print('Headers: $_headers');
+    final uri = Uri.parse('$baseUrl$endpoint');
+    debugPrint('Sending POST to $uri');
+    debugPrint('Payload: $data');
+    debugPrint('Headers: $_headers');
     final response = await http.post(
-      Uri.parse('$baseUrl$endpoint'),
+      uri,
       headers: _headers,
       body: jsonEncode(data),
     );
@@ -77,8 +81,12 @@ class ApiBaseService {
 
   // PUT request
   Future<dynamic> put(String endpoint, Map<String, dynamic> data) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    debugPrint('Sending PUT to $uri');
+    debugPrint('Payload: $data');
+    debugPrint('Headers: $_headers');
     final response = await http.put(
-      Uri.parse('$baseUrl$endpoint'),
+      uri,
       headers: _headers,
       body: jsonEncode(data),
     );
@@ -87,8 +95,12 @@ class ApiBaseService {
 
   // PATCH request
   Future<dynamic> patch(String endpoint, Map<String, dynamic> data) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    debugPrint('Sending PATCH to $uri');
+    debugPrint('Payload: $data');
+    debugPrint('Headers: $_headers');
     final response = await http.patch(
-      Uri.parse('$baseUrl$endpoint'),
+      uri,
       headers: _headers,
       body: jsonEncode(data),
     );
@@ -97,10 +109,10 @@ class ApiBaseService {
 
   // DELETE request
   Future<dynamic> delete(String endpoint) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl$endpoint'),
-      headers: _headers,
-    );
+    final uri = Uri.parse('$baseUrl$endpoint');
+    debugPrint('Sending DELETE to $uri');
+    debugPrint('Headers: $_headers');
+    final response = await http.delete(uri, headers: _headers);
     return _processResponse(response);
   }
 

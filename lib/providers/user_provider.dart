@@ -10,6 +10,26 @@ class UserProvider extends ChangeNotifier {
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
 
+  Future<void> initialize() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await AuthService().loadToken();
+      if (AuthService().token != null) {
+        final profile = await AuthService().getProfile();
+        // The profile response usually wraps user data in 'user' or 'data'
+        final data = profile['user'] ?? profile['data'] ?? profile;
+        _currentUser = UserModel.fromJson(data);
+      }
+    } catch (e) {
+      debugPrint('UserProvider init error: $e');
+      await logout();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   void setCurrentUser(UserModel user) {
     _currentUser = user;
     notifyListeners();

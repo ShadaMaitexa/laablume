@@ -13,13 +13,18 @@ class AdminService extends ApiBaseService {
 
   // Verify OTP and get admin access token
   Future<Map<String, dynamic>> verifyOtp(String phone, String otp) async {
+    // Clear existing tokens to ensure a clean login request
+    await clearTokens();
+
     final response = await post('/admin/verify-otp', {
       'phone': phone,
       'otp': otp,
     });
     // Store token if available
     if (response != null && response is Map<String, dynamic>) {
-      String? token = response['token'] ?? response['accessToken'];
+      // Handle potential unwrapping if key is missing at root
+      final data = response['data'] ?? response;
+      String? token = data['token'] ?? data['accessToken'];
       if (token != null) {
         await setToken(token);
       }
@@ -58,13 +63,7 @@ class AdminService extends ApiBaseService {
 
   // Approve/Enable a hospital entity
   Future<Map<String, dynamic>> approveHospital(String id) async {
-    // First approve the hospital entity
-    await post('/admin/approve-hospital/$id', {});
-    // Then ensure the user status is updated for login
-    final response = await patch('/admin/users/$id/status', {
-      'privacyPolicyAccepted': true,
-      'isActive': true,
-    });
+    final response = await post('/admin/approve-hospital/$id', {});
     return Map<String, dynamic>.from(response is Map ? response : {});
   }
 
@@ -81,13 +80,7 @@ class AdminService extends ApiBaseService {
 
   // Approve/Enable a doctor entity
   Future<Map<String, dynamic>> approveDoctor(String id) async {
-    // First approve the doctor entity
-    await post('/admin/approve-doctor/$id', {});
-    // Then ensure the user status is updated for login
-    final response = await patch('/admin/users/$id/status', {
-      'privacyPolicyAccepted': true,
-      'isActive': true,
-    });
+    final response = await post('/admin/approve-doctor/$id', {});
     return Map<String, dynamic>.from(response is Map ? response : {});
   }
 
@@ -104,13 +97,7 @@ class AdminService extends ApiBaseService {
 
   // Approve/Enable a lab entity
   Future<Map<String, dynamic>> approveLab(String id) async {
-    // First approve the lab entity
-    await post('/admin/approve-lab/$id', {});
-    // Then ensure the user status is updated for login
-    final response = await patch('/admin/users/$id/status', {
-      'privacyPolicyAccepted': true,
-      'isActive': true,
-    });
+    final response = await post('/admin/approve-lab/$id', {});
     return Map<String, dynamic>.from(response is Map ? response : {});
   }
 
@@ -126,8 +113,20 @@ class AdminService extends ApiBaseService {
     }
   }
 
-  // Approve a user account
-  Future<Map<String, dynamic>> approveUser(String id) async {
+  // Approve a user account with optional role-specific approval
+  Future<Map<String, dynamic>> approveUser(String id, {String? role}) async {
+    // If a role is provided, trigger the specific provider approval as well
+    if (role != null) {
+      final r = role.toLowerCase();
+      try {
+        if (r == 'doctor') await post('/admin/approve-doctor/$id', {});
+        if (r == 'lab') await post('/admin/approve-lab/$id', {});
+        if (r == 'hospital') await post('/admin/approve-hospital/$id', {});
+      } catch (e) {
+        print('Provider-specific approval failed: $e');
+      }
+    }
+
     final response = await patch('/admin/users/$id/status', {
       'privacyPolicyAccepted': true,
       'isActive': true,

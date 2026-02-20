@@ -35,8 +35,9 @@ class AuthService extends ApiBaseService {
 
     // Store tokens
     if (response != null && response is Map<String, dynamic>) {
-      String? token = response['token'] ?? response['accessToken'];
-      String? refreshToken = response['refreshToken'];
+      final tokenData = response['data'] ?? response;
+      String? token = tokenData['token'] ?? tokenData['accessToken'];
+      String? refreshToken = tokenData['refreshToken'];
       if (token != null) {
         await setToken(token, refreshToken: refreshToken);
       }
@@ -46,10 +47,6 @@ class AuthService extends ApiBaseService {
 
   // Request OTP for mobile login (V2)
   Future<Map<String, dynamic>> requestOtp(String phone) async {
-    // Hardcoded Admin Bypass
-    if (phone == '+911234567890') {
-      return {'message': 'OTP sent (Hardcoded Bypass)'};
-    }
     final response = await post('/auth/v2/request-otp', {'phone': phone});
     return response;
   }
@@ -60,20 +57,8 @@ class AuthService extends ApiBaseService {
     required String otp,
     String? role,
   }) async {
-    // Hardcoded Admin Bypass
-    if (phone == '+911234567890' && otp == '1234') {
-      final mockAdmin = {
-        'token': 'hardcoded-admin-token',
-        'name': 'Platform Admin',
-        'phone': '+911234567890',
-        'email': 'admin@lablume.com',
-        'role': 'admin',
-        'id': 'admin-001',
-        'isApproved': true,
-      };
-      await setToken(mockAdmin['token'].toString());
-      return mockAdmin;
-    }
+    // Clear existing tokens to ensure a clean login request
+    await clearTokens();
 
     final Map<String, dynamic> data = {'phone': phone, 'otp': otp};
     if (role != null) {
@@ -83,8 +68,9 @@ class AuthService extends ApiBaseService {
 
     // Store tokens
     if (response != null && response is Map<String, dynamic>) {
-      String? token = response['token'] ?? response['accessToken'];
-      String? refreshToken = response['refreshToken'];
+      final tokenData = response['data'] ?? response;
+      String? token = tokenData['token'] ?? tokenData['accessToken'];
+      String? refreshToken = tokenData['refreshToken'];
       if (token != null) {
         await setToken(token, refreshToken: refreshToken);
       }
@@ -100,8 +86,9 @@ class AuthService extends ApiBaseService {
 
     // Update stored token
     if (response != null && response is Map<String, dynamic>) {
-      String? newToken = response['token'] ?? response['accessToken'];
-      String? newRefreshToken = response['refreshToken'];
+      final tokenData = response['data'] ?? response;
+      String? newToken = tokenData['token'] ?? tokenData['accessToken'];
+      String? newRefreshToken = tokenData['refreshToken'];
       if (newToken != null) {
         await setToken(newToken, refreshToken: newRefreshToken);
       }

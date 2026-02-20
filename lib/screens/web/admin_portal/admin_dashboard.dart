@@ -593,22 +593,23 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
                                 _primaryColor,
                                 true,
                                 () async {
+                                  final pid = partner['id'] ?? partner['_id'];
+                                  final uid =
+                                      partner['userId'] ??
+                                      partner['user']?['id'] ??
+                                      partner['user']?['_id'];
+
                                   try {
                                     if (_approvalTypeIndex == 0) {
-                                      await AdminService().approveHospital(
-                                        partner['id'] ?? partner['_id'],
-                                      );
+                                      await AdminService().approveHospital(pid);
                                     } else if (_approvalTypeIndex == 1) {
-                                      await AdminService().approveDoctor(
-                                        partner['id'] ?? partner['_id'],
-                                      );
+                                      await AdminService().approveDoctor(pid);
                                     } else if (_approvalTypeIndex == 2) {
-                                      await AdminService().approveLab(
-                                        partner['id'] ?? partner['_id'],
-                                      );
+                                      await AdminService().approveLab(pid);
                                     } else {
                                       await AdminService().approveUser(
-                                        partner['id'] ?? partner['_id'],
+                                        uid ?? pid,
+                                        role: partner['role'],
                                       );
                                     }
                                     if (mounted) {
@@ -1335,22 +1336,22 @@ class _AdminWebPortalState extends State<AdminWebPortal> {
               ),
               onTap: () async {
                 Navigator.pop(context);
+                final pid = partner['id'] ?? partner['_id'];
+                final uid =
+                    partner['userId'] ??
+                    partner['user']?['id'] ??
+                    partner['user']?['_id'];
                 try {
                   if (_approvalTypeIndex == 0) {
-                    await AdminService().approveHospital(
-                      partner['id'] ?? partner['_id'],
-                    );
+                    await AdminService().approveHospital(pid);
                   } else if (_approvalTypeIndex == 1) {
-                    await AdminService().approveDoctor(
-                      partner['id'] ?? partner['_id'],
-                    );
+                    await AdminService().approveDoctor(pid);
                   } else if (_approvalTypeIndex == 2) {
-                    await AdminService().approveLab(
-                      partner['id'] ?? partner['_id'],
-                    );
+                    await AdminService().approveLab(pid);
                   } else {
                     await AdminService().approveUser(
-                      partner['id'] ?? partner['_id'],
+                      uid ?? pid,
+                      role: partner['role'],
                     );
                   }
                   if (mounted) {

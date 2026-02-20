@@ -7,8 +7,21 @@ import 'screens/common/splash_screen.dart';
 import 'providers/patient_provider.dart';
 import 'providers/user_provider.dart';
 
-void main() {
-  runApp(const LabLumeApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final userProvider = UserProvider();
+  await userProvider.initialize();
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => PatientProvider()),
+        ChangeNotifierProvider.value(value: userProvider),
+      ],
+      child: const LabLumeApp(),
+    ),
+  );
 }
 
 class LabLumeApp extends StatelessWidget {
@@ -16,23 +29,16 @@ class LabLumeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => PatientProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-      ],
-      child: MaterialApp(
-        title: 'LabLume',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          scaffoldBackgroundColor: const Color(0xFFEFF7F6),
-          primaryColor: const Color(0xFF12B8A6),
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF12B8A6)),
-          textTheme: GoogleFonts.poppinsTextTheme(),
-        ),
-       
-        home: const PlatformSelector(),
+    return MaterialApp(
+      title: 'LabLume',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        scaffoldBackgroundColor: const Color(0xFFEFF7F6),
+        primaryColor: const Color(0xFF12B8A6),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF12B8A6)),
+        textTheme: GoogleFonts.poppinsTextTheme(),
       ),
+      home: const PlatformSelector(),
     );
   }
 }
@@ -50,6 +56,4 @@ class PlatformSelector extends StatelessWidget {
     // If running on Web, show the professional Landing Page with role-based entry
     return const LandingPage();
   }
-} 
-
- 
+}
