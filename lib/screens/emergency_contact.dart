@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/patient_provider.dart';
 import 'package:laablume/screens/health_assesment.dart';
 
 class EmergencyContactScreen extends StatefulWidget {
@@ -57,21 +59,26 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
       return;
     }
 
+    // Accumulate data
+    context.read<PatientProvider>().updateOnboardingData({
+      'emergencyContact': {
+        'firstName': firstNameController.text.trim(),
+        'lastName': lastNameController.text.trim(),
+        'relationship': relationship,
+        'phone': phoneController.text.trim(),
+      },
+    });
+
     // All validations passed, proceed to next screen
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const HealthAssessmentScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const HealthAssessmentScreen()),
     );
   }
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
@@ -83,7 +90,11 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
         elevation: 0,
         backgroundColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.black),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Colors.black,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: _buildProgressBar(2, 5),
@@ -93,7 +104,9 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const HealthAssessmentScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const HealthAssessmentScreen(),
+                ),
               );
             },
             child: Text(
@@ -159,11 +172,25 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                   children: [
                     const Text('🇺🇸', style: TextStyle(fontSize: 18)),
                     const SizedBox(width: 4),
-                    const Icon(Icons.keyboard_arrow_down, size: 16, color: Color(0xFF6B7280)),
+                    const Icon(
+                      Icons.keyboard_arrow_down,
+                      size: 16,
+                      color: Color(0xFF6B7280),
+                    ),
                     const SizedBox(width: 8),
-                    Text('+1', style: GoogleFonts.poppins(fontSize: 14, color: Colors.black)),
+                    Text(
+                      '+1',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.black,
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Container(width: 1, height: 24, color: const Color(0xFFE5E7EB)),
+                    Container(
+                      width: 1,
+                      height: 24,
+                      color: const Color(0xFFE5E7EB),
+                    ),
                     const SizedBox(width: 12),
                   ],
                 ),
@@ -229,8 +256,8 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
           height: 4,
           margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: index < step 
-                ? const Color(0xFF12B8A6) 
+            color: index < step
+                ? const Color(0xFF12B8A6)
                 : const Color(0xFF12B8A6).withOpacity(0.2),
             borderRadius: BorderRadius.circular(2),
           ),
@@ -274,10 +301,24 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
               style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: GoogleFonts.poppins(color: const Color(0xFF9CA3AF), fontSize: 14),
-                prefixIcon: prefix != null ? Padding(padding: const EdgeInsets.only(left: 16), child: prefix) : null,
-                prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                hintStyle: GoogleFonts.poppins(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 14,
+                ),
+                prefixIcon: prefix != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: prefix,
+                      )
+                    : null,
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 0,
+                  minHeight: 0,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
                 border: InputBorder.none,
               ),
             ),
@@ -324,7 +365,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: value == 'Select relationship'
-                            ? const Color(0xFF9CA3AF) 
+                            ? const Color(0xFF9CA3AF)
                             : Colors.black,
                       ),
                     ),
@@ -363,7 +404,10 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
             const SizedBox(height: 24),
             Text(
               'Relationship',
-              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w700),
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 20),
             Column(
@@ -387,14 +431,16 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
     bool isSelected = relationship == value;
     return ListTile(
       title: Text(
-        value, 
+        value,
         style: GoogleFonts.poppins(
           fontSize: 15,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           color: isSelected ? const Color(0xFF12B8A6) : Colors.black,
-        )
+        ),
       ),
-      trailing: isSelected ? const Icon(Icons.check, color: Color(0xFF12B8A6)) : null,
+      trailing: isSelected
+          ? const Icon(Icons.check, color: Color(0xFF12B8A6))
+          : null,
       onTap: () {
         setState(() => relationship = value);
         Navigator.pop(context);

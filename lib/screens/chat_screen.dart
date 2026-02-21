@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/message_service.dart';
 import '../utils/responsive_layout.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -10,43 +11,15 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  // ---------- API CALL ----------
+  // Fetch conversations — the backend chat endpoint is per-bookingId.
+  // A future /api/chat/list endpoint would populate this list.
   Future<List<MessageModel>> fetchConversations() async {
-    // TODO: Replace with real API call
-    await Future.delayed(const Duration(seconds: 1));
-
-    return [
-      MessageModel(
-        id: '1',
-        name: 'Dr. Sarah Wilson',
-        lastMessage:
-            'Your test results look good. Let\'s schedule a follow-up.',
-        time: '2:30 PM',
-        unread: true,
-        avatarUrl: null,
-        appointmentDate: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      MessageModel(
-        id: '2',
-        name: 'Dr. Michael Chen',
-        lastMessage: 'Please take the medication twice daily.',
-        time: '11:45 AM',
-        unread: false,
-        avatarUrl: null,
-        appointmentDate: DateTime.now().subtract(
-          const Duration(days: 8),
-        ), // Expired
-      ),
-      MessageModel(
-        id: '3',
-        name: 'Dr. Emily Davis',
-        lastMessage: 'Your appointment is confirmed for tomorrow.',
-        time: '9:15 AM',
-        unread: true,
-        avatarUrl: null,
-        appointmentDate: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-    ];
+    try {
+      await Future.delayed(const Duration(milliseconds: 300));
+      return [];
+    } catch (_) {
+      return [];
+    }
   }
 
   MessageModel? _selectedMessage;
@@ -447,9 +420,91 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-class ChatDetailScreen extends StatelessWidget {
+class ChatDetailScreen extends StatefulWidget {
   final MessageModel message;
   const ChatDetailScreen({super.key, required this.message});
+
+  @override
+  State<ChatDetailScreen> createState() => _ChatDetailScreenState();
+}
+
+class _ChatDetailScreenState extends State<ChatDetailScreen> {
+  final MessageService _messageService = MessageService();
+  final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  List<Map<String, dynamic>> _messages = [];
+  bool _isLoading = true;
+  bool _isSending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMessages();
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadMessages() async {
+    try {
+      final data = await _messageService.getChatHistory(widget.message.id);
+      if (mounted) {
+        setState(() {
+          _messages = data
+              .map((m) => m is Map<String, dynamic> ? m : <String, dynamic>{})
+              .toList();
+          _isLoading = false;
+        });
+        _scrollToBottom();
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _sendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty || widget.message.isChatExpired) return;
+
+    _messageController.clear();
+    setState(() {
+      _isSending = true;
+      _messages.add({
+        'content': text,
+        'isMe': true,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+    });
+    _scrollToBottom();
+
+    try {
+      await _messageService.sendMessage({
+        'bookingId': widget.message.id,
+        'content': text,
+      });
+    } catch (_) {
+      // Message was optimistically added; silently fail or show a retry indicator
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -484,7 +539,7 @@ class ChatDetailScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    message.name,
+                    widget.message.name,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -492,12 +547,10 @@ class ChatDetailScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    message.isChatExpired
-                        ? 'Chat Expired'
-                        : 'Appointment Completed',
+                    widget.message.isChatExpired ? 'Chat Expired' : 'Active',
                     style: GoogleFonts.poppins(
                       fontSize: 10,
-                      color: message.isChatExpired
+                      color: widget.message.isChatExpired
                           ? Colors.red
                           : const Color(0xFF12B8A6),
                       fontWeight: FontWeight.w600,
@@ -523,29 +576,49 @@ class ChatDetailScreen extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                _buildMessageBubble(
-                  message: message.lastMessage,
-                  isMe: false,
-                  time: message.time,
-                ),
-                _buildMessageBubble(
-                  message: 'Hello! How can I help you today?',
-                  isMe: true,
-                  time: 'Just now',
-                ),
-              ],
-            ),
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
+                  )
+                : _messages.isEmpty
+                ? Center(
+                    child: Text(
+                      'No messages yet. Start the conversation!',
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(24),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _messages[index];
+                      final isMe =
+                          msg['isMe'] as bool? ?? msg['sender'] == 'patient';
+                      final content =
+                          msg['content'] as String? ??
+                          msg['message'] as String? ??
+                          '';
+                      final time = msg['timestamp'] != null
+                          ? _formatTime(msg['timestamp'])
+                          : '';
+                      return _buildMessageBubble(
+                        message: content,
+                        isMe: isMe,
+                        time: time,
+                      );
+                    },
+                  ),
           ),
-          if (message.isChatExpired)
+          if (widget.message.isChatExpired)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               color: Colors.red.withOpacity(0.05),
               child: Text(
-                'This chat has expired (7 days post-appointment). Please book a new consultation for further interaction.',
+                'This chat has expired (7 days post-appointment). Please book a new consultation.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
@@ -559,6 +632,18 @@ class ChatDetailScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatTime(String isoString) {
+    try {
+      final dt = DateTime.parse(isoString).toLocal();
+      final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+      final m = dt.minute.toString().padLeft(2, '0');
+      final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+      return '$h:$m $ampm';
+    } catch (_) {
+      return '';
+    }
   }
 
   Widget _buildMessageBubble({
@@ -601,14 +686,16 @@ class ChatDetailScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            time,
-            style: GoogleFonts.poppins(
-              fontSize: 10,
-              color: const Color(0xFF9CA3AF),
+          if (time.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              time,
+              style: GoogleFonts.poppins(
+                fontSize: 10,
+                color: const Color(0xFF9CA3AF),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -630,9 +717,7 @@ class ChatDetailScreen extends StatelessWidget {
             ),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Opening prescription shared by doctor...'),
-                ),
+                const SnackBar(content: Text('Viewing prescription...')),
               );
             },
             tooltip: 'View Prescription',
@@ -645,7 +730,10 @@ class ChatDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: TextField(
+                controller: _messageController,
                 style: GoogleFonts.poppins(fontSize: 14),
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => _sendMessage(),
                 decoration: InputDecoration(
                   hintText: 'Type a message...',
                   hintStyle: GoogleFonts.poppins(
@@ -663,12 +751,21 @@ class ChatDetailScreen extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(
-                Icons.send_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-              onPressed: () {},
+              icon: _isSending
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.send_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+              onPressed: _isSending ? null : _sendMessage,
             ),
           ),
         ],

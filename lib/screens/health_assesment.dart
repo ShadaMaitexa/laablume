@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/patient_provider.dart';
 import 'package:laablume/screens/_cycle_assesment.dart';
 
 class HealthAssessmentScreen extends StatefulWidget {
   const HealthAssessmentScreen({super.key});
 
   @override
-  State<HealthAssessmentScreen> createState() =>
-      _HealthAssessmentScreenState();
+  State<HealthAssessmentScreen> createState() => _HealthAssessmentScreenState();
 }
 
 class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
   String selectedBlood = 'B';
   String selectedRh = '+';
-  
+
   // Text editing controllers for input fields
   final TextEditingController allergiesController = TextEditingController();
-  final TextEditingController chronicConditionsController = TextEditingController();
+  final TextEditingController chronicConditionsController =
+      TextEditingController();
   final TextEditingController heightController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   final TextEditingController systolicBPController = TextEditingController();
@@ -54,6 +56,21 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
       return;
     }
 
+    // Accumulate health profile data
+    context.read<PatientProvider>().updateOnboardingData({
+      'healthProfile': {
+        'bloodType': selectedBlood,
+        'rhFactor': selectedRh,
+        'allergies': allergiesController.text.trim(),
+        'height': double.tryParse(heightController.text.trim()) ?? 0,
+        'weight': double.tryParse(weightController.text.trim()) ?? 0,
+        'bloodPressure': {
+          'systolic': int.tryParse(systolicBPController.text.trim()) ?? 0,
+          'diastolic': int.tryParse(diastolicBPController.text.trim()) ?? 0,
+        },
+      },
+    });
+
     // All validations passed, proceed to next screen
     Navigator.push(
       context,
@@ -65,10 +82,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
@@ -90,7 +104,9 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const LifestyleInformationScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const LifestyleInformationScreen(),
+                ),
               );
             },
             child: Text(
@@ -266,8 +282,8 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
           height: 4,
           margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: index < step 
-                ? const Color(0xFF12B8A6) 
+            color: index < step
+                ? const Color(0xFF12B8A6)
                 : const Color(0xFF12B8A6).withOpacity(0.2),
             borderRadius: BorderRadius.circular(2),
           ),
@@ -311,10 +327,24 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
               style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: GoogleFonts.poppins(color: const Color(0xFF9CA3AF), fontSize: 14),
-                prefixIcon: prefix != null ? Padding(padding: const EdgeInsets.only(left: 16), child: prefix) : null,
-                prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                hintStyle: GoogleFonts.poppins(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 14,
+                ),
+                prefixIcon: prefix != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: prefix,
+                      )
+                    : null,
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 0,
+                  minHeight: 0,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
                 border: InputBorder.none,
               ),
             ),
@@ -340,15 +370,17 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF12B8A6) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: const Color(0xFF12B8A6).withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
-          ] : [],
-          border: isSelected 
-              ? null 
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF12B8A6).withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
+          border: isSelected
+              ? null
               : Border.all(color: const Color(0xFFE5E7EB)),
         ),
         child: Column(
@@ -390,8 +422,8 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF1F2937) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: isSelected 
-              ? null 
+          border: isSelected
+              ? null
               : Border.all(color: const Color(0xFFE5E7EB)),
         ),
         child: Text(

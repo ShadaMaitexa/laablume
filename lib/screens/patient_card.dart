@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/patient_provider.dart';
 import 'package:laablume/screens/emergency_contact.dart';
 
 class PersonalDataScreen extends StatefulWidget {
@@ -103,11 +105,25 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                       children: [
                         const Text('🇺🇸', style: TextStyle(fontSize: 18)),
                         const SizedBox(width: 4),
-                        const Icon(Icons.keyboard_arrow_down, size: 16, color: Color(0xFF6B7280)),
+                        const Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 16,
+                          color: Color(0xFF6B7280),
+                        ),
                         const SizedBox(width: 8),
-                        Text('+1', style: GoogleFonts.poppins(fontSize: 14, color: Colors.black)),
+                        Text(
+                          '+1',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: Colors.black,
+                          ),
+                        ),
                         const SizedBox(width: 8),
-                        Container(width: 1, height: 24, color: const Color(0xFFE5E7EB)),
+                        Container(
+                          width: 1,
+                          height: 24,
+                          color: const Color(0xFFE5E7EB),
+                        ),
                         const SizedBox(width: 12),
                       ],
                     ),
@@ -176,8 +192,8 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
           height: 4,
           margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: index < step 
-                ? const Color(0xFF12B8A6) 
+            color: index < step
+                ? const Color(0xFF12B8A6)
                 : const Color(0xFF12B8A6).withOpacity(0.2),
             borderRadius: BorderRadius.circular(2),
           ),
@@ -220,10 +236,24 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
               style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: GoogleFonts.poppins(color: const Color(0xFF9CA3AF), fontSize: 14),
-                prefixIcon: prefix != null ? Padding(padding: const EdgeInsets.only(left: 16), child: prefix) : null,
-                prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                hintStyle: GoogleFonts.poppins(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 14,
+                ),
+                prefixIcon: prefix != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: prefix,
+                      )
+                    : null,
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 0,
+                  minHeight: 0,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
                 border: InputBorder.none,
               ),
             ),
@@ -269,8 +299,8 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                       value,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: value.contains('choose') || value.contains('DD') 
-                            ? const Color(0xFF9CA3AF) 
+                        color: value.contains('choose') || value.contains('DD')
+                            ? const Color(0xFF9CA3AF)
                             : Colors.black,
                       ),
                     ),
@@ -284,6 +314,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
       ),
     );
   }
+
   // ---------------- DOB DIALOG WITH PICKER ----------------
   void _showDobDialog() {
     showDialog(
@@ -291,7 +322,9 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
       builder: (_) {
         return Dialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: Column(
@@ -325,10 +358,36 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                         onSelected: (v) => selectedDay = v,
                       ),
                       _pickerColumn(
-                        values: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                        values: [
+                          'January',
+                          'February',
+                          'March',
+                          'April',
+                          'May',
+                          'June',
+                          'July',
+                          'August',
+                          'September',
+                          'October',
+                          'November',
+                          'December',
+                        ],
                         initialItem: selectedMonth - 1,
                         onSelected: (v) {
-                          final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                          final months = [
+                            'January',
+                            'February',
+                            'March',
+                            'April',
+                            'May',
+                            'June',
+                            'July',
+                            'August',
+                            'September',
+                            'October',
+                            'November',
+                            'December',
+                          ];
                           selectedMonth = months.indexOf(v as String) + 1;
                         },
                       ),
@@ -347,19 +406,39 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                        dob = '$selectedDay ${months[selectedMonth - 1]} $selectedYear';
+                        final months = [
+                          'January',
+                          'February',
+                          'March',
+                          'April',
+                          'May',
+                          'June',
+                          'July',
+                          'August',
+                          'September',
+                          'October',
+                          'November',
+                          'December',
+                        ];
+                        dob =
+                            '$selectedDay ${months[selectedMonth - 1]} $selectedYear';
                       });
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF12B8A6),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(26),
+                      ),
                       elevation: 0,
                     ),
                     child: Text(
                       'Save date',
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -452,7 +531,9 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                 decoration: InputDecoration(
                   icon: const Icon(Icons.search, color: Color(0xFF9CA3AF)),
                   hintText: 'Search',
-                  hintStyle: GoogleFonts.poppins(color: const Color(0xFF9CA3AF)),
+                  hintStyle: GoogleFonts.poppins(
+                    color: const Color(0xFF9CA3AF),
+                  ),
                   border: InputBorder.none,
                 ),
               ),
@@ -460,7 +541,10 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
             const SizedBox(height: 20),
             ListTile(
               leading: const Icon(Icons.my_location, color: Color(0xFF12B8A6)),
-              title: Text('Use current location', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+              title: Text(
+                'Use current location',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              ),
               onTap: () {
                 setState(() => city = 'Boston, MA');
                 Navigator.pop(context);
@@ -499,8 +583,37 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
       _showSnackBar('Please enter your first name');
       return;
     }
+    if (lastNameController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your last name');
+      return;
+    }
+    if (dob == 'DD / MM / YYYY') {
+      _showSnackBar('Please select your date of birth');
+      return;
+    }
+    if (phoneController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your phone number');
+      return;
+    }
+    if (city == 'Enter or choose your city') {
+      _showSnackBar('Please select your city');
+      return;
+    }
+
+    // Accumulate data
+    context.read<PatientProvider>().updateOnboardingData({
+      'personalData': {
+        'firstName': firstNameController.text.trim(),
+        'lastName': lastNameController.text.trim(),
+        'dob': dob, // Format as needed by backend, e.g. YYYY-MM-DD
+        'phone': phoneController.text.trim(),
+        'city': city,
+        'address': addressController.text.trim(),
+      },
+    });
+
     Navigator.push(
-      context, 
+      context,
       MaterialPageRoute(builder: (context) => const EmergencyContactScreen()),
     );
   }
@@ -511,4 +624,3 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     );
   }
 }
- 

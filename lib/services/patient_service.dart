@@ -150,4 +150,12 @@ class PatientService extends ApiBaseService {
     final response = await post('/patients/upload-profile-image', imageData);
     return response;
   }
+
+  // Complete initial health profiling/onboarding
+  Future<Map<String, dynamic>> completeOnboarding(
+    Map<String, dynamic> onboardingData,
+  ) async {
+    final response = await patch('/patients/health-profile', onboardingData);
+    return response;
+  }
 }

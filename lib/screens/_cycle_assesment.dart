@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/patient_provider.dart';
 import 'package:laablume/screens/main_navigation_screen.dart';
 
 class LifestyleInformationScreen extends StatefulWidget {
@@ -32,12 +34,7 @@ class _LifestyleInformationScreenState
         centerTitle: true,
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-              );
-            },
+            onPressed: () => _completeOnboarding(context),
             child: Text(
               'Skip',
               style: GoogleFonts.poppins(
@@ -130,15 +127,7 @@ class _LifestyleInformationScreenState
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    _showSnackBar('Lifestyle information saved!');
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MainNavigationScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: () => _completeOnboarding(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF12B8A6),
                     shape: RoundedRectangleBorder(
@@ -173,8 +162,8 @@ class _LifestyleInformationScreenState
           height: 4,
           margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: index < step 
-                ? const Color(0xFF12B8A6) 
+            color: index < step
+                ? const Color(0xFF12B8A6)
                 : const Color(0xFF12B8A6).withOpacity(0.2),
             borderRadius: BorderRadius.circular(2),
           ),
@@ -186,7 +175,7 @@ class _LifestyleInformationScreenState
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message), 
+        content: Text(message),
         backgroundColor: const Color(0xFF12B8A6),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -194,14 +183,61 @@ class _LifestyleInformationScreenState
     );
   }
 
+  Future<void> _completeOnboarding(BuildContext ctx) async {
+    final smokingOptions = ['Yes', 'No', 'Occasionally'];
+    final alcoholOptions = ['Yes', 'No', 'Occasionally'];
+    final activityOptions = ['Light', 'Moderate', 'Very Active'];
+
+    final provider = ctx.read<PatientProvider>();
+
+    // Accumulate lifestyle data
+    provider.updateOnboardingData({
+      'lifestyle': {
+        'smoking': smokingOptions[_selectedSmokingIndex],
+        'alcohol': alcoholOptions[_selectedAlcoholIndex],
+        'activityLevel': activityOptions[_selectedActivityIndex],
+      },
+    });
+
+    // Submit unified onboarding payload
+    final success = await provider.completeOnboarding(provider.onboardingData);
+
+    if (!mounted) return;
+
+    if (success) {
+      provider.clearOnboardingData();
+      _showSnackBar('Onboarding complete! Welcome aboard 🎉');
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+          (route) => false,
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Failed to save your profile. Please try again.'),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
+  }
+
   // ---------- SECTION TITLE ----------
+
   Widget _sectionTitle(String text) {
     return Text(
       text,
       style: GoogleFonts.poppins(
-        fontSize: 13, 
+        fontSize: 13,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFF1F2937)
+        color: const Color(0xFF1F2937),
       ),
     );
   }
@@ -280,7 +316,9 @@ class _LifestyleInformationScreenState
               subtitle,
               style: GoogleFonts.poppins(
                 fontSize: 13,
-                color: selected ? Colors.white.withOpacity(0.7) : const Color(0xFF6B7280),
+                color: selected
+                    ? Colors.white.withOpacity(0.7)
+                    : const Color(0xFF6B7280),
               ),
             ),
           ],

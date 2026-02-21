@@ -15,6 +15,7 @@ class PatientProvider with ChangeNotifier {
   List<HealthMetric> _healthMetrics = [];
   List<Report> _reports = [];
   List<Prescription> _prescriptions = [];
+  Map<String, dynamic> _onboardingData = {};
   bool _isLoading = false;
 
   UserModel? get user => _user;
@@ -23,7 +24,31 @@ class PatientProvider with ChangeNotifier {
   List<HealthMetric> get healthMetrics => _healthMetrics;
   List<Report> get reports => _reports;
   List<Prescription> get prescriptions => _prescriptions;
+  Map<String, dynamic> get onboardingData => _onboardingData;
   bool get isLoading => _isLoading;
+
+  void updateOnboardingData(Map<String, dynamic> data) {
+    // Deep merge or specific nesting based on Step requirements
+    if (data.containsKey('personalData')) {
+      _onboardingData['personalData'] =
+          (_onboardingData['personalData'] as Map<String, dynamic>? ?? {})
+            ..addAll(data['personalData']);
+    } else if (data.containsKey('emergencyContact')) {
+      _onboardingData['emergencyContact'] = data['emergencyContact'];
+    } else if (data.containsKey('healthProfile')) {
+      _onboardingData['healthProfile'] = data['healthProfile'];
+    } else if (data.containsKey('lifestyle')) {
+      _onboardingData['lifestyle'] = data['lifestyle'];
+    } else {
+      _onboardingData.addAll(data);
+    }
+    notifyListeners();
+  }
+
+  void clearOnboardingData() {
+    _onboardingData = {};
+    notifyListeners();
+  }
 
   Future<void> loadDashboardData() async {
     _isLoading = true;
@@ -177,6 +202,77 @@ class PatientProvider with ChangeNotifier {
       return true;
     } catch (e) {
       debugPrint("Error uploading profile image: $e");
+      return false;
+    }
+  }
+
+  Future<bool> completeOnboarding(Map<String, dynamic> onboardingData) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _patientService.completeOnboarding(onboardingData);
+      await loadProfile(); // Refresh user state to reflect completion
+      return true;
+    } catch (e) {
+      debugPrint("Error completing onboarding: $e");
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // discovery methods
+  Future<List<dynamic>> searchDoctors({
+    String? specialty,
+    String? search,
+    String? city,
+  }) async {
+    try {
+      return await _patientService.searchDoctors(
+        specialty: specialty,
+        search: search,
+        city: city,
+      );
+    } catch (e) {
+      debugPrint("Error searching doctors: $e");
+      return [];
+    }
+  }
+
+  Future<List<dynamic>> getDoctorSlots(String doctorId) async {
+    try {
+      return await _patientService.getDoctorSlots(doctorId);
+    } catch (e) {
+      debugPrint("Error getting doctor slots: $e");
+      return [];
+    }
+  }
+
+  Future<List<dynamic>> searchLabs({String? city}) async {
+    try {
+      return await _patientService.searchLabs(city: city);
+    } catch (e) {
+      debugPrint("Error searching labs: $e");
+      return [];
+    }
+  }
+
+  Future<List<dynamic>> getLabTests(String labId) async {
+    try {
+      return await _patientService.getLabTestsByLab(labId);
+    } catch (e) {
+      debugPrint("Error getting lab tests: $e");
+      return [];
+    }
+  }
+
+  Future<bool> bookTest(Map<String, dynamic> testData) async {
+    try {
+      await _patientService.bookTest(testData);
+      return true;
+    } catch (e) {
+      debugPrint("Error booking test: $e");
       return false;
     }
   }
