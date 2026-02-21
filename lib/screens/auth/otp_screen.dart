@@ -79,7 +79,6 @@ class _OtpScreenState extends State<OtpScreen> {
         });
 
         if (response != null) {
-          final role = response['role'] ?? 'patient';
           final bool isApproved =
               response['privacyPolicyAccepted'] ??
               response['isApproved'] ??

@@ -3,9 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
-import '../models/appointment_model.dart';
-import '../services/doctor_service.dart';
-import '../models/doctor_model.dart';
 
 class MyAppointmentsScreen extends StatefulWidget {
   const MyAppointmentsScreen({super.key});
@@ -15,34 +12,12 @@ class MyAppointmentsScreen extends StatefulWidget {
 }
 
 class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
-  final DoctorService _doctorService = DoctorService();
-  final Map<String, DoctorModel> _doctorsCache = {};
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PatientProvider>().loadAppointments();
     });
-  }
-
-  Future<void> _loadDoctorData(List<AppointmentModel> appointments) async {
-    // Fetch details for all unique doctors
-    final doctorIds = appointments.map((e) => e.doctorID).toSet();
-    for (final id in doctorIds) {
-      if (id.isNotEmpty && !_doctorsCache.containsKey(id)) {
-        try {
-          final doctorJson = await _doctorService.getDoctorById(id);
-          if (doctorJson != null && doctorJson.isNotEmpty) {
-            setState(() {
-              _doctorsCache[id] = DoctorModel.fromJson(doctorJson);
-            });
-          }
-        } catch (e) {
-          debugPrint("Error loading doctor $id: $e");
-        }
-      }
-    }
   }
 
   String _formatDate(DateTime date) {
@@ -108,7 +83,6 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           }
 
           final appointments = provider.appointments;
-          _loadDoctorData(appointments);
 
           return ListView.separated(
             padding: const EdgeInsets.all(24),
@@ -116,11 +90,10 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final apt = appointments[index];
-              final doctor = _doctorsCache[apt.doctorID];
 
               return _buildAppointmentCard(
-                doctorName: doctor?.name ?? "Loading...",
-                specialty: doctor?.specialty ?? "Please wait",
+                doctorName: apt.doctorName ?? "Doctor",
+                specialty: apt.doctorSpecialty ?? "Medical Professional",
                 dateTime: _formatDate(apt.appointmentDateTime),
                 type: apt.reasonForVisit,
                 status: apt.status,
