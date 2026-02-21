@@ -5,10 +5,8 @@ import '../providers/patient_provider.dart';
 import '../services/patient_service.dart';
 import '../utils/responsive_layout.dart';
 import 'common/feedback_screen.dart';
-import 'lab_tests/lab_tests_screen.dart';
 import 'reports/lab_reports_screen.dart';
 import 'reports/upload_report_screen.dart';
-import 'doctors/find_doctors_screen.dart';
 import 'chat_screen.dart';
 import 'my_appointments_screen.dart';
 import 'health_metrics/health_metrics_screen.dart';
@@ -181,7 +179,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const FindDoctorsScreen()),
+        MaterialPageRoute(builder: (context) => const ChatScreen()),
       ),
       child: Container(
         height: 60,
@@ -330,28 +328,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           crossAxisSpacing: 20,
           childAspectRatio: 0.85,
           children: [
-            _serviceCard(
-              icon: Icons.science_outlined,
-              title: 'Book Lab Test',
-              subtitle: 'Accurate results',
-              color: const Color(0xFF12B8A6),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const LabTestsScreen()),
-              ),
-            ),
-            _serviceCard(
-              icon: Icons.people_outline_rounded,
-              title: 'Find Doctors',
-              subtitle: 'Top specialists',
-              color: const Color(0xFFF59E0B),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const FindDoctorsScreen(),
-                ),
-              ),
-            ),
             _serviceCard(
               icon: Icons.upload_file_outlined,
               title: 'Upload Report',

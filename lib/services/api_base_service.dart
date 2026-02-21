@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiBaseService {
-  final String baseUrl = "https://labloom-new.onrender.com/api";
+  final String baseUrl = "https://labloom.onrender.com/api";
   static String? _token;
   static String? _refreshToken;
 

@@ -45,7 +45,7 @@ class UserProvider extends ChangeNotifier {
         role: 'patient',
       );
 
-      if (response != null) {
+      if (response != null && response is Map<String, dynamic>) {
         final user = UserModel.fromJson(response);
 
         // Enforce approval check

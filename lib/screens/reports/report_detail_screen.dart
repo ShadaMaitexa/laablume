@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/report_model.dart';
-import '../doctors/find_doctors_screen.dart';
+import '../chat_screen.dart';
 
 class ReportDetailScreen extends StatelessWidget {
   final Report report;
@@ -208,7 +208,7 @@ class ReportDetailScreen extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            // Consult Doctor Button
+            // Chat with Support Button
             Container(
               width: double.infinity,
               height: 56,
@@ -216,9 +216,7 @@ class ReportDetailScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const FindDoctorsScreen(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const ChatScreen()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
