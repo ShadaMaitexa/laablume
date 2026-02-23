@@ -9,15 +9,13 @@ class AuthService extends ApiBaseService {
   Future<Map<String, dynamic>> signup({
     required String name,
     required String phone,
-    required String email,
+    required String email, // Keeping these in signature so UI doesn't break
     String password = '',
     String role = 'patient', // Default to patient
   }) async {
     final response = await post('/auth/v2/signup', {
       'name': name,
       'phone': phone,
-      'email': email,
-      'password': password,
       'role': role,
     });
     return response;

@@ -170,7 +170,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                 prefix: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('🇺🇸', style: TextStyle(fontSize: 18)),
+                    const Text('🇮🇳', style: TextStyle(fontSize: 18)),
                     const SizedBox(width: 4),
                     const Icon(
                       Icons.keyboard_arrow_down,
@@ -179,7 +179,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '+1',
+                      '+91',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.black,

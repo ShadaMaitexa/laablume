@@ -329,6 +329,21 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
             child: TextField(
               controller: controller,
               maxLines: maxLines,
+              readOnly: label == 'Birth date',
+              onTap: label == 'Birth date'
+                  ? () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (pickedDate != null) {
+                        controller.text =
+                            "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                      }
+                    }
+                  : null,
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -352,7 +367,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(width: 16),
-        const Text('🇺🇸', style: TextStyle(fontSize: 18)),
+        const Text('🇮🇳', style: TextStyle(fontSize: 18)),
         const SizedBox(width: 4),
         const Icon(
           Icons.keyboard_arrow_down,
@@ -361,7 +376,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         ),
         const SizedBox(width: 8),
         Text(
-          '+1',
+          '+91',
           style: GoogleFonts.poppins(fontSize: 14, color: Colors.black),
         ),
         const SizedBox(width: 8),
