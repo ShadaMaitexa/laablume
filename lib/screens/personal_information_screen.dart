@@ -283,12 +283,8 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
 
                 _buildField('First name', firstNameController),
                 _buildField('Last name', lastNameController),
-                _buildField(
-                  'Birth date',
-                  birthDateController,
-                  icon: Icons.calendar_today_rounded,
-                ),
-                _buildField('Phone number', phoneController, isPhone: true),
+                _buildDatePickerField('Birth date', birthDateController),
+                _buildPhoneField(),
                 _buildField('City', cityController),
                 _buildField('Address', addressController, maxLines: 3),
               ],
@@ -302,8 +298,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   Widget _buildField(
     String label,
     TextEditingController controller, {
-    IconData? icon,
-    bool isPhone = false,
     int maxLines = 1,
   }) {
     return Padding(
@@ -329,9 +323,51 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
             child: TextField(
               controller: controller,
               maxLines: maxLines,
-              readOnly: label == 'Birth date',
-              onTap: label == 'Birth date'
-                  ? () async {
+              style: GoogleFonts.poppins(fontSize: 14),
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDatePickerField(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    readOnly: true,
+                    onTap: () async {
                       DateTime? pickedDate = await showDatePicker(
                         context: context,
                         initialDate: DateTime.now(),
@@ -342,19 +378,24 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                         controller.text =
                             "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
                       }
-                    }
-                  : null,
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
+                    },
+                    style: GoogleFonts.poppins(fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'YYYY-MM-DD',
+                      hintStyle: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                      border: InputBorder.none,
+                    ),
+                  ),
                 ),
-                border: InputBorder.none,
-                prefixIcon: isPhone ? _buildPhonePrefix() : null,
-                suffixIcon: icon != null
-                    ? Icon(icon, color: const Color(0xFF6B7280), size: 20)
-                    : null,
-              ),
+                const Icon(
+                  Icons.calendar_today_rounded,
+                  color: Color(0xFF6B7280),
+                  size: 20,
+                ),
+              ],
             ),
           ),
         ],
@@ -362,27 +403,58 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     );
   }
 
-  Widget _buildPhonePrefix() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(width: 16),
-        const Text('🇮🇳', style: TextStyle(fontSize: 18)),
-        const SizedBox(width: 4),
-        const Icon(
-          Icons.keyboard_arrow_down,
-          size: 16,
-          color: Color(0xFF6B7280),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          '+91',
-          style: GoogleFonts.poppins(fontSize: 14, color: Colors.black),
-        ),
-        const SizedBox(width: 8),
-        Container(width: 1, height: 24, color: const Color(0xFFE5E7EB)),
-        const SizedBox(width: 12),
-      ],
+  Widget _buildPhoneField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Phone number',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                const Text('🇮🇳', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 8),
+                const Text(
+                  '+91',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+                const VerticalDivider(indent: 12, endIndent: 12, width: 24),
+                Expanded(
+                  child: TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    style: GoogleFonts.poppins(fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: '81290 83932',
+                      hintStyle: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

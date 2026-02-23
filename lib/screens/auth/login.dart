@@ -102,8 +102,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 40),
-
-                  // Title
                   Text(
                     'Sign in',
                     style: GoogleFonts.poppins(
@@ -112,10 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: const Color(0xFF12B8A6),
                     ),
                   ),
-
                   const SizedBox(height: 8),
-
-                  // Subtitle
                   Text(
                     'Welcome to Lab Lume, you\'re in one\nstep to connecting healthcare',
                     style: GoogleFonts.poppins(
@@ -124,10 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: const Color(0xFF6B7280),
                     ),
                   ),
-
                   const SizedBox(height: 76),
-
-                  // Mobile label
                   Text(
                     'Mobile number',
                     style: GoogleFonts.poppins(
@@ -135,10 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
-                  // Phone input with country dropdown
                   Container(
                     height: 48,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -147,7 +136,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: const Color(0xFF12B8A6)),
                     ),
-
                     child: Row(
                       children: [
                         DropdownButton<String>(
@@ -183,13 +171,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: Colors.black,
                           ),
                         ),
-
                         const VerticalDivider(
                           width: 20,
                           thickness: 1,
                           color: Color(0xFF12B8A6),
                         ),
-
                         Expanded(
                           child: TextField(
                             controller: phoneController,
@@ -206,10 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 29),
-
-                  // Login button
                   SizedBox(
                     width: double.infinity,
                     height: 46,

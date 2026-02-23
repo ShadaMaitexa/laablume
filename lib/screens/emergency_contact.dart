@@ -163,39 +163,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                 onTap: _showRelationshipSheet,
                 icon: Icons.keyboard_arrow_down,
               ),
-              _buildModernInputField(
-                label: 'Phone number',
-                controller: phoneController,
-                hint: '000 000 0000',
-                prefix: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('🇮🇳', style: TextStyle(fontSize: 18)),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.keyboard_arrow_down,
-                      size: 16,
-                      color: Color(0xFF6B7280),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '+91',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 1,
-                      height: 24,
-                      color: const Color(0xFFE5E7EB),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
-                ),
-                keyboardType: TextInputType.phone,
-              ),
+              _buildPhoneField(),
               _buildModernInputField(
                 label: 'Email',
                 controller: emailController,
@@ -445,6 +413,61 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
         setState(() => relationship = value);
         Navigator.pop(context);
       },
+    );
+  }
+
+  Widget _buildPhoneField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Phone number',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                const Text('🇮🇳', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 8),
+                const Text(
+                  '+91',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+                const VerticalDivider(indent: 12, endIndent: 12, width: 24),
+                Expanded(
+                  child: TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    style: GoogleFonts.poppins(fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: '81290 83932',
+                      hintStyle: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
