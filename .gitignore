@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Secrets & environment — Never commit API keys
+.env
+.env.local
+dart_defines.json
+secrets.json

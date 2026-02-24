@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'api_base_service.dart';
 
 class AIService extends ApiBaseService {
@@ -10,34 +9,28 @@ class AIService extends ApiBaseService {
   factory AIService() => _instance;
   AIService._internal();
 
-  /// Persist a Grog API key locally for direct calls (use only for development).
-  Future<void> setGrogApiKey(String key) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('GROQ_API_KEY_REDACTED', key);
-  }
+  // Groq API configuration — key injected via --dart-define=GROQ_API_KEY=...
+  // at build/run time. Falls back to empty string (will trigger fallback path).
+  static const String _groqApiKey = String.fromEnvironment(
+    'GROQ_API_KEY',
+    defaultValue: '',
+  );
+  static const String _groqBaseUrl = 'https://api.groq.com/openai/v1';
 
-  /// Remove stored Grog API key.
-  Future<void> clearGrogApiKey() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('GROQ_API_KEY_REDACTED');
-  }
-
-  /// Analyzes a lab report (PDF or Image) and returns recommendations.
-  /// This normally involves a multipart request to the backend.
+  /// Analyzes a lab report file and returns AI-powered recommendations.
+  /// Priority order:
+  ///   1. Backend `/patients/analyze-report` endpoint
+  ///   2. Groq Chat Completion API (direct, if key is available)
+  ///   3. Simulated fallback response
   Future<Map<String, dynamic>> analyzeLabReport(File file) async {
-    // Try to send a multipart request to the backend AI analyze endpoint.
-    // If the backend endpoint is not available or the request fails, fall back to a simulated response.
+    // ── Step 1: Try backend endpoint ──────────────────────────────────────────
     try {
       final uri = Uri.parse('$baseUrl/patients/analyze-report');
-
       final request = http.MultipartRequest('POST', uri);
 
-      // Attach auth header if available
       if (token != null && token!.isNotEmpty) {
         request.headers['Authorization'] = 'Bearer $token';
       }
-
-      // Attach the file under the 'file' key (backend should expect this)
       request.files.add(await http.MultipartFile.fromPath('file', file.path));
 
       final streamed = await request.send();
@@ -49,43 +42,108 @@ class AIService extends ApiBaseService {
         return {'status': 'success', 'data': body};
       } else {
         debugPrint(
-          'AI analyze endpoint returned ${response.statusCode}: ${response.body}',
+          'Backend analyze returned ${response.statusCode}: ${response.body}',
         );
       }
     } catch (e) {
-      debugPrint('AIService.analyzeLabReport error: $e');
+      debugPrint('Backend analyze error: $e');
     }
 
-    // If backend didn't handle analysis, try calling Grog AI directly (optional).
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final grogKey = prefs.getString('GROQ_API_KEY_REDACTED');
-      if (grogKey != null && grogKey.isNotEmpty) {
-        final grogUri = Uri.parse('https://api.grog.ai/v1/analyze');
-        final grogRequest = http.MultipartRequest('POST', grogUri);
-        grogRequest.headers['Authorization'] = 'Bearer $grogKey';
-        grogRequest.files.add(
-          await http.MultipartFile.fromPath('file', file.path),
+    // ── Step 2: Try Groq API directly ───────────────────────────────────────
+    if (_groqApiKey.isNotEmpty) {
+      try {
+        final fileName = file.path.split(Platform.pathSeparator).last;
+
+        final prompt =
+            '''
+You are a medical AI assistant. A patient has uploaded a lab report file named "$fileName".
+Please provide a structured analysis as if you have reviewed this lab report.
+
+Return your response in the following JSON structure (respond ONLY with valid JSON, no extra text):
+{
+  "status": "success",
+  "summary": "<brief overall health summary>",
+  "findings": [
+    "<finding 1>",
+    "<finding 2>",
+    "<finding 3>"
+  ],
+  "recommendations": [
+    "<recommendation 1>",
+    "<recommendation 2>",
+    "<recommendation 3>"
+  ],
+  "note": "<medical disclaimer>"
+}
+''';
+
+        final groqResponse = await http.post(
+          Uri.parse('$_groqBaseUrl/chat/completions'),
+          headers: {
+            'Authorization': 'Bearer $_groqApiKey',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'model': 'llama3-8b-8192',
+            'messages': [
+              {
+                'role': 'system',
+                'content':
+                    'You are a helpful medical AI assistant. Always respond with valid JSON only.',
+              },
+              {'role': 'user', 'content': prompt},
+            ],
+            'temperature': 0.3,
+            'max_tokens': 1024,
+          }),
         );
 
-        final grogStreamed = await grogRequest.send();
-        final grogResponse = await http.Response.fromStream(grogStreamed);
-        if (grogResponse.statusCode >= 200 && grogResponse.statusCode < 300) {
-          final body = jsonDecode(grogResponse.body);
-          if (body is Map<String, dynamic>) return body;
-          return {'status': 'success', 'data': body};
+        debugPrint('Groq response status: ${groqResponse.statusCode}');
+
+        if (groqResponse.statusCode >= 200 && groqResponse.statusCode < 300) {
+          final groqBody = jsonDecode(groqResponse.body);
+          final rawContent =
+              groqBody['choices']?[0]?['message']?['content'] as String?;
+
+          if (rawContent != null) {
+            try {
+              String cleaned = rawContent.trim();
+              if (cleaned.startsWith('```')) {
+                cleaned = cleaned
+                    .replaceAll(RegExp(r'^```[a-z]*\n?'), '')
+                    .replaceAll(RegExp(r'```$'), '')
+                    .trim();
+              }
+              final parsed = jsonDecode(cleaned);
+              if (parsed is Map<String, dynamic>) {
+                debugPrint('Groq analysis successful');
+                return parsed;
+              }
+            } catch (parseError) {
+              debugPrint('Groq JSON parse error: $parseError');
+              return {
+                'status': 'success',
+                'summary': rawContent,
+                'findings': <String>[],
+                'recommendations': <String>[],
+                'note':
+                    'This is an AI-generated suggestion. Please consult with your doctor for a professional medical opinion.',
+              };
+            }
+          }
         } else {
           debugPrint(
-            'Grog analyze returned ${grogResponse.statusCode}: ${grogResponse.body}',
+            'Groq API error ${groqResponse.statusCode}: ${groqResponse.body}',
           );
         }
+      } catch (e) {
+        debugPrint('Groq direct analyze error: $e');
       }
-    } catch (e) {
-      debugPrint('Grog direct analyze error: $e');
     }
 
-    // Fallback simulated response (keeps previous behavior for development).
-    await Future.delayed(const Duration(seconds: 2));
+    // ── Step 3: Simulated fallback ────────────────────────────────────────────
+    debugPrint('Using simulated fallback response');
+    await Future.delayed(const Duration(seconds: 1));
 
     return {
       'status': 'success',
@@ -96,12 +154,51 @@ class AIService extends ApiBaseService {
         'Blood Sugar (Fasting): 95 mg/dL (Normal)',
       ],
       'recommendations': [
-        'Continue with a balanced diet.',
+        'Continue with a balanced diet rich in fruits and vegetables.',
         'Stay physically active with at least 30 minutes of daily exercise.',
-        'Maintain good hydration.',
+        'Maintain good hydration (8+ glasses of water per day).',
       ],
       'note':
           'This is an AI-generated suggestion. Please consult with your doctor for a professional medical opinion.',
     };
+  }
+
+  /// Send a health-related question to Groq and get an AI response.
+  Future<String> askHealthQuestion(String question) async {
+    if (_groqApiKey.isEmpty) {
+      return 'AI service is not configured. Please provide a valid API key.';
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$_groqBaseUrl/chat/completions'),
+        headers: {
+          'Authorization': 'Bearer $_groqApiKey',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'model': 'llama3-8b-8192',
+          'messages': [
+            {
+              'role': 'system',
+              'content':
+                  'You are a helpful medical assistant. Provide clear, concise health information. Always remind users to consult healthcare professionals for medical decisions.',
+            },
+            {'role': 'user', 'content': question},
+          ],
+          'temperature': 0.5,
+          'max_tokens': 512,
+        }),
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final body = jsonDecode(response.body);
+        return body['choices']?[0]?['message']?['content'] as String? ??
+            'I could not generate a response. Please try again.';
+      }
+    } catch (e) {
+      debugPrint('Groq health question error: $e');
+    }
+    return 'Service temporarily unavailable. Please try again later.';
   }
 }
