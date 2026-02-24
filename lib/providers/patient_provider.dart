@@ -276,4 +276,15 @@ class PatientProvider with ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> uploadReport(String name, String filePath) async {
+    try {
+      await _patientService.uploadReport(name, filePath);
+      await loadReports();
+      return true;
+    } catch (e) {
+      debugPrint("Error uploading report: $e");
+      return false;
+    }
+  }
 }

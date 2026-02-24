@@ -69,6 +69,20 @@ class PatientService extends ApiBaseService {
     return response;
   }
 
+  // Upload an external lab report
+  Future<Map<String, dynamic>> uploadReport(
+    String name,
+    String filePath,
+  ) async {
+    final response = await upload(
+      '/patients/reports',
+      filePath,
+      fieldName: 'file',
+      additionalFields: {'name': name},
+    );
+    return response;
+  }
+
   // Search/filter available doctors
   Future<List<dynamic>> searchDoctors({
     String? specialty,

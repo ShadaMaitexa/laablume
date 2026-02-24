@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/patient_provider.dart';
 import 'personal_information_screen.dart';
 import 'emergency_contact.dart';
 import 'insurance_information_screen.dart';
@@ -17,6 +19,14 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PatientProvider>().loadProfile();
+    });
+  }
+
   void _showLogoutDialog() {
     showDialog(
       context: context,
@@ -63,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Actual logout logic here
+                    // TODO: Implement actual logout logic (e.g., clear tokens, navigate to login)
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
@@ -107,22 +117,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF8F6),
+      backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
-        child: FutureBuilder<UserProfile>(
-          future: fetchProfile(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        child: Consumer<PatientProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading && provider.user == null) {
               return const Center(
                 child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
               );
             }
 
-            if (!snapshot.hasData) {
-              return const Center(child: Text('Failed to load profile'));
-            }
-
-            final user = snapshot.data!;
+            final user = provider.user;
 
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(
@@ -178,44 +183,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Row(
                             children: [
                               Container(
-                                width: 56,
-                                height: 56,
+                                width: 64,
+                                height: 64,
                                 decoration: BoxDecoration(
                                   color: const Color(
                                     0xFF12B8A6,
                                   ).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(16),
-                                  image: user.avatarUrl != null
+                                  borderRadius: BorderRadius.circular(20),
+                                  image: user?.profileImageUrl != null
                                       ? DecorationImage(
-                                          image: NetworkImage(user.avatarUrl!),
+                                          image: NetworkImage(
+                                            user!.profileImageUrl!,
+                                          ),
                                           fit: BoxFit.cover,
                                         )
                                       : null,
                                 ),
-                                child: user.avatarUrl == null
+                                child: user?.profileImageUrl == null
                                     ? const Icon(
                                         Icons.person_rounded,
                                         color: Color(0xFF12B8A6),
-                                        size: 28,
+                                        size: 32,
                                       )
                                     : null,
                               ),
-                              const SizedBox(width: 16),
+                              const SizedBox(width: 20),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      user.name,
+                                      user?.name ?? 'Loading...',
                                       style: GoogleFonts.poppins(
-                                        fontSize: 16,
+                                        fontSize: 18,
                                         fontWeight: FontWeight.w700,
                                         color: const Color(0xFF111827),
                                       ),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      'Manage account',
+                                      user?.email ?? '',
                                       style: GoogleFonts.poppins(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500,
@@ -238,6 +245,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 32),
 
                       // -------- Menu Section --------
+                      _buildSectionTitle('HEALTH RECORD'),
+                      const SizedBox(height: 12),
                       _menuItem(
                         Icons.person_outline_rounded,
                         'Personal Information',
@@ -282,6 +291,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                       ),
+
+                      const SizedBox(height: 24),
+                      _buildSectionTitle('SETTINGS'),
+                      const SizedBox(height: 12),
                       _menuItem(
                         Icons.payments_outlined,
                         'Payment Methods',
@@ -313,6 +326,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
 
+                      const SizedBox(height: 12),
+                      const Divider(height: 32),
                       const SizedBox(height: 8),
 
                       // Logout Button
@@ -333,6 +348,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title,
+        style: GoogleFonts.poppins(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF9CA3AF),
+          letterSpacing: 1.2,
         ),
       ),
     );
@@ -364,7 +394,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, color: iconColor ?? const Color(0xFF12B8A6), size: 22),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: (iconColor ?? const Color(0xFF12B8A6)).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: iconColor ?? const Color(0xFF12B8A6),
+                size: 20,
+              ),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
@@ -387,45 +428,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-// =================================================
-// API SERVICES (MOCK)
-// =================================================
-Future<UserProfile> fetchProfile() async {
-  await Future.delayed(const Duration(milliseconds: 800));
-  return UserProfile(
-    name: 'John Maitexa',
-    age: 38,
-    weightKg: 82,
-    avatarUrl: null,
-  );
-}
-
-// =================================================
-// MODEL (API READY)
-// =================================================
-class UserProfile {
-  final String name;
-  final int age;
-  final int weightKg;
-  final String? avatarUrl;
-
-  UserProfile({
-    required this.name,
-    required this.age,
-    required this.weightKg,
-    this.avatarUrl,
-  });
-
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
-    return UserProfile(
-      name: json['name'],
-      age: json['age'],
-      weightKg: json['weight'],
-      avatarUrl: json['avatar'],
     );
   }
 }

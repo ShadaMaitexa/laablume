@@ -4,13 +4,13 @@ import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
 import '../services/patient_service.dart';
 import '../utils/responsive_layout.dart';
-import 'common/feedback_screen.dart';
 import 'reports/lab_reports_screen.dart';
 import 'reports/upload_report_screen.dart';
 import 'chat_screen.dart';
 import 'my_appointments_screen.dart';
 import 'health_metrics/health_metrics_screen.dart';
 import 'common/notifications_screen.dart';
+import 'medical_records_screen.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -305,7 +305,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            _sectionHeader('Services'),
+            _sectionHeader('Quick Services'),
             InkWell(
               onTap: () {},
               child: Text(
@@ -326,12 +326,30 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           crossAxisCount: ResponsiveLayout.isMobile(context) ? 2 : 4,
           mainAxisSpacing: 20,
           crossAxisSpacing: 20,
-          childAspectRatio: 0.85,
+          childAspectRatio: 0.9,
           children: [
             _serviceCard(
-              icon: Icons.upload_file_outlined,
-              title: 'Upload Report',
-              subtitle: 'AI Analysis',
+              icon: Icons.person_search_outlined,
+              title: 'Find Doctor',
+              subtitle: 'Expert care',
+              color: const Color(0xFF12B8A6),
+              onTap: () {
+                // TODO: Navigate to SearchDoctorsScreen
+              },
+            ),
+            _serviceCard(
+              icon: Icons.biotech_outlined,
+              title: 'Lab Tests',
+              subtitle: 'Book diagnostics',
+              color: const Color(0xFFF59E0B),
+              onTap: () {
+                // TODO: Navigate to SearchLabsScreen
+              },
+            ),
+            _serviceCard(
+              icon: Icons.upload_file_rounded,
+              title: 'Clinical AI',
+              subtitle: 'Smart analysis',
               color: const Color(0xFF6366F1),
               onTap: () => Navigator.push(
                 context,
@@ -341,18 +359,14 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               ),
             ),
             _serviceCard(
-              icon: Icons.rate_review_outlined,
-              title: 'Give Feedback',
-              subtitle: 'Share experience',
-              color: Colors.orange,
+              icon: Icons.history_rounded,
+              title: 'Records',
+              subtitle: 'View history',
+              color: const Color(0xFF10B981),
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const FeedbackScreen(
-                    targetId: 'app',
-                    targetName: 'App',
-                    targetType: 'app',
-                  ),
+                  builder: (context) => const MedicalRecordsScreen(),
                 ),
               ),
             ),
@@ -363,106 +377,106 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   }
 
   Widget _buildAIBanner() {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const UploadReportScreen()),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF12B8A6).withOpacity(0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-          border: Border.all(color: const Color(0xFF12B8A6).withOpacity(0.1)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 40),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111827),
+        borderRadius: BorderRadius.circular(32),
+        image: const DecorationImage(
+          image: AssetImage('assets/dna_bg.png'),
+          fit: BoxFit.cover,
+          opacity: 0.15,
         ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF12B8A6).withOpacity(0.2),
-                    const Color(0xFF12B8A6).withOpacity(0.05),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF111827).withOpacity(0.15),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF12B8A6).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.auto_awesome_rounded,
-                color: Color(0xFF12B8A6),
-                size: 32,
-              ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'AI Analysis Ready',
-                    style: GoogleFonts.poppins(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF111827),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Instantly analyze your blood work with our advanced AI.',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: const Color(0xFF6B7280),
-                      height: 1.5,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            // Action button
-            const SizedBox(width: 16),
-            ElevatedButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const UploadReportScreen(),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Color(0xFF12B8A6),
+                  size: 24,
                 ),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF12B8A6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 14,
-                ),
-              ),
-              child: Text(
-                'Analyze Now',
+              const SizedBox(width: 16),
+              Text(
+                'Clinical AI Analysis',
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
+                  letterSpacing: 0.5,
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Understand your health\nlike never before.',
+            style: GoogleFonts.poppins(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              height: 1.2,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Our AI analyzes your blood tests and diagnostic reports to give you personalized insights and preventative advice.',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: Colors.white.withOpacity(0.6),
+              height: 1.6,
+            ),
+          ),
+          const SizedBox(height: 28),
+          ElevatedButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const UploadReportScreen(),
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF12B8A6),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Get Started',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Icon(Icons.arrow_forward_rounded, size: 20),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -547,18 +561,18 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
   Widget _buildHospitalList(List<dynamic> hospitals) {
     return SizedBox(
-      height: 140,
+      height: 180,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
         itemCount: hospitals.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 16),
+        separatorBuilder: (context, index) => const SizedBox(width: 20),
         itemBuilder: (context, index) {
           final h = hospitals[index];
           return _hospitalCard(
-            h['name'],
-            h['location'],
-            h['rating'].toString(),
+            h['name'] ?? 'Healthcare Center',
+            h['city'] ?? h['location'] ?? 'Unknown Location',
+            (h['rating'] ?? 4.5).toString(),
           );
         },
       ),
@@ -567,60 +581,50 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
   Widget _hospitalCard(String name, String location, String rating) {
     return Container(
-      width: 260,
-      padding: const EdgeInsets.all(20),
+      width: 280,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF111827).withOpacity(0.04),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: const Color(0xFF111827).withOpacity(0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
+        border: Border.all(color: const Color(0xFFF3F4F6).withOpacity(0.5)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: const Color(0xFF12B8A6).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(
-              Icons.local_hospital_rounded,
-              color: Color(0xFF12B8A6),
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  name,
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF111827),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF12B8A6).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(18),
                 ),
-                Text(
-                  location,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF6B7280),
-                  ),
+                child: const Icon(
+                  Icons.local_hospital_rounded,
+                  color: Color(0xFF12B8A6),
+                  size: 26,
                 ),
-                const SizedBox(height: 4),
-                Row(
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(
                       Icons.star_rounded,
@@ -633,13 +637,48 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF111827),
+                        color: const Color(0xFFF59E0B),
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            name,
+            style: GoogleFonts.poppins(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF111827),
+              height: 1.2,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              const Icon(
+                Icons.location_on_rounded,
+                color: Color(0xFF9CA3AF),
+                size: 14,
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  location,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF6B7280),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ],
       ),

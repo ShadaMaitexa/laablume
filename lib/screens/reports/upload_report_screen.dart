@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:laablume/services/ai_service.dart';
+import 'package:provider/provider.dart';
+import '../../providers/patient_provider.dart';
 
 class UploadReportScreen extends StatefulWidget {
   const UploadReportScreen({super.key});
@@ -29,15 +31,24 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
       _isUploading = true;
     });
 
-    // TODO: Replace with actual API call to upload file
-    await Future.delayed(const Duration(seconds: 2));
-
-    setState(() {
-      _isUploading = false;
-      _isAnalyzing = true;
-    });
-
     try {
+      // 1. Upload the file to backend
+      final fileName = _selectedFile!.path.split('/').last;
+      final uploadSuccess = await context.read<PatientProvider>().uploadReport(
+        fileName,
+        _selectedFile!.path,
+      );
+
+      if (!uploadSuccess) {
+        throw Exception('Failed to upload report to server');
+      }
+
+      setState(() {
+        _isUploading = false;
+        _isAnalyzing = true;
+      });
+
+      // 2. Perform AI Analysis
       final analysis = await AIService().analyzeLabReport(_selectedFile!);
 
       setState(() {
@@ -54,12 +65,13 @@ ${(analysis['recommendations'] as List).map((r) => '• $r').join('\n')}
 **Note:** ${analysis['note']}''';
       });
 
-      _showSnackBar('Report analyzed successfully!');
+      _showSnackBar('Report uploaded and analyzed successfully!');
     } catch (e) {
       setState(() {
+        _isUploading = false;
         _isAnalyzing = false;
       });
-      _showSnackBar('Analysis failed: $e');
+      _showSnackBar('Process failed: $e');
     }
   }
 

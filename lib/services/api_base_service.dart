@@ -116,6 +116,37 @@ class ApiBaseService {
     return _processResponse(response);
   }
 
+  // MULTIPART UPLOAD
+  Future<dynamic> upload(
+    String endpoint,
+    String filePath, {
+    String fieldName = 'file',
+    Map<String, String>? additionalFields,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    debugPrint('Sending MULTIPART POST to $uri');
+    debugPrint('File Path: $filePath');
+
+    final request = http.MultipartRequest('POST', uri);
+
+    // Auth headers
+    if (_token != null && _token!.isNotEmpty) {
+      request.headers['Authorization'] = 'Bearer $_token';
+    }
+
+    // Add file
+    request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+
+    // Add additional fields
+    if (additionalFields != null) {
+      request.fields.addAll(additionalFields);
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    return _processResponse(response);
+  }
+
   // Response processing
   dynamic _processResponse(http.Response response) {
     print('API Response [${response.request?.url}]: ${response.statusCode}');
