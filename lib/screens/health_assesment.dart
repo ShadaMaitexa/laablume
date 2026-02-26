@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
@@ -40,9 +41,19 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
       _showSnackBar('Please enter your height');
       return;
     }
+    final double? height = double.tryParse(heightController.text.trim());
+    if (height == null || height < 50 || height > 300) {
+      _showSnackBar('Please enter a valid height between 50 and 300 cm');
+      return;
+    }
 
     if (weightController.text.trim().isEmpty) {
       _showSnackBar('Please enter your weight');
+      return;
+    }
+    final double? weight = double.tryParse(weightController.text.trim());
+    if (weight == null || weight < 1 || weight > 500) {
+      _showSnackBar('Please enter a valid weight between 1 and 500 kg');
       return;
     }
 
@@ -50,9 +61,19 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
       _showSnackBar('Please enter systolic blood pressure');
       return;
     }
+    final int? systolic = int.tryParse(systolicBPController.text.trim());
+    if (systolic == null || systolic < 60 || systolic > 250) {
+      _showSnackBar('Please enter a valid systolic BP (60–250 mmHg)');
+      return;
+    }
 
     if (diastolicBPController.text.trim().isEmpty) {
       _showSnackBar('Please enter diastolic blood pressure');
+      return;
+    }
+    final int? diastolic = int.tryParse(diastolicBPController.text.trim());
+    if (diastolic == null || diastolic < 40 || diastolic > 150) {
+      _showSnackBar('Please enter a valid diastolic BP (40–150 mmHg)');
       return;
     }
 
@@ -195,6 +216,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                       controller: heightController,
                       hint: '172',
                       keyboardType: TextInputType.number,
+                      digitsOnly: true,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -204,6 +226,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                       controller: weightController,
                       hint: '85',
                       keyboardType: TextInputType.number,
+                      digitsOnly: true,
                     ),
                   ),
                 ],
@@ -226,6 +249,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                       controller: systolicBPController,
                       hint: '120',
                       keyboardType: TextInputType.number,
+                      digitsOnly: true,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -235,6 +259,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                       controller: diastolicBPController,
                       hint: '80',
                       keyboardType: TextInputType.number,
+                      digitsOnly: true,
                     ),
                   ),
                 ],
@@ -299,6 +324,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
     Widget? prefix,
     TextInputType? keyboardType,
     int maxLines = 1,
+    bool digitsOnly = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -324,6 +350,9 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
               controller: controller,
               keyboardType: keyboardType,
               maxLines: maxLines,
+              inputFormatters: digitsOnly
+                  ? [FilteringTextInputFormatter.digitsOnly]
+                  : null,
               style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
                 hintText: hint,

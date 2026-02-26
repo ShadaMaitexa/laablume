@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:laablume/screens/patient_card.dart';
+import 'package:laablume/screens/main_navigation_screen.dart';
 import 'package:pinput/pinput.dart';
 import '../../services/auth_service.dart';
 
@@ -92,11 +93,30 @@ class _OtpScreenState extends State<OtpScreen> {
             return;
           }
 
-          // Success - navigate to next screen
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PersonalDataScreen()),
-          );
+          // Check if user has already completed onboarding
+          final dynamic userData = response['data'] ?? response;
+          final user = UserModel.fromJson(userData);
+
+          // Update user provider if you have one or just use model
+          // context.read<UserProvider>().setCurrentUser(user);
+
+          // Navigate to main app if onboarding done, else start onboarding flow
+          if (user.isOnboarded) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const MainNavigationScreen(),
+              ),
+              (route) => false,
+            );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const PersonalDataScreen(),
+              ),
+            );
+          }
         } else {
           // Show error
           setState(() {

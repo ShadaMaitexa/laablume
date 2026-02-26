@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
@@ -14,9 +15,8 @@ class PersonalDataScreen extends StatefulWidget {
 class _PersonalDataScreenState extends State<PersonalDataScreen> {
   String dob = 'DD / MM / YYYY';
 
-  int selectedDay = 1;
-  int selectedMonth = 1;
-  int selectedYear = 1998;
+  DateTime? selectedDate;
+
 
   // Text editing controllers for input fields
   final TextEditingController firstNameController = TextEditingController();
@@ -94,14 +94,15 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                   _buildModernSelectField(
                     label: 'Date of birth',
                     value: dob,
-                    onTap: _showDobDialog,
+                    onTap: _selectDate,
                     icon: Icons.calendar_today_outlined,
                   ),
                   _buildModernInputField(
                     label: 'Phone number',
                     controller: phoneController,
-                    hint: 'Enter phone number',
+                    hint: 'Enter 10-digit phone number',
                     keyboardType: TextInputType.phone,
+                    digitsOnly: true,
                   ),
                   _buildModernInputField(
                     label: 'Email',
@@ -182,6 +183,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     Widget? prefix,
     TextInputType? keyboardType,
     int maxLines = 1,
+    bool digitsOnly = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -206,6 +208,9 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
               controller: controller,
               keyboardType: keyboardType,
               maxLines: maxLines,
+              inputFormatters: digitsOnly
+                  ? [FilteringTextInputFormatter.digitsOnly]
+                  : null,
               style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
                 hintText: hint,
@@ -241,6 +246,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     required String value,
     required VoidCallback onTap,
     required IconData icon,
+    bool isNumericOnly = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -288,180 +294,54 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     );
   }
 
-  // ---------------- DOB DIALOG WITH PICKER ----------------
-  void _showDobDialog() {
-    showDialog(
+  // ---------------- DATE PICKER ----------------
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
       context: context,
-      builder: (_) {
-        return Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Choose your birth date',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF111827),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Provide your personal data to book visits in just a few clicks.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: const Color(0xFF6B7280),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  height: 160,
-                  child: Row(
-                    children: [
-                      _pickerColumn(
-                        values: List.generate(31, (i) => i + 1),
-                        initialItem: selectedDay - 1,
-                        onSelected: (v) => selectedDay = v,
-                      ),
-                      _pickerColumn(
-                        values: [
-                          'January',
-                          'February',
-                          'March',
-                          'April',
-                          'May',
-                          'June',
-                          'July',
-                          'August',
-                          'September',
-                          'October',
-                          'November',
-                          'December',
-                        ],
-                        initialItem: selectedMonth - 1,
-                        onSelected: (v) {
-                          final months = [
-                            'January',
-                            'February',
-                            'March',
-                            'April',
-                            'May',
-                            'June',
-                            'July',
-                            'August',
-                            'September',
-                            'October',
-                            'November',
-                            'December',
-                          ];
-                          selectedMonth = months.indexOf(v as String) + 1;
-                        },
-                      ),
-                      _pickerColumn(
-                        values: List.generate(100, (i) => 1925 + i),
-                        initialItem: selectedYear - 1925,
-                        onSelected: (v) => selectedYear = v,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        final months = [
-                          'January',
-                          'February',
-                          'March',
-                          'April',
-                          'May',
-                          'June',
-                          'July',
-                          'August',
-                          'September',
-                          'October',
-                          'November',
-                          'December',
-                        ];
-                        dob =
-                            '$selectedDay ${months[selectedMonth - 1]} $selectedYear';
-                      });
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B8A6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(26),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Save date',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'Cancel',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF12B8A6),
-                    ),
-                  ),
-                ),
-              ],
+      initialDate: selectedDate ?? DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF12B8A6),
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF111827),
             ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _pickerColumn({
-    required List<dynamic> values,
-    required int initialItem,
-    required Function(dynamic) onSelected,
-  }) {
-    return Expanded(
-      child: ListWheelScrollView.useDelegate(
-        itemExtent: 40,
-        physics: const FixedExtentScrollPhysics(),
-        controller: FixedExtentScrollController(initialItem: initialItem),
-        onSelectedItemChanged: (index) => onSelected(values[index]),
-        childDelegate: ListWheelChildBuilderDelegate(
-          builder: (_, i) => Center(
-            child: Text(
-              values[i].toString(),
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF111827),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF12B8A6),
               ),
             ),
           ),
-          childCount: values.length,
-        ),
-      ),
+          child: child!,
+        );
+      },
     );
+
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        final months = [
+          'January',
+          'February',
+          'March',
+          'April',
+          'May',
+          'June',
+          'July',
+          'August',
+          'September',
+          'October',
+          'November',
+          'December',
+        ];
+        dob = '${picked.day} ${months[picked.month - 1]} ${picked.year}';
+      });
+    }
   }
+
 
   void _validateAndProceed() {
     if (firstNameController.text.trim().isEmpty) {
@@ -479,6 +359,18 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     if (phoneController.text.trim().isEmpty) {
       _showSnackBar('Please enter your phone number');
       return;
+    }
+    final phoneDigits = phoneController.text.trim().replaceAll(RegExp(r'\D'), '');
+    if (phoneDigits.length < 10) {
+      _showSnackBar('Please enter a valid 10-digit phone number');
+      return;
+    }
+    if (emailController.text.trim().isNotEmpty) {
+      final emailRegex = RegExp(r'^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,4}$');
+      if (!emailRegex.hasMatch(emailController.text.trim())) {
+        _showSnackBar('Please enter a valid email address');
+        return;
+      }
     }
     if (cityController.text.trim().isEmpty) {
       _showSnackBar('Please enter your city');

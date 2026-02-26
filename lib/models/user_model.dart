@@ -8,6 +8,7 @@ class UserModel {
   final bool isApproved;
   final String? hospitalId;
   final String? hospitalName;
+  final bool isOnboarded;
 
   UserModel({
     required this.id,
@@ -15,11 +16,11 @@ class UserModel {
     required this.email,
     required this.mobileNumber,
     required this.role,
-    this.isApproved =
-        true, // Default to true for patients, false for labs/hospitals if needed
+    this.isApproved = true,
     this.profileImageUrl,
     this.hospitalId,
     this.hospitalName,
+    this.isOnboarded = false,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -45,6 +46,9 @@ class UserModel {
       profileImageUrl: userData['profileImageUrl']?.toString(),
       hospitalId: userData['hospitalId']?.toString(),
       hospitalName: userData['hospitalName']?.toString(),
+      isOnboarded: userData['onboardingCompleted'] ??
+          userData['isOnboarded'] ??
+          (userData['dob'] != null && userData['dob'].toString().isNotEmpty),
     );
   }
 
@@ -59,6 +63,7 @@ class UserModel {
       'profileImageUrl': profileImageUrl,
       'hospitalId': hospitalId,
       'hospitalName': hospitalName,
+      'isOnboarded': isOnboarded,
     };
   }
 }

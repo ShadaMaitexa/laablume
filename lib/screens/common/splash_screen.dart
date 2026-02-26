@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:laablume/screens/common/onboarding_screen.dart';
+import 'package:laablume/screens/main_navigation_screen.dart';
+import 'package:laablume/screens/patient_card.dart';
+import 'package:laablume/providers/user_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,10 +29,24 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
+        final userProvider = context.read<UserProvider>();
+        final user = userProvider.currentUser;
+
+        Widget nextScreen;
+        if (user != null) {
+          if (user.isOnboarded) {
+            nextScreen = const MainNavigationScreen();
+          } else {
+            nextScreen = const PersonalDataScreen();
+          }
+        } else {
+          nextScreen = const OnboardingScreen();
+        }
+
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const OnboardingScreen(),
+            pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
@@ -52,6 +53,18 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
     if (phoneController.text.trim().isEmpty) {
       _showSnackBar('Please enter emergency contact\'s phone number');
       return;
+    }
+    final phoneDigits = phoneController.text.trim().replaceAll(RegExp(r'\D'), '');
+    if (phoneDigits.length < 10) {
+      _showSnackBar('Please enter a valid 10-digit phone number');
+      return;
+    }
+    if (emailController.text.trim().isNotEmpty) {
+      final emailRegex = RegExp(r'^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,4}$');
+      if (!emailRegex.hasMatch(emailController.text.trim())) {
+        _showSnackBar('Please enter a valid email address');
+        return;
+      }
     }
 
     if (addressController.text.trim().isEmpty) {
@@ -166,8 +179,9 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
               _buildModernInputField(
                 label: 'Phone number',
                 controller: phoneController,
-                hint: 'Enter phone number',
+                hint: 'Enter 10-digit phone number',
                 keyboardType: TextInputType.phone,
+                digitsOnly: true,
               ),
               _buildModernInputField(
                 label: 'Email',
@@ -246,6 +260,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
     Widget? prefix,
     TextInputType? keyboardType,
     int maxLines = 1,
+    bool digitsOnly = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -271,6 +286,9 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
               controller: controller,
               keyboardType: keyboardType,
               maxLines: maxLines,
+              inputFormatters: digitsOnly
+                  ? [FilteringTextInputFormatter.digitsOnly]
+                  : null,
               style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
                 hintText: hint,
