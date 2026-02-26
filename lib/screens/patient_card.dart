@@ -13,7 +13,6 @@ class PersonalDataScreen extends StatefulWidget {
 
 class _PersonalDataScreenState extends State<PersonalDataScreen> {
   String dob = 'DD / MM / YYYY';
-  String city = 'Enter or choose your city';
 
   int selectedDay = 1;
   int selectedMonth = 1;
@@ -24,6 +23,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
 
   @override
@@ -32,6 +32,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     lastNameController.dispose();
     phoneController.dispose();
     emailController.dispose();
+    cityController.dispose();
     addressController.dispose();
     super.dispose();
   }
@@ -99,34 +100,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                   _buildModernInputField(
                     label: 'Phone number',
                     controller: phoneController,
-                    hint: '000 000 0000',
-                    prefix: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('🇺🇸', style: TextStyle(fontSize: 18)),
-                        const SizedBox(width: 4),
-                        const Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 16,
-                          color: Color(0xFF6B7280),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '+1',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          width: 1,
-                          height: 24,
-                          color: const Color(0xFFE5E7EB),
-                        ),
-                        const SizedBox(width: 12),
-                      ],
-                    ),
+                    hint: 'Enter phone number',
                     keyboardType: TextInputType.phone,
                   ),
                   _buildModernInputField(
@@ -135,11 +109,10 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                     hint: 'your.email@example.com',
                     keyboardType: TextInputType.emailAddress,
                   ),
-                  _buildModernSelectField(
+                  _buildModernInputField(
                     label: 'City',
-                    value: city,
-                    onTap: _showCityBottomSheet,
-                    icon: Icons.keyboard_arrow_down,
+                    controller: cityController,
+                    hint: 'Enter your city',
                   ),
                   _buildModernInputField(
                     label: 'Address',
@@ -490,94 +463,6 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     );
   }
 
-  void _showCityBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        child: Column(
-          children: [
-            Container(
-              width: 48,
-              height: 5,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE5E7EB),
-                borderRadius: BorderRadius.circular(2.5),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'City',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  icon: const Icon(Icons.search, color: Color(0xFF9CA3AF)),
-                  hintText: 'Search',
-                  hintStyle: GoogleFonts.poppins(
-                    color: const Color(0xFF9CA3AF),
-                  ),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.my_location, color: Color(0xFF12B8A6)),
-              title: Text(
-                'Use current location',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-              ),
-              onTap: () {
-                setState(() => city = 'Boston, MA');
-                Navigator.pop(context);
-              },
-            ),
-            Expanded(
-              child: ListView(
-                children: [
-                  _cityOption('Boston, MA'),
-                  _cityOption('Bowling Green, KY'),
-                  _cityOption('Bozeman, MT'),
-                  _cityOption('Bonita Springs, FL'),
-                  _cityOption('Boise, ID'),
-                  _cityOption('Bossier City, LA'),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _cityOption(String name) {
-    return ListTile(
-      title: Text(name, style: GoogleFonts.poppins(fontSize: 15)),
-      onTap: () {
-        setState(() => city = name);
-        Navigator.pop(context);
-      },
-    );
-  }
-
   void _validateAndProceed() {
     if (firstNameController.text.trim().isEmpty) {
       _showSnackBar('Please enter your first name');
@@ -595,8 +480,8 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
       _showSnackBar('Please enter your phone number');
       return;
     }
-    if (city == 'Enter or choose your city') {
-      _showSnackBar('Please select your city');
+    if (cityController.text.trim().isEmpty) {
+      _showSnackBar('Please enter your city');
       return;
     }
 
@@ -607,7 +492,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
         'lastName': lastNameController.text.trim(),
         'dob': dob, // Format as needed by backend, e.g. YYYY-MM-DD
         'phone': phoneController.text.trim(),
-        'city': city,
+        'city': cityController.text.trim(),
         'address': addressController.text.trim(),
       },
     });
