@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:laablume/screens/patient_card.dart';
 import 'package:laablume/screens/main_navigation_screen.dart';
 import 'package:pinput/pinput.dart';
+import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 
 class OtpScreen extends StatefulWidget {

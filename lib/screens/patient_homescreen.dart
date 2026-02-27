@@ -11,6 +11,8 @@ import 'my_appointments_screen.dart';
 import 'health_metrics/health_metrics_screen.dart';
 import 'common/notifications_screen.dart';
 import 'medical_records_screen.dart';
+import 'search_doctors_screen.dart';
+import 'search_labs_screen.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -179,7 +181,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ChatScreen()),
+        MaterialPageRoute(builder: (context) => const SearchDoctorsScreen()),
       ),
       child: Container(
         height: 60,
@@ -307,7 +309,12 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           children: [
             _sectionHeader('Quick Services'),
             InkWell(
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchDoctorsScreen()),
+                );
+              },
               child: Text(
                 'View all',
                 style: GoogleFonts.poppins(
@@ -334,7 +341,10 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               subtitle: 'Expert care',
               color: const Color(0xFF12B8A6),
               onTap: () {
-                // TODO: Navigate to SearchDoctorsScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchDoctorsScreen()),
+                );
               },
             ),
             _serviceCard(
@@ -343,7 +353,10 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               subtitle: 'Book diagnostics',
               color: const Color(0xFFF59E0B),
               onTap: () {
-                // TODO: Navigate to SearchLabsScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchLabsScreen()),
+                );
               },
             ),
             _serviceCard(
