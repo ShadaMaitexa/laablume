@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:laablume/screens/patient_card.dart';
 import 'package:laablume/screens/main_navigation_screen.dart';
 import 'package:pinput/pinput.dart';
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 
@@ -70,37 +72,17 @@ class _OtpScreenState extends State<OtpScreen> {
     });
 
     try {
-      final response = await AuthService().verifyOtp(
-        phone: widget.mobileNumber,
-        otp: otpController.text,
-      );
-
+      final userProvider = context.read<UserProvider>();
+      await userProvider.login(widget.mobileNumber, otpController.text);
+      
       if (mounted) {
         setState(() {
           _isVerifying = false;
         });
 
-        if (response != null) {
-          final bool isApproved =
-              response['privacyPolicyAccepted'] ??
-              response['isApproved'] ??
-              true;
+        final user = userProvider.currentUser;
 
-          if (!isApproved) {
-            setState(() {
-              _otpError =
-                  'Your account is awaiting admin approval. Please try again later.';
-            });
-            return;
-          }
-
-          // Check if user has already completed onboarding
-          final dynamic userData = response['data'] ?? response;
-          final user = UserModel.fromJson(userData);
-
-          // Update user provider if you have one or just use model
-          // context.read<UserProvider>().setCurrentUser(user);
-
+        if (user != null) {
           // Navigate to main app if onboarding done, else start onboarding flow
           if (user.isOnboarded) {
             Navigator.pushAndRemoveUntil(
@@ -118,12 +100,6 @@ class _OtpScreenState extends State<OtpScreen> {
               ),
             );
           }
-        } else {
-          // Show error
-          setState(() {
-            _otpError = 'Invalid OTP. Please try again.';
-          });
-          otpController.clear();
         }
       }
     } catch (e) {

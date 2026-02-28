@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
+import '../providers/user_provider.dart';
 import 'package:laablume/screens/main_navigation_screen.dart';
 
 class LifestyleInformationScreen extends StatefulWidget {
@@ -206,6 +207,15 @@ class _LifestyleInformationScreenState
 
     if (success) {
       provider.clearOnboardingData();
+      
+      // Update global user provider to reflect onboarding status
+      if (mounted) {
+        final user = provider.user;
+        if (user != null) {
+          context.read<UserProvider>().setCurrentUser(user);
+        }
+      }
+      
       _showSnackBar('Onboarding complete! Welcome aboard 🎉');
       await Future.delayed(const Duration(milliseconds: 600));
       if (mounted) {

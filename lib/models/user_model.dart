@@ -46,9 +46,13 @@ class UserModel {
       profileImageUrl: userData['profileImageUrl']?.toString(),
       hospitalId: userData['hospitalId']?.toString(),
       hospitalName: userData['hospitalName']?.toString(),
-      isOnboarded: userData['onboardingCompleted'] ??
-          userData['isOnboarded'] ??
-          (userData['dob'] != null && userData['dob'].toString().isNotEmpty),
+      isOnboarded: userData['onboardingCompleted'] == true ||
+          userData['isOnboarded'] == true ||
+          (userData['role'] != null && userData['role'] != 'patient') ||
+          (userData['dob'] != null && userData['dob'].toString().isNotEmpty) ||
+          (userData['personalData'] != null &&
+              userData['personalData']['dob'] != null &&
+              userData['personalData']['dob'].toString().isNotEmpty),
     );
   }
 

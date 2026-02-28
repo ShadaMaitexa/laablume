@@ -46,7 +46,11 @@ class UserProvider extends ChangeNotifier {
       );
 
       if (response != null && response is Map<String, dynamic>) {
-        final user = UserModel.fromJson(response);
+        // After verification, we fetch the full profile to ensure all fields (like dob) are present
+        // and onboarding status is correctly determined.
+        final profileResponse = await AuthService().getProfile();
+        final data = profileResponse['user'] ?? profileResponse['data'] ?? profileResponse;
+        final user = UserModel.fromJson(data);
 
         // Enforce approval check
         if (!user.isApproved) {
