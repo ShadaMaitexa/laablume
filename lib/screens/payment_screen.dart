@@ -418,7 +418,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       name: 'Laablume Healthcare',
       description: 'Payment for ${widget.title}',
       prefillEmail: user?.email ?? 'patient@laablume.com',
-      prefillContact: user?.phone ?? '9999999999',
+      prefillContact: user?.mobileNumber ?? '9999999999',
       notes: {
         'type': widget.type.toString(),
         'booking_id': widget.bookingData['labId'] ?? widget.bookingData['doctorId'] ?? 'unknown',

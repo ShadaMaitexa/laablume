@@ -49,10 +49,12 @@ class UserModel {
       isOnboarded: userData['onboardingCompleted'] == true ||
           userData['isOnboarded'] == true ||
           (userData['role'] != null && userData['role'] != 'patient') ||
-          (userData['dob'] != null && userData['dob'].toString().isNotEmpty) ||
+          (userData['dob'] != null && userData['dob'].toString().isNotEmpty && userData['dob'].toString() != 'DD / MM / YYYY') ||
+          (userData['bloodType'] != null) ||
           (userData['personalData'] != null &&
               userData['personalData']['dob'] != null &&
-              userData['personalData']['dob'].toString().isNotEmpty),
+              userData['personalData']['dob'].toString().isNotEmpty &&
+              userData['personalData']['dob'].toString() != 'DD / MM / YYYY'),
     );
   }
 

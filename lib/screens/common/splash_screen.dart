@@ -34,6 +34,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
         Widget nextScreen;
         if (user != null) {
+          debugPrint('User found: ${user.name}, Onboarded: ${user.isOnboarded}');
           if (user.isOnboarded) {
             nextScreen = const MainNavigationScreen();
           } else {
