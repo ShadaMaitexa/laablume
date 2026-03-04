@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
 import 'common/feedback_screen.dart';
+import 'payment_screen.dart';
 
 class DoctorDetailScreen extends StatefulWidget {
   final Map<String, dynamic> doctor;
@@ -282,24 +283,22 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
     );
   }
 
-  void _bookAppointment() async {
-    final provider = context.read<PatientProvider>();
-    final success = await provider.bookAppointment({
-      'doctorId': widget.doctor['id'] ?? widget.doctor['_id'],
-      'slot': _selectedSlot,
-      'date': DateTime.now().toIso8601String().split('T')[0],
-    });
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? 'Appointment booked successfully!' : 'Failed to book appointment.'),
-          backgroundColor: success ? Colors.green : Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+  void _bookAppointment() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentScreen(
+          title: 'Consultation with ${widget.doctor['name']}',
+          subtitle: widget.doctor['specialty'] ?? 'Specialist',
+          amount: 500.0, // Default consultation fee
+          type: PaymentType.appointment,
+          bookingData: {
+            'doctorId': widget.doctor['id'] ?? widget.doctor['_id'],
+            'slot': _selectedSlot,
+            'date': DateTime.now().toIso8601String().split('T')[0],
+          },
         ),
-      );
-      if (success) Navigator.pop(context);
-    }
+      ),
+    );
   }
 }

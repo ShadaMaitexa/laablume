@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
 import 'common/feedback_screen.dart';
+import 'payment_screen.dart';
 
 class LabDetailScreen extends StatefulWidget {
   final Map<String, dynamic> lab;
@@ -284,25 +285,24 @@ class _LabDetailScreenState extends State<LabDetailScreen> {
     );
   }
 
-  void _bookTest(Map<String, dynamic> test) async {
-    final provider = context.read<PatientProvider>();
-    final success = await provider.bookTest({
-      'labId': widget.lab['id'] ?? widget.lab['_id'],
-      'testId': test['id'] ?? test['_id'],
-      'testName': test['name'],
-      'price': test['price'],
-      'bookingDate': DateTime.now().toIso8601String(),
-    });
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? 'Test booked successfully!' : 'Failed to book test.'),
-          backgroundColor: success ? Colors.green : Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+  void _bookTest(Map<String, dynamic> test) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentScreen(
+          title: test['name'] ?? 'Diagnostic Test',
+          subtitle: widget.lab['name'] ?? 'Laboratory',
+          amount: double.tryParse(test['price']?.toString() ?? '500') ?? 500.0,
+          type: PaymentType.labTest,
+          bookingData: {
+            'labId': widget.lab['id'] ?? widget.lab['_id'],
+            'testId': test['id'] ?? test['_id'],
+            'testName': test['name'],
+            'price': test['price'],
+            'bookingDate': DateTime.now().toIso8601String(),
+          },
         ),
-      );
-    }
+      ),
+    );
   }
 }
