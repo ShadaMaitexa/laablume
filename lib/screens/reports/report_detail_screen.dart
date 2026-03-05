@@ -142,7 +142,9 @@ class ReportDetailScreen extends StatelessWidget {
                       const Spacer(),
                       _headerStat(
                         'Status',
-                        (report.isValidated ?? false) ? 'Normal' : 'Processing',
+                        (report.verifiedByDoctor ?? false)
+                            ? 'Normal'
+                            : 'Processing',
                       ),
                     ],
                   ),
@@ -156,16 +158,16 @@ class ReportDetailScreen extends StatelessWidget {
             _sectionTitle('Health Recommendation'),
             const SizedBox(height: 16),
             _statusCard(
-              status: (report.isValidated ?? false)
+              status: (report.verifiedByDoctor ?? false)
                   ? 'Good Health Condition'
                   : 'Processing Analysis',
-              color: (report.isValidated ?? false)
+              color: (report.verifiedByDoctor ?? false)
                   ? const Color(0xFF10B981)
                   : const Color(0xFFF59E0B),
-              icon: (report.isValidated ?? false)
+              icon: (report.verifiedByDoctor ?? false)
                   ? Icons.verified_rounded
                   : Icons.sync_rounded,
-              description: (report.isValidated ?? false)
+              description: (report.verifiedByDoctor ?? false)
                   ? 'Great! All your diagnostic parameters are within the standard medical reference ranges.'
                   : 'We are currently processing your report tokens. AI analysis will be available shortly.',
             ),
