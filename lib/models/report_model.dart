@@ -6,8 +6,8 @@ class Report {
   final String testName;
   final DateTime date;
   final String status; // pending, validated, delivered
-  final String? fileUrl;
-  final bool? isValidated;
+  final String? reportUrl;
+  final bool? verifiedByDoctor;
   final String? validatedBy;
   final DateTime? validatedAt;
   final Map<String, dynamic>? results;
@@ -20,8 +20,8 @@ class Report {
     required this.testName,
     required this.date,
     required this.status,
-    this.fileUrl,
-    this.isValidated,
+    this.reportUrl,
+    this.verifiedByDoctor,
     this.validatedBy,
     this.validatedAt,
     this.results,
@@ -38,8 +38,8 @@ class Report {
         json['date'] ?? json['createdAt'] ?? DateTime.now().toIso8601String(),
       ),
       status: json['status'] ?? 'pending',
-      fileUrl: json['fileUrl'] ?? json['url'],
-      isValidated: json['isValidated'] ?? false,
+      reportUrl: json['reportUrl'] ?? json['fileUrl'] ?? json['url'],
+      verifiedByDoctor: json['verifiedByDoctor'] ?? json['isValidated'] ?? false,
       validatedBy: json['validatedBy'],
       validatedAt: json['validatedAt'] != null
           ? DateTime.parse(json['validatedAt'])
@@ -57,11 +57,16 @@ class Report {
       'testName': testName,
       'date': date.toIso8601String(),
       'status': status,
-      'fileUrl': fileUrl,
-      'isValidated': isValidated,
+      'reportUrl': reportUrl,
+      'verifiedByDoctor': verifiedByDoctor,
       'validatedBy': validatedBy,
       'validatedAt': validatedAt?.toIso8601String(),
       'results': results,
     };
   }
+
+  // Helper method for Report visibility rules
+  bool get shouldShowReport => verifiedByDoctor ?? false;
+  bool get shouldShowUnderReview => (reportUrl != null && (verifiedByDoctor == false || verifiedByDoctor == null));
+  bool get shouldShowNothing => reportUrl == null;
 }

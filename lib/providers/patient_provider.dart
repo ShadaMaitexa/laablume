@@ -277,9 +277,12 @@ class PatientProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> uploadReport(String name, String filePath) async {
+  Future<bool> uploadReport(String bookingId, String filePath) async {
     try {
-      await _patientService.uploadReport(name, filePath);
+      await _patientService.uploadPatientReport(
+        bookingId: bookingId,
+        filePath: filePath,
+      );
       await loadReports();
       return true;
     } catch (e) {

@@ -69,16 +69,39 @@ class PatientService extends ApiBaseService {
     return response;
   }
 
-  // Upload an external lab report
-  Future<Map<String, dynamic>> uploadReport(
-    String name,
-    String filePath,
-  ) async {
+  // Patient Report Upload (V2 as per guide)
+  // Upload and email report
+  Future<Map<String, dynamic>> uploadPatientReport({
+    required String bookingId,
+    required String filePath,
+  }) async {
     final response = await upload(
-      '/patients/reports',
+      '/upload/patient-report/$bookingId',
       filePath,
-      fieldName: 'file',
-      additionalFields: {'name': name},
+      fieldName: 'report',
+    );
+    return response;
+  }
+
+  // Verify Doctor Docs
+  Future<Map<String, dynamic>> uploadDoctorDocument(String filePath) async {
+    final response = await upload(
+      '/upload/doctor-document',
+      filePath,
+      fieldName: 'document',
+    );
+    return response;
+  }
+
+  // Verify Lab Docs
+  Future<Map<String, dynamic>> uploadLabDocument({
+    required String labId,
+    required String filePath,
+  }) async {
+    final response = await upload(
+      '/upload/lab-document/$labId',
+      filePath,
+      fieldName: 'document',
     );
     return response;
   }
@@ -150,8 +173,12 @@ class PatientService extends ApiBaseService {
   }
 
   // View specific slots assigned by the hospital for a doctor
-  Future<List<dynamic>> getDoctorSlots(String doctorId) async {
-    final response = await get('/patients/doctors/$doctorId/slots');
+  Future<List<dynamic>> getDoctorSlots(String doctorId, {String? date}) async {
+    final queryParams = date != null ? {'date': date} : null;
+    final response = await get(
+      '/patients/doctors/$doctorId/slots',
+      queryParams: queryParams,
+    );
     return response['slots'] ?? response['data'] ?? [];
   }
 

@@ -1,3 +1,4 @@
+import '../models/report_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -98,6 +99,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                 type: apt.reasonForVisit,
                 status: apt.status,
                 statusColor: _getStatusColor(apt.status),
+                labReport: apt.labReport,
               );
             },
           );
@@ -120,7 +122,11 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
     required String type,
     required String status,
     required Color statusColor,
+    Report? labReport,
   }) {
+    final bool hasReport = labReport != null;
+    final bool isVerified = labReport?.shouldShowReport ?? false;
+    final bool isUnderReview = labReport?.shouldShowUnderReview ?? false;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -250,33 +256,64 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               ],
             ),
           ),
+          if (hasReport) ...[
+            const SizedBox(height: 12),
+            if (isVerified)
+              ElevatedButton.icon(
+                onPressed: () {
+                  // Navigate to report detail
+                  Navigator.pushNamed(
+                    context,
+                    '/report-detail',
+                    arguments: labReport,
+                  );
+                },
+                icon: const Icon(Icons.description_rounded, size: 18),
+                label: const Text('View Report'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF12B8A6),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              )
+            else if (isUnderReview)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B).withOpacity(0.2),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.hourglass_empty_rounded,
+                      size: 16,
+                      color: Color(0xFFF59E0B),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Report Under Review',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFF59E0B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
           const SizedBox(height: 20),
           Row(
             children: [
-              if (status.toLowerCase() == 'completed') ...[
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () =>
-                        _showReviewDialog(context, doctorName, 'doctor'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Give Feedback',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-              ],
               Expanded(
                 child: OutlinedButton(
                   onPressed: () {},
@@ -296,8 +333,30 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   ),
                 ),
               ),
-              if (status.toLowerCase() != 'completed') ...[
-                const SizedBox(width: 16),
+              const SizedBox(width: 12),
+              if (status.toLowerCase() == 'completed') ...[
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        _showReviewDialog(context, doctorName, 'doctor'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Feedback',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ] else ...[
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {},

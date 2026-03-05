@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:laablume/services/ai_service.dart';
 import 'package:provider/provider.dart';
 import '../../providers/patient_provider.dart';
 
 class UploadReportScreen extends StatefulWidget {
-  const UploadReportScreen({super.key});
+  final String? bookingId;
+  const UploadReportScreen({super.key, this.bookingId});
 
   @override
   State<UploadReportScreen> createState() => _UploadReportScreenState();
@@ -34,14 +34,17 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
 
     try {
       // Try to upload to backend — if it fails, still proceed with AI analysis
-      try {
-        final fileName = _selectedFile!.path.split('/').last.split('\\').last;
-        await context.read<PatientProvider>().uploadReport(
-          fileName,
-          _selectedFile!.path,
-        );
-      } catch (e) {
-        debugPrint('Backend upload skipped (server may not have endpoint yet): $e');
+      if (widget.bookingId != null) {
+        try {
+          await context.read<PatientProvider>().uploadReport(
+                widget.bookingId!,
+                _selectedFile!.path,
+              );
+        } catch (e) {
+          debugPrint('Backend upload failed: $e');
+        }
+      } else {
+        debugPrint('Skipping backend upload: No bookingId provided');
       }
 
       // Perform AI Analysis via Groq
@@ -71,30 +74,16 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
   // Real file picker
   Future<void> _pickFile(String type) async {
     try {
-      if (type == 'pdf') {
-        FilePickerResult? result = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowedExtensions: ['pdf'],
-        );
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: type == 'camera' ? ImageSource.camera : ImageSource.gallery,
+      );
 
-        if (result != null && result.files.single.path != null) {
-          setState(() {
-            _selectedFile = File(result.files.single.path!);
-          });
-          _showSnackBar('File selected: ${result.files.single.name}');
-        }
-      } else {
-        final ImagePicker picker = ImagePicker();
-        final XFile? image = await picker.pickImage(
-          source: type == 'camera' ? ImageSource.camera : ImageSource.gallery,
-        );
-
-        if (image != null) {
-          setState(() {
-            _selectedFile = File(image.path);
-          });
-          _showSnackBar('Image selected');
-        }
+      if (image != null) {
+        setState(() {
+          _selectedFile = File(image.path);
+        });
+        _showSnackBar('Image selected');
       }
     } catch (e) {
       _showSnackBar('Error picking file: $e');
@@ -158,7 +147,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      'Upload your lab report in PDF or image format for AI-powered analysis',
+                      'Upload your lab report image (JPG, PNG, WebP) for AI-powered analysis',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -201,16 +190,6 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
               title: 'Choose from Gallery',
               subtitle: 'Select image from gallery',
               onTap: () => _pickFile('gallery'),
-            ),
-
-            const SizedBox(height: 16),
-
-            // PDF Option
-            _uploadOption(
-              icon: Icons.picture_as_pdf_rounded,
-              title: 'Upload PDF',
-              subtitle: 'Select PDF document',
-              onTap: () => _pickFile('pdf'),
             ),
 
             const SizedBox(height: 32),

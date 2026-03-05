@@ -213,15 +213,15 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
   Widget _reportCard(Report report) {
     return GestureDetector(
       onTap: () {
-        if (report.status.toLowerCase() == 'analyzed' ||
-            report.status.toLowerCase() == 'delivered' ||
-            report.status.toLowerCase() == 'validated') {
+        if (report.shouldShowReport) {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ReportDetailScreen(report: report),
             ),
           );
+        } else if (report.shouldShowUnderReview) {
+          _showSnackBar("Report is under review by a doctor.");
         }
       },
       child: Container(
@@ -318,8 +318,7 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                   ),
                 ),
                 const Spacer(),
-                if (report.status == 'analyzed' ||
-                    report.status == 'delivered') ...[
+                if (report.shouldShowReport) ...[
                   GestureDetector(
                     onTap: () =>
                         _showReviewDialog(context, "Laboratory", 'lab'),
@@ -354,10 +353,7 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                   ),
                   const SizedBox(width: 12),
                 ],
-                _statusBadgeContainer(
-                  report.status,
-                  report.isValidated ?? false,
-                ),
+                _statusBadgeContainer(report),
               ],
             ),
           ],
@@ -366,27 +362,41 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
     );
   }
 
-  Widget _statusBadgeContainer(String status, bool hasAbnormalities) {
-    if (status == 'pending') {
+  Widget _statusBadgeContainer(Report report) {
+    if (report.shouldShowUnderReview) {
       return _badge(
-        text: 'Processing',
+        text: 'Under Review',
         color: const Color(0xFFF59E0B),
         bgColor: const Color(0xFFFEF3C7),
       );
     }
 
-    if (hasAbnormalities) {
+    if (report.shouldShowReport) {
       return _badge(
-        text: 'Flagged',
-        color: const Color(0xFFEF4444),
-        bgColor: const Color(0xFFFEE2E2),
+        text: 'Verified',
+        color: const Color(0xFF10B981),
+        bgColor: const Color(0xFFD1FAE5),
       );
     }
 
     return _badge(
-      text: 'Healthy',
-      color: const Color(0xFF10B981),
-      bgColor: const Color(0xFFD1FAE5),
+      text: report.status.toUpperCase(),
+      color: const Color(0xFF6B7280),
+      bgColor: const Color(0xFFF3F4F6),
+    );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: const Color(0xFF111827),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 
