@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
@@ -20,7 +21,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
   bool _isAnalyzing = false;
   String? _aiAnalysis;
 
-  // API READY - Upload and analyze report
+  // Analyze report using Groq AI
   Future<void> _uploadAndAnalyze() async {
     if (_selectedFile == null) {
       _showSnackBar('Please select a file first');
@@ -28,50 +29,42 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
     }
 
     setState(() {
-      _isUploading = true;
+      _isAnalyzing = true;
     });
 
     try {
-      // 1. Upload the file to backend
-      final fileName = _selectedFile!.path.split('/').last;
-      final uploadSuccess = await context.read<PatientProvider>().uploadReport(
-        fileName,
-        _selectedFile!.path,
-      );
-
-      if (!uploadSuccess) {
-        throw Exception('Failed to upload report to server');
+      // Try to upload to backend — if it fails, still proceed with AI analysis
+      try {
+        final fileName = _selectedFile!.path.split('/').last.split('\\').last;
+        await context.read<PatientProvider>().uploadReport(
+          fileName,
+          _selectedFile!.path,
+        );
+      } catch (e) {
+        debugPrint('Backend upload skipped (server may not have endpoint yet): $e');
       }
 
-      setState(() {
-        _isUploading = false;
-        _isAnalyzing = true;
-      });
-
-      // 2. Perform AI Analysis
+      // Perform AI Analysis via Groq
       final analysis = await AIService().analyzeLabReport(_selectedFile!);
 
       setState(() {
         _isAnalyzing = false;
         _aiAnalysis =
-            '''**Overall Health Status:** Good
-
-**Key Findings:**
-${(analysis['findings'] as List).map((f) => '• $f').join('\n')}
-
-**Recommendations:**
-${(analysis['recommendations'] as List).map((r) => '• $r').join('\n')}
-
-**Note:** ${analysis['note']}''';
+            '**Summary:** ${analysis['summary'] ?? 'Analysis complete.'}\n\n'
+            '**Key Findings:**\n'
+            '${(analysis['findings'] as List? ?? []).map((f) => '• $f').join('\n')}\n\n'
+            '**Recommendations:**\n'
+            '${(analysis['recommendations'] as List? ?? []).map((r) => '• $r').join('\n')}\n\n'
+            '**Note:** ${analysis['note'] ?? ''}';
       });
 
-      _showSnackBar('Report uploaded and analyzed successfully!');
+      _showSnackBar('AI analysis complete!');
     } catch (e) {
       setState(() {
         _isUploading = false;
         _isAnalyzing = false;
       });
-      _showSnackBar('Process failed: $e');
+      _showSnackBar('Analysis failed: $e');
     }
   }
 
@@ -266,12 +259,13 @@ ${(analysis['recommendations'] as List).map((r) => '• $r').join('\n')}
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'sample_report.pdf',
+                            _selectedFile!.path.split('/').last.split('\\').last,
                             style: GoogleFonts.poppins(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF111827),
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
                           Text(
@@ -327,7 +321,7 @@ ${(analysis['recommendations'] as List).map((r) => '• $r').join('\n')}
                   ],
                 ),
                 child: ElevatedButton(
-                  onPressed: _isUploading || _isAnalyzing
+                  onPressed: _isAnalyzing
                       ? null
                       : _uploadAndAnalyze,
                   style: ElevatedButton.styleFrom(
@@ -337,7 +331,7 @@ ${(analysis['recommendations'] as List).map((r) => '• $r').join('\n')}
                     ),
                     elevation: 0,
                   ),
-                  child: _isUploading || _isAnalyzing
+                  child: _isAnalyzing
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -349,7 +343,7 @@ ${(analysis['recommendations'] as List).map((r) => '• $r').join('\n')}
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              'Scale & Analyze',
+                              'Analyze with AI',
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,

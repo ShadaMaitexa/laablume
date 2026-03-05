@@ -9,13 +9,12 @@ class AIService extends ApiBaseService {
   factory AIService() => _instance;
   AIService._internal();
 
-  // Groq API configuration — key injected via --dart-define=GROQ_API_KEY=...
-  // at build/run time. Falls back to empty string (will trigger fallback path).
-  static const String _groqApiKey = String.fromEnvironment(
-    'GROQ_API_KEY',
-    defaultValue: '',
-  );
+  // Groq API key — used directly for AI features (lab report analysis & health Q&A)
+  static const String _groqApiKey =
+      'gsk_placeholder_replace_with_your_actual_groq_api_key';
   static const String _groqBaseUrl = 'https://api.groq.com/openai/v1';
+  // Model: llama-3.1-8b-instant is fast and free on Groq's tier
+  static const String _groqModel = 'llama-3.1-8b-instant';
 
   /// Analyzes a lab report file and returns AI-powered recommendations.
   /// Priority order:
@@ -84,7 +83,7 @@ Return your response in the following JSON structure (respond ONLY with valid JS
             'Content-Type': 'application/json',
           },
           body: jsonEncode({
-            'model': 'llama3-8b-8192',
+            'model': _groqModel,
             'messages': [
               {
                 'role': 'system',
@@ -165,8 +164,8 @@ Return your response in the following JSON structure (respond ONLY with valid JS
 
   /// Send a health-related question to Groq and get an AI response.
   Future<String> askHealthQuestion(String question) async {
-    if (_groqApiKey.isEmpty) {
-      return 'AI service is not configured. Please provide a valid API key.';
+    if (_groqApiKey.isEmpty || _groqApiKey.startsWith('gsk_placeholder')) {
+      return 'AI service is not configured. Please set a valid Groq API key in ai_service.dart.';
     }
 
     try {
@@ -177,7 +176,7 @@ Return your response in the following JSON structure (respond ONLY with valid JS
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'model': 'llama3-8b-8192',
+          'model': _groqModel,
           'messages': [
             {
               'role': 'system',
