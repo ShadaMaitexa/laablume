@@ -60,8 +60,13 @@ class UserProvider extends ChangeNotifier {
         }
 
         _currentUser = user;
+        debugPrint('### UserProvider login success: ${user.name}');
+      } else {
+        debugPrint('### UserProvider login failure: verifyOtp response was null or not a map');
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('### UserProvider login error: $e');
+      debugPrint('### StackTrace: $stack');
       rethrow;
     } finally {
       _isLoading = false;

@@ -160,10 +160,19 @@ const requestOtp = async (req, res) => {
 // @access  Public
 const verifyOtp = async (req, res) => {
     const { phone, otp } = req.body;
+    console.log(`### Verifying OTP for ${phone}: Received ${otp} ###`);
 
     const user = await User.findOne({ phone });
 
-    if (user && user.otp === otp && user.otpExpires > Date.now()) {
+    if (!user) {
+        console.log(`### User not found for phone: ${phone} ###`);
+        return res.status(400).json({ message: 'User not found' });
+    }
+
+    const isMatch = user.otp === String(otp);
+    const isNotExpired = user.otpExpires > Date.now();
+
+    if (isMatch && isNotExpired) {
         // Removed approval check to allow login for document upload
         // const restrictedRoles = ['doctor', 'lab', 'hospital'];
         // if (restrictedRoles.includes(user.role) && !user.privacyPolicyAccepted) { ... }

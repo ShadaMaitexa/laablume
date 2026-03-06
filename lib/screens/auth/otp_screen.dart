@@ -83,6 +83,14 @@ class _OtpScreenState extends State<OtpScreen> {
         final user = userProvider.currentUser;
 
         if (user != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Verification successful! Loading profile...'),
+              backgroundColor: Color(0xFF12B8A6),
+              duration: Duration(seconds: 1),
+            ),
+          );
+
           // Navigate to main app if onboarding done, else start onboarding flow
           if (user.isOnboarded) {
             Navigator.pushAndRemoveUntil(
@@ -103,10 +111,13 @@ class _OtpScreenState extends State<OtpScreen> {
         }
       }
     } catch (e) {
+      debugPrint('### OtpScreen _verifyOtp caught error: $e');
       if (mounted) {
         setState(() {
           _isVerifying = false;
-          _otpError = e.toString().replaceAll('Exception: ', '');
+          _otpError = e.toString().contains('Exception: ') 
+            ? e.toString().replaceAll('Exception: ', '')
+            : 'Verification failed: $e';
         });
         otpController.clear();
       }

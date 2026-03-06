@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
+import '../providers/user_provider.dart';
 import 'package:laablume/screens/emergency_contact.dart';
 
 class PersonalDataScreen extends StatefulWidget {
@@ -25,6 +26,31 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final user = context.read<UserProvider>().currentUser;
+    if (user != null) {
+      firstNameController.text = user.firstName ??
+          (user.name.isNotEmpty ? user.name.split(' ')[0] : '');
+      lastNameController.text = user.lastName ??
+          (user.name.contains(' ')
+              ? user.name.split(' ').sublist(1).join(' ')
+              : '');
+      emailController.text = user.email;
+
+      // Strip +91 if present
+      String phone = user.mobileNumber;
+      if (phone.startsWith('+91')) {
+        phone = phone.substring(3);
+      } else if (phone.startsWith('+')) {
+        // Strip other country codes if they exist (best effort)
+        phone = phone.replaceFirst(RegExp(r'^\+\d{1,3}'), '');
+      }
+      phoneController.text = phone;
+    }
+  }
 
   @override
   void dispose() {
