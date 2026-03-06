@@ -132,7 +132,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
     final bool hasReport = labReport != null;
     final bool isVerified = labReport?.shouldShowReport ?? false;
     final bool isUnderReview = labReport?.shouldShowUnderReview ?? false;
-    final bool canChat = ['confirmed', 'completed', 'verified'].contains(status.toLowerCase());
+    final bool isPast7Days = DateTime.now().difference(appointmentDate).inDays > 7;
+    final bool canChat = ['confirmed', 'completed', 'verified'].contains(status.toLowerCase()) && !isPast7Days;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -390,7 +391,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                       elevation: 0,
                     ),
                     child: Text(
-                      'Chat',
+                      isPast7Days ? 'Chat Expired' : 'Chat',
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
                         color: Colors.white,

@@ -234,13 +234,27 @@ class _SearchLabsScreenState extends State<SearchLabsScreen> {
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF12B8A6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+            ElevatedButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LabDetailScreen(lab: lab),
+                ),
               ),
-              child: const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF12B8A6), size: 16),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF12B8A6),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+              child: Text(
+                'View Tests',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
         ),

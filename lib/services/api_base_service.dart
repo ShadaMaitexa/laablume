@@ -119,13 +119,14 @@ class ApiBaseService {
   // MULTIPART UPLOAD
   Future<dynamic> upload(
     String endpoint,
-    String filePath, {
+    String? filePath, {
     String fieldName = 'file',
     Map<String, String>? additionalFields,
+    Uint8List? bytes,
+    String? filename,
   }) async {
     final uri = Uri.parse('$baseUrl$endpoint');
     debugPrint('Sending MULTIPART POST to $uri');
-    debugPrint('File Path: $filePath');
 
     final request = http.MultipartRequest('POST', uri);
 
@@ -135,7 +136,29 @@ class ApiBaseService {
     }
 
     // Add file
-    request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+    if (kIsWeb) {
+      if (bytes != null && filename != null) {
+        request.files.add(http.MultipartFile.fromBytes(
+          fieldName,
+          bytes,
+          filename: filename,
+        ));
+      } else {
+        throw Exception("Bytes and filename are required for web upload");
+      }
+    } else {
+      if (filePath != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(fieldName, filePath),
+        );
+      } else if (bytes != null && filename != null) {
+        request.files.add(http.MultipartFile.fromBytes(
+          fieldName,
+          bytes,
+          filename: filename,
+        ));
+      }
+    }
 
     // Add additional fields
     if (additionalFields != null) {

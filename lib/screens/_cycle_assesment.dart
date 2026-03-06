@@ -21,6 +21,40 @@ class _LifestyleInformationScreenState
   int _selectedActivityIndex = 1; // Default: Moderate
 
   @override
+  void initState() {
+    super.initState();
+    final patientProvider = context.read<PatientProvider>();
+    final userProvider = context.read<UserProvider>();
+
+    final smokingOptions = ['Yes', 'No', 'Occasionally'];
+    final alcoholOptions = ['Yes', 'No', 'Occasionally'];
+    final activityOptions = ['Light', 'Moderate', 'Very Active'];
+
+    // Local session data
+    final localLifestyle =
+        patientProvider.onboardingData['lifestyle'] as Map<String, dynamic>?;
+
+    // Backend data
+    final userLifestyle =
+        patientProvider.user?.lifestyle ?? userProvider.currentUser?.lifestyle;
+
+    if (localLifestyle != null) {
+      _selectedSmokingIndex = smokingOptions.indexOf(localLifestyle['smoking'] ?? 'No');
+      _selectedAlcoholIndex = alcoholOptions.indexOf(localLifestyle['alcohol'] ?? 'Occasionally');
+      _selectedActivityIndex = activityOptions.indexOf(localLifestyle['activityLevel'] ?? 'Moderate');
+    } else if (userLifestyle != null) {
+      _selectedSmokingIndex = smokingOptions.indexOf(userLifestyle.smoking ?? 'No');
+      _selectedAlcoholIndex = alcoholOptions.indexOf(userLifestyle.alcohol ?? 'Occasionally');
+      _selectedActivityIndex = activityOptions.indexOf(userLifestyle.activityLevel ?? 'Moderate');
+    }
+
+    // Fallback for indexOf returning -1
+    if (_selectedSmokingIndex == -1) _selectedSmokingIndex = 1;
+    if (_selectedAlcoholIndex == -1) _selectedAlcoholIndex = 2;
+    if (_selectedActivityIndex == -1) _selectedActivityIndex = 1;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEAF8F6),
@@ -31,7 +65,7 @@ class _LifestyleInformationScreenState
           icon: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: _buildProgressBar(4, 5),
+        title: _buildProgressBar(4, 4),
         centerTitle: true,
         actions: [
           TextButton(
@@ -201,7 +235,38 @@ class _LifestyleInformationScreenState
     });
 
     // Submit unified onboarding payload
-    final success = await provider.completeOnboarding(provider.onboardingData);
+    // Strip phone/email if they haven't changed to avoid backend duplicate errors
+    final Map<String, dynamic> finalData = Map.from(provider.onboardingData);
+    if (finalData.containsKey('personalData')) {
+      final Map<String, dynamic> personalData =
+          Map.from(finalData['personalData']);
+
+      // Normalize comparison (strip common prefix if needed)
+      String? currentMobile = provider.user?.mobileNumber ??
+          context.read<UserProvider>().currentUser?.mobileNumber;
+      String? currentEmail = provider.user?.email ??
+          context.read<UserProvider>().currentUser?.email;
+
+      String submittedPhone = personalData['phone']?.toString() ?? '';
+      // Simple heuristic for +91 stripping/matching
+      bool isPhoneDuplicate = submittedPhone.isNotEmpty &&
+          (currentMobile == submittedPhone ||
+              currentMobile == '+91$submittedPhone' ||
+              (currentMobile?.startsWith('+91') == true &&
+                  currentMobile?.substring(3) == submittedPhone));
+
+      if (isPhoneDuplicate) {
+        personalData.remove('phone');
+      }
+
+      if (currentEmail != null && personalData['email'] == currentEmail) {
+        personalData.remove('email');
+      }
+
+      finalData['personalData'] = personalData;
+    }
+
+    final success = await provider.completeOnboarding(finalData);
 
     if (!mounted) return;
 

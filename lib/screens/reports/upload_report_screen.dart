@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:laablume/services/ai_service.dart';
@@ -17,14 +17,15 @@ class UploadReportScreen extends StatefulWidget {
 }
 
 class _UploadReportScreenState extends State<UploadReportScreen> {
-  File? _selectedFile;
+  Uint8List? _selectedFileBytes;
+  String? _selectedFileName;
+  String? _selectedFilePath; // Still used on mobile if available
   bool _isUploading = false;
   bool _isAnalyzing = false;
   String? _aiAnalysis;
 
-  // Analyze report using Groq AI
   Future<void> _uploadAndAnalyze() async {
-    if (_selectedFile == null) {
+    if (_selectedFileBytes == null && _selectedFilePath == null) {
       _showSnackBar('Please select a file first');
       return;
     }
@@ -34,22 +35,26 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
     });
 
     try {
-      // Try to upload to backend — if it fails, still proceed with AI analysis
+      // Try to upload to backend
       if (widget.bookingId != null) {
         try {
           await context.read<PatientProvider>().uploadReport(
                 widget.bookingId!,
-                _selectedFile!.path,
+                _selectedFilePath,
+                bytes: _selectedFileBytes,
+                filename: _selectedFileName,
               );
         } catch (e) {
           debugPrint('Backend upload failed: $e');
         }
-      } else {
-        debugPrint('Skipping backend upload: No bookingId provided');
       }
 
       // Perform AI Analysis via Groq
-      final analysis = await AIService().analyzeLabReport(_selectedFile!);
+      final analysis = await AIService().analyzeLabReport(
+        filePath: _selectedFilePath,
+        bytes: _selectedFileBytes,
+        filename: _selectedFileName,
+      );
 
       setState(() {
         _isAnalyzing = false;
@@ -72,18 +77,20 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
     }
   }
 
-  // Real file picker
   Future<void> _pickFile(String type) async {
     try {
       if (type == 'pdf') {
         FilePickerResult? result = await FilePicker.platform.pickFiles(
           type: FileType.custom,
           allowedExtensions: ['pdf'],
+          withData: true, // Required for web
         );
 
         if (result != null) {
           setState(() {
-            _selectedFile = File(result.files.single.path!);
+            _selectedFileBytes = result.files.single.bytes;
+            _selectedFileName = result.files.single.name;
+            _selectedFilePath = kIsWeb ? null : result.files.single.path;
           });
           _showSnackBar('PDF selected');
         }
@@ -96,8 +103,11 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
       );
 
       if (image != null) {
+        final bytes = await image.readAsBytes();
         setState(() {
-          _selectedFile = File(image.path);
+          _selectedFileBytes = bytes;
+          _selectedFileName = image.name;
+          _selectedFilePath = kIsWeb ? null : image.path;
         });
         _showSnackBar('Image selected');
       }
@@ -221,7 +231,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
             const SizedBox(height: 32),
 
             // Selected File Display
-            if (_selectedFile != null) ...[
+            if (_selectedFileBytes != null || _selectedFilePath != null) ...[
               Text(
                 'Selected File',
                 style: GoogleFonts.poppins(
@@ -253,10 +263,10 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Icon(
-                        _selectedFile!.path.toLowerCase().endsWith('.pdf')
+                        (_selectedFileName ?? '').toLowerCase().endsWith('.pdf')
                             ? Icons.picture_as_pdf_rounded
                             : Icons.description_rounded,
-                        color: Color(0xFF12B8A6),
+                        color: const Color(0xFF12B8A6),
                         size: 28,
                       ),
                     ),
@@ -266,7 +276,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _selectedFile!.path.split('/').last.split('\\').last,
+                            _selectedFileName ?? 'Selected Report',
                             style: GoogleFonts.poppins(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
@@ -276,7 +286,9 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '2.4 MB',
+                            _selectedFileBytes != null
+                                ? '${(_selectedFileBytes!.length / 1024 / 1024).toStringAsFixed(1)} MB'
+                                : 'Local File',
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
@@ -289,14 +301,16 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                     GestureDetector(
                       onTap: () {
                         setState(() {
-                          _selectedFile = null;
+                          _selectedFileBytes = null;
+                          _selectedFileName = null;
+                          _selectedFilePath = null;
                           _aiAnalysis = null;
                         });
                       },
                       child: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF3F4F6),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -313,7 +327,8 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
             ],
 
             // Upload and Analyze Button
-            if (_selectedFile != null && _aiAnalysis == null)
+            if ((_selectedFileBytes != null || _selectedFilePath != null) &&
+                _aiAnalysis == null)
               Container(
                 width: double.infinity,
                 height: 56,

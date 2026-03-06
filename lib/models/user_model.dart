@@ -17,6 +17,8 @@ class UserModel {
 
   final EmergencyContact? emergencyContact;
   final HealthProfile? healthProfile;
+  final Lifestyle? lifestyle;
+  final Insurance? insurance;
 
   UserModel({
     required this.id,
@@ -36,6 +38,8 @@ class UserModel {
     this.lastName,
     this.emergencyContact,
     this.healthProfile,
+    this.lifestyle,
+    this.insurance,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -80,6 +84,12 @@ class UserModel {
       healthProfile: userData['healthProfile'] != null
           ? HealthProfile.fromJson(userData['healthProfile'])
           : null,
+      lifestyle: userData['lifestyle'] != null
+          ? Lifestyle.fromJson(userData['lifestyle'])
+          : null,
+      insurance: userData['insurance'] != null
+          ? Insurance.fromJson(userData['insurance'])
+          : null,
     );
   }
 
@@ -102,6 +112,8 @@ class UserModel {
       'lastName': lastName,
       'emergencyContact': emergencyContact?.toJson(),
       'healthProfile': healthProfile?.toJson(),
+      'lifestyle': lifestyle?.toJson(),
+      'insurance': insurance?.toJson(),
     };
   }
 }
@@ -266,6 +278,74 @@ class HospitalModel {
       'mobileNumber': mobileNumber,
       'isApproved': isApproved,
       'doctorIds': doctorIds,
+    };
+  }
+}
+
+class Lifestyle {
+  final String? smoking;
+  final String? alcohol;
+  final String? activityLevel;
+  final String? sleep;
+  final String? waterIntake;
+
+  Lifestyle({
+    this.smoking,
+    this.alcohol,
+    this.activityLevel,
+    this.sleep,
+    this.waterIntake,
+  });
+
+  factory Lifestyle.fromJson(Map<String, dynamic> json) {
+    return Lifestyle(
+      smoking: json['smoking'],
+      alcohol: json['alcohol'],
+      activityLevel: json['activityLevel'],
+      sleep: json['sleep'],
+      waterIntake: json['waterIntake'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'smoking': smoking,
+      'alcohol': alcohol,
+      'activityLevel': activityLevel,
+      'sleep': sleep,
+      'waterIntake': waterIntake,
+    };
+  }
+}
+
+class Insurance {
+  final String? provider;
+  final String? policyNumber;
+  final String? policyExpiryDate;
+  final String? providerContact;
+
+  Insurance({
+    this.provider,
+    this.policyNumber,
+    this.policyExpiryDate,
+    this.providerContact,
+  });
+
+  factory Insurance.fromJson(Map<String, dynamic> json) {
+    return Insurance(
+      provider: json['provider'],
+      policyNumber: json['policyNumber'],
+      policyExpiryDate: json['policyExpiryDate']?.toString(),
+      providerContact: json['providerContact'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'provider': provider,
+      'policyNumber': policyNumber,
+      'policyExpiryDate': policyExpiryDate,
+      'providerContact': providerContact,
     };
   }
 }

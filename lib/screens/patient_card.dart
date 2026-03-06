@@ -74,7 +74,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
           icon: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: _buildProgressBar(1, 5),
+        title: _buildProgressBar(1, 4),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -412,6 +412,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
             ? "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}"
             : dob,
         'phone': phoneController.text.trim(),
+        'email': emailController.text.trim(), // Added email to payload
         'city': cityController.text.trim(),
         'address': addressController.text.trim(),
       },

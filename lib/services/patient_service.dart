@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'api_base_service.dart';
 
 class PatientService extends ApiBaseService {
@@ -73,22 +74,32 @@ class PatientService extends ApiBaseService {
   // Upload and email report
   Future<Map<String, dynamic>> uploadPatientReport({
     required String bookingId,
-    required String filePath,
+    String? filePath,
+    Uint8List? bytes,
+    String? filename,
   }) async {
     final response = await upload(
       '/upload/patient-report/$bookingId',
       filePath,
       fieldName: 'report',
+      bytes: bytes,
+      filename: filename,
     );
     return response;
   }
 
   // Verify Doctor Docs
-  Future<Map<String, dynamic>> uploadDoctorDocument(String filePath) async {
+  Future<Map<String, dynamic>> uploadDoctorDocument(
+    String? filePath, {
+    Uint8List? bytes,
+    String? filename,
+  }) async {
     final response = await upload(
       '/upload/doctor-document',
       filePath,
       fieldName: 'document',
+      bytes: bytes,
+      filename: filename,
     );
     return response;
   }
@@ -96,12 +107,16 @@ class PatientService extends ApiBaseService {
   // Verify Lab Docs
   Future<Map<String, dynamic>> uploadLabDocument({
     required String labId,
-    required String filePath,
+    String? filePath,
+    Uint8List? bytes,
+    String? filename,
   }) async {
     final response = await upload(
       '/upload/lab-document/$labId',
       filePath,
       fieldName: 'document',
+      bytes: bytes,
+      filename: filename,
     );
     return response;
   }
@@ -198,15 +213,24 @@ class PatientService extends ApiBaseService {
       '/patients/doctors/$doctorId/slots',
       queryParams: queryParams,
     );
+    if (response is List) {
+      return response;
+    }
     return response['slots'] ?? response['data'] ?? [];
   }
 
   // Upload profile image
-  Future<Map<String, dynamic>> uploadProfileImage(String filePath) async {
+  Future<Map<String, dynamic>> uploadProfileImage(
+    String? filePath, {
+    Uint8List? bytes,
+    String? filename,
+  }) async {
     final response = await upload(
       '/patients/upload-profile-image',
       filePath,
       fieldName: 'image',
+      bytes: bytes,
+      filename: filename,
     );
     return response;
   }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
+import '../providers/user_provider.dart';
 import 'package:laablume/screens/_cycle_assesment.dart';
 
 class HealthAssessmentScreen extends StatefulWidget {
@@ -28,18 +29,37 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
   @override
   void initState() {
     super.initState();
-    final user = context.read<PatientProvider>().user;
-    if (user?.healthProfile != null) {
-      final hp = user!.healthProfile!;
-      selectedBlood = hp.bloodType ?? 'B';
-      selectedRh = hp.rhFactor ?? '+';
-      allergiesController.text = hp.allergies ?? '';
-      chronicConditionsController.text = hp.chronicConditions ?? '';
-      heightController.text = hp.height?.toString() ?? '';
-      weightController.text = hp.weight?.toString() ?? '';
-      systolicBPController.text = hp.bloodPressure?.systolic?.toString() ?? '';
-      diastolicBPController.text =
-          hp.bloodPressure?.diastolic?.toString() ?? '';
+    final patientProvider = context.read<PatientProvider>();
+    final userProvider = context.read<UserProvider>();
+    
+    // Check local onboarding state
+    final localHP = patientProvider.onboardingData['healthProfile'] as Map<String, dynamic>?;
+    
+    // Check backend state
+    final userHP = patientProvider.user?.healthProfile ?? userProvider.currentUser?.healthProfile;
+
+    if (localHP != null) {
+      selectedBlood = localHP['bloodType'] ?? 'B';
+      selectedRh = localHP['rhFactor'] ?? '+';
+      allergiesController.text = localHP['allergies'] ?? '';
+      chronicConditionsController.text = localHP['chronicConditions'] ?? '';
+      heightController.text = localHP['height']?.toString() ?? '';
+      weightController.text = localHP['weight']?.toString() ?? '';
+      
+      final bp = localHP['bloodPressure'];
+      if (bp != null) {
+        systolicBPController.text = bp['systolic']?.toString() ?? '';
+        diastolicBPController.text = bp['diastolic']?.toString() ?? '';
+      }
+    } else if (userHP != null) {
+      selectedBlood = userHP.bloodType ?? 'B';
+      selectedRh = userHP.rhFactor ?? '+';
+      allergiesController.text = userHP.allergies ?? '';
+      chronicConditionsController.text = userHP.chronicConditions ?? '';
+      heightController.text = userHP.height?.toString() ?? '';
+      weightController.text = userHP.weight?.toString() ?? '';
+      systolicBPController.text = userHP.bloodPressure?.systolic?.toString() ?? '';
+      diastolicBPController.text = userHP.bloodPressure?.diastolic?.toString() ?? '';
     }
   }
 
@@ -101,6 +121,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
         'bloodType': selectedBlood,
         'rhFactor': selectedRh,
         'allergies': allergiesController.text.trim(),
+        'chronicConditions': chronicConditionsController.text.trim(),
         'height': double.tryParse(heightController.text.trim()) ?? 0,
         'weight': double.tryParse(weightController.text.trim()) ?? 0,
         'bloodPressure': {
@@ -136,7 +157,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
           icon: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: _buildProgressBar(3, 5),
+        title: _buildProgressBar(3, 4),
         centerTitle: true,
         actions: [
           TextButton(

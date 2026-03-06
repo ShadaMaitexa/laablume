@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
+import '../providers/user_provider.dart';
 import 'package:laablume/screens/health_assesment.dart';
 
 class EmergencyContactScreen extends StatefulWidget {
@@ -26,16 +27,31 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
   @override
   void initState() {
     super.initState();
-    final user = context.read<PatientProvider>().user;
-    if (user?.emergencyContact != null) {
-      final ec = user!.emergencyContact!;
-      firstNameController.text = ec.firstName ?? '';
-      lastNameController.text = ec.lastName ?? '';
-      relationship = ec.relationship ?? 'Select relationship';
-      phoneController.text = ec.phone ?? '';
-      emailController.text = ec.email ?? '';
-      cityController.text = ec.city ?? '';
-      addressController.text = ec.address ?? '';
+    final patientProvider = context.read<PatientProvider>();
+    final userProvider = context.read<UserProvider>();
+    
+    // First priority: Local onboarding data (partial save during session)
+    final localEC = patientProvider.onboardingData['emergencyContact'] as Map<String, dynamic>?;
+    
+    // Second priority: Backend data
+    final userEC = patientProvider.user?.emergencyContact ?? userProvider.currentUser?.emergencyContact;
+
+    if (localEC != null) {
+      firstNameController.text = localEC['firstName'] ?? '';
+      lastNameController.text = localEC['lastName'] ?? '';
+      relationship = localEC['relationship'] ?? 'Select relationship';
+      phoneController.text = localEC['phone'] ?? '';
+      emailController.text = localEC['email'] ?? '';
+      cityController.text = localEC['city'] ?? '';
+      addressController.text = localEC['address'] ?? '';
+    } else if (userEC != null) {
+      firstNameController.text = userEC.firstName ?? '';
+      lastNameController.text = userEC.lastName ?? '';
+      relationship = userEC.relationship ?? 'Select relationship';
+      phoneController.text = userEC.phone ?? '';
+      emailController.text = userEC.email ?? '';
+      cityController.text = userEC.city ?? '';
+      addressController.text = userEC.address ?? '';
     }
   }
 
@@ -95,6 +111,9 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
         'lastName': lastNameController.text.trim(),
         'relationship': relationship,
         'phone': phoneController.text.trim(),
+        'email': emailController.text.trim(),
+        'city': cityController.text.trim(),
+        'address': addressController.text.trim(),
       },
     });
 
@@ -126,7 +145,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: _buildProgressBar(2, 5),
+        title: _buildProgressBar(2, 4),
         centerTitle: true,
         actions: [
           TextButton(

@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../models/appointment_model.dart';
@@ -210,9 +211,17 @@ class PatientProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> uploadProfileImage(String filePath) async {
+  Future<bool> uploadProfileImage(
+    String? filePath, {
+    Uint8List? bytes,
+    String? filename,
+  }) async {
     try {
-      await _patientService.uploadProfileImage(filePath);
+      await _patientService.uploadProfileImage(
+        filePath,
+        bytes: bytes,
+        filename: filename,
+      );
       await loadProfile();
       return true;
     } catch (e) {
@@ -310,11 +319,18 @@ class PatientProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> uploadReport(String bookingId, String filePath) async {
+  Future<bool> uploadReport(
+    String bookingId,
+    String? filePath, {
+    Uint8List? bytes,
+    String? filename,
+  }) async {
     try {
       await _patientService.uploadPatientReport(
         bookingId: bookingId,
         filePath: filePath,
+        bytes: bytes,
+        filename: filename,
       );
       await loadReports();
       return true;

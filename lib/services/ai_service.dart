@@ -21,7 +21,11 @@ class AIService extends ApiBaseService {
   ///   1. Backend `/patients/analyze-report` endpoint
   ///   2. Groq Chat Completion API (direct, if key is available)
   ///   3. Simulated fallback response
-  Future<Map<String, dynamic>> analyzeLabReport(File file) async {
+  Future<Map<String, dynamic>> analyzeLabReport({
+    String? filePath,
+    Uint8List? bytes,
+    String? filename,
+  }) async {
     // ── Step 1: Try backend endpoint ──────────────────────────────────────────
     try {
       final uri = Uri.parse('$baseUrl/patients/analyze-report');
@@ -31,7 +35,20 @@ class AIService extends ApiBaseService {
       if (userToken != null && userToken.isNotEmpty) {
         request.headers['Authorization'] = 'Bearer $userToken';
       }
-      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      if (kIsWeb) {
+        if (bytes != null && filename != null) {
+          request.files.add(http.MultipartFile.fromBytes(
+            'file',
+            bytes,
+            filename: filename,
+          ));
+        }
+      } else {
+        if (filePath != null) {
+          request.files.add(await http.MultipartFile.fromPath('file', filePath));
+        }
+      }
 
       final streamed = await request.send();
       final response = await http.Response.fromStream(streamed);

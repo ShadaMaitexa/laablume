@@ -628,13 +628,43 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.all(24),
-                    itemCount: _messages.length,
+                    itemCount: _messages.length + 1, // +1 for the notice
                     itemBuilder: (context, index) {
-                      final msg = _messages[index];
+                      if (index == 0) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 24),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF12B8A6).withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                                color:
+                                    const Color(0xFF12B8A6).withOpacity(0.2)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline_rounded,
+                                  color: Color(0xFF12B8A6), size: 18),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Note: Your doctor will only see your messages 7 days after the appointment per the configured rule.',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFF0D9488),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      final msg = _messages[index - 1];
                       final isMe =
                           msg['isMe'] as bool? ?? msg['sender'] == 'patient';
-                      final content =
-                          msg['content'] as String? ??
+                      final content = msg['content'] as String? ??
                           msg['message'] as String? ??
                           '';
                       final time = msg['timestamp'] != null
@@ -746,18 +776,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(
-              Icons.description_outlined,
-              color: Color(0xFF12B8A6),
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Viewing prescription...')),
-              );
-            },
-            tooltip: 'View Prescription',
-          ),
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
