@@ -5,10 +5,22 @@ class MessageService extends ApiBaseService {
   factory MessageService() => _instance;
   MessageService._internal();
 
-  // Get chat history
-  Future<List<dynamic>> getChatHistory(String bookingId) async {
+  /// Get chat history. Returns a map with:
+  ///   - 'messages': List<dynamic>
+  ///   - 'isChatExpired': bool
+  ///   - 'chatExpiryDate': String (ISO date)
+  Future<Map<String, dynamic>> getChatHistory(String bookingId) async {
     final response = await get('/chat/$bookingId');
-    return response['messages'] ?? response['data'] ?? [];
+    // Handle both old (list) and new (object with messages key) API shapes
+    if (response is List) {
+      return {'messages': response, 'isChatExpired': false};
+    }
+    return {
+      'messages': response['messages'] ?? [],
+      'isChatExpired': response['isChatExpired'] ?? false,
+      'chatExpiryDate': response['chatExpiryDate'],
+      'appointmentDate': response['appointmentDate'],
+    };
   }
 
   // Send a message

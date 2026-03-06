@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
+import 'chat_screen.dart';
 
 class MyAppointmentsScreen extends StatefulWidget {
   const MyAppointmentsScreen({super.key});
@@ -93,6 +94,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               final apt = appointments[index];
 
               return _buildAppointmentCard(
+                bookingId: apt.id,
+                appointmentDate: apt.appointmentDateTime,
                 doctorName: apt.doctorName ?? "Doctor",
                 specialty: apt.doctorSpecialty ?? "Medical Professional",
                 dateTime: _formatDate(apt.appointmentDateTime),
@@ -116,6 +119,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   }
 
   Widget _buildAppointmentCard({
+    required String bookingId,
+    required DateTime appointmentDate,
     required String doctorName,
     required String specialty,
     required String dateTime,
@@ -127,6 +132,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
     final bool hasReport = labReport != null;
     final bool isVerified = labReport?.shouldShowReport ?? false;
     final bool isUnderReview = labReport?.shouldShowUnderReview ?? false;
+    final bool canChat = ['confirmed', 'completed', 'verified'].contains(status.toLowerCase());
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -359,9 +365,24 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               ] else ...[
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: canChat ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatDetailScreen(
+                            message: MessageModel(
+                              id: bookingId,
+                              name: doctorName,
+                              lastMessage: 'Tap to start conversation',
+                              time: '',
+                              appointmentDate: appointmentDate,
+                            ),
+                          ),
+                        ),
+                      );
+                    } : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12B8A6),
+                      backgroundColor: canChat ? const Color(0xFF12B8A6) : Colors.grey,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

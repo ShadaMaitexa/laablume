@@ -54,16 +54,6 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
                     childAspectRatio: 0.85,
                     children: [
                       _MedicalRecordCard(
-                        icon: Icons.medication_outlined,
-                        title: 'Prescriptions',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const PrescriptionsScreen()),
-                          );
-                        },
-                      ),
-                      _MedicalRecordCard(
                         icon: Icons.biotech_outlined,
                         title: 'Lab reports',
                         onTap: () {

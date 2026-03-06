@@ -13,6 +13,8 @@ import 'common/notifications_screen.dart';
 import 'medical_records_screen.dart';
 import 'search_doctors_screen.dart';
 import 'search_labs_screen.dart';
+import 'search_hospitals_screen.dart';
+import 'hospital_detail_screen.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -584,7 +586,12 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           children: [
             _sectionHeader('Popular Hospitals'),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchHospitalsScreen()),
+                );
+              },
               child: Text(
                 'View All',
                 style: GoogleFonts.poppins(
@@ -639,6 +646,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         itemBuilder: (context, index) {
           final h = hospitals[index];
           return _hospitalCard(
+            h['id'] ?? h['_id'] ?? '',
             h['name'] ?? 'Healthcare Center',
             h['city'] ?? h['location'] ?? 'Unknown Location',
             (h['rating'] ?? 4.5).toString(),
@@ -648,9 +656,16 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     );
   }
 
-  Widget _hospitalCard(String name, String location, String rating) {
-    return Container(
-      width: 280,
+  Widget _hospitalCard(String id, String name, String location, String rating) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => HospitalDetailScreen(hospitalId: id)),
+        );
+      },
+      child: Container(
+        width: 280,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -751,8 +766,9 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _iconButton(IconData icon, VoidCallback onTap) {
     return Container(

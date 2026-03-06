@@ -224,7 +224,59 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _validateAndProceed,
+                  onPressed: () async {
+                    if (context.read<PatientProvider>().user?.isOnboarded ==
+                        true) {
+                      // Show loading
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) =>
+                            const Center(child: CircularProgressIndicator()),
+                      );
+
+                      // Save and update
+                      final data = {
+                        'emergencyContact': {
+                          'firstName': firstNameController.text.trim(),
+                          'lastName': lastNameController.text.trim(),
+                          'relationship': relationship,
+                          'phone': phoneController.text.trim(),
+                          'email': emailController.text.trim(),
+                          'city': cityController.text.trim(),
+                          'address': addressController.text.trim(),
+                        },
+                      };
+
+                      final success = await context
+                          .read<PatientProvider>()
+                          .completeOnboarding(data);
+
+                      if (mounted) {
+                        Navigator.pop(context); // Remove loading
+                        if (success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content:
+                                  Text('Emergency contact updated successfully'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                          Navigator.pop(context); // Back to profile
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content:
+                                  Text('Failed to update emergency contact'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    } else {
+                      _validateAndProceed();
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF12B8A6),
                     shape: RoundedRectangleBorder(
@@ -233,7 +285,9 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                     elevation: 0,
                   ),
                   child: Text(
-                    'Next',
+                    context.read<PatientProvider>().user?.isOnboarded == true
+                        ? 'Update Information'
+                        : 'Next',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

@@ -143,6 +143,25 @@ class PatientService extends ApiBaseService {
     return response['hospitals'] ?? response['data'] ?? [];
   }
 
+  // Search/filter available hospitals
+  Future<List<dynamic>> searchHospitals({String? city, String? search}) async {
+    final queryParams = <String, String>{};
+    if (city != null) queryParams['city'] = city;
+    if (search != null) queryParams['search'] = search;
+
+    final response = await get(
+      '/patients/hospitals',
+      queryParams: queryParams.isNotEmpty ? queryParams : null,
+    );
+    return response['hospitals'] ?? response['data'] ?? [];
+  }
+
+  // Get details for a specific hospital
+  Future<Map<String, dynamic>> getHospitalDetails(String hospitalId) async {
+    final response = await get('/patients/hospitals/$hospitalId');
+    return response['hospital'] ?? response['data'] ?? {};
+  }
+
   // Submit feedback for lab, doctor, or hospital
   Future<Map<String, dynamic>> submitFeedback(
     Map<String, dynamic> feedbackData,

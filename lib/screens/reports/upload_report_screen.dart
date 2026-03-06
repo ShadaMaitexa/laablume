@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:laablume/services/ai_service.dart';
 import 'package:provider/provider.dart';
@@ -74,6 +74,21 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
   // Real file picker
   Future<void> _pickFile(String type) async {
     try {
+      if (type == 'pdf') {
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['pdf'],
+        );
+
+        if (result != null) {
+          setState(() {
+            _selectedFile = File(result.files.single.path!);
+          });
+          _showSnackBar('PDF selected');
+        }
+        return;
+      }
+
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
         source: type == 'camera' ? ImageSource.camera : ImageSource.gallery,
@@ -147,7 +162,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      'Upload your lab report image (JPG, PNG, WebP) for AI-powered analysis',
+                      'Upload your lab report (PDF, JPG, PNG) for AI-powered analysis',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -192,6 +207,16 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
               onTap: () => _pickFile('gallery'),
             ),
 
+            const SizedBox(height: 16),
+
+            // PDF Option
+            _uploadOption(
+              icon: Icons.picture_as_pdf_rounded,
+              title: 'Upload PDF',
+              subtitle: 'Select PDF report from storage',
+              onTap: () => _pickFile('pdf'),
+            ),
+
             const SizedBox(height: 32),
 
             // Selected File Display
@@ -226,8 +251,10 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                         color: const Color(0xFF12B8A6).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(
-                        Icons.description_rounded,
+                      child: Icon(
+                        _selectedFile!.path.toLowerCase().endsWith('.pdf')
+                            ? Icons.picture_as_pdf_rounded
+                            : Icons.description_rounded,
                         color: Color(0xFF12B8A6),
                         size: 28,
                       ),

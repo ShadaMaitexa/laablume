@@ -290,7 +290,71 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _validateAndProceed,
+                  onPressed: () async {
+                    if (context.read<PatientProvider>().user?.isOnboarded ==
+                        true) {
+                      // Show loading
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) =>
+                            const Center(child: CircularProgressIndicator()),
+                      );
+
+                      // Save and update
+                      final data = {
+                        'healthProfile': {
+                          'bloodType': selectedBlood,
+                          'rhFactor': selectedRh,
+                          'allergies': allergiesController.text.trim(),
+                          'chronicConditions':
+                              chronicConditionsController.text.trim(),
+                          'height':
+                              double.tryParse(heightController.text.trim()) ??
+                                  0,
+                          'weight':
+                              double.tryParse(weightController.text.trim()) ??
+                                  0,
+                          'bloodPressure': {
+                            'systolic':
+                                int.tryParse(systolicBPController.text.trim()) ??
+                                    0,
+                            'diastolic':
+                                int.tryParse(diastolicBPController.text.trim()) ??
+                                    0,
+                          },
+                        },
+                      };
+
+                      final success = await context
+                          .read<PatientProvider>()
+                          .completeOnboarding(data);
+
+                      if (mounted) {
+                        Navigator.pop(context); // Remove loading
+                        if (success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content:
+                                  Text('Health profile updated successfully'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                          Navigator.pop(context); // Back to profile
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content:
+                                  Text('Failed to update health profile'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    } else {
+                      _validateAndProceed();
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF12B8A6),
                     shape: RoundedRectangleBorder(
@@ -299,7 +363,9 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                     elevation: 0,
                   ),
                   child: Text(
-                    'Next',
+                    context.read<PatientProvider>().user?.isOnboarded == true
+                        ? 'Update Information'
+                        : 'Next',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

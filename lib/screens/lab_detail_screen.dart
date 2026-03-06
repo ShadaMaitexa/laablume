@@ -17,6 +17,8 @@ class LabDetailScreen extends StatefulWidget {
 class _LabDetailScreenState extends State<LabDetailScreen> {
   List<dynamic> _tests = [];
   bool _isLoadingTests = true;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _testsKey = GlobalKey();
 
   @override
   void initState() {
@@ -54,13 +56,14 @@ class _LabDetailScreenState extends State<LabDetailScreen> {
         ),
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildLabInfoCard(),
             const SizedBox(height: 32),
-            _buildSectionHeader('Available Tests'),
+            _buildSectionHeader('Available Tests', key: _testsKey),
             const SizedBox(height: 16),
             _isLoadingTests
                 ? const Center(child: CircularProgressIndicator(color: Color(0xFF12B8A6)))
@@ -131,6 +134,30 @@ class _LabDetailScreenState extends State<LabDetailScreen> {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Scrollable.ensureVisible(
+                  _testsKey.currentContext!,
+                  duration: const Duration(seconds: 1),
+                  curve: Curves.easeInOut,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF12B8A6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 0,
+              ),
+              child: Text(
+                'Browse All Tests',
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w700, color: Colors.white),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
             child: OutlinedButton(
               onPressed: () {
                 Navigator.push(
@@ -182,8 +209,9 @@ class _LabDetailScreenState extends State<LabDetailScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, {Key? key}) {
     return Text(
+      key: key,
       title,
       style: GoogleFonts.poppins(
         fontSize: 18,

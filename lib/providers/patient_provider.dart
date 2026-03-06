@@ -273,6 +273,24 @@ class PatientProvider with ChangeNotifier {
     }
   }
 
+  Future<List<dynamic>> searchHospitals({String? city, String? search}) async {
+    try {
+      return await _patientService.searchHospitals(city: city, search: search);
+    } catch (e) {
+      debugPrint("Error searching hospitals: $e");
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>> getHospitalDetails(String hospitalId) async {
+    try {
+      return await _patientService.getHospitalDetails(hospitalId);
+    } catch (e) {
+      debugPrint("Error getting hospital details: $e");
+      return {};
+    }
+  }
+
   Future<List<dynamic>> getLabTests(String labId) async {
     try {
       return await _patientService.getLabTestsByLab(labId);

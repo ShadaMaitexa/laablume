@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../providers/patient_provider.dart';
 import '../services/message_service.dart';
 import '../utils/responsive_layout.dart';
 
@@ -11,12 +14,28 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  // Fetch conversations — the backend chat endpoint is per-bookingId.
-  // A future /api/chat/list endpoint would populate this list.
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PatientProvider>().loadAppointments();
+    });
+  }
+
   Future<List<MessageModel>> fetchConversations() async {
     try {
-      await Future.delayed(const Duration(milliseconds: 300));
-      return [];
+      final appointments = context.read<PatientProvider>().appointments;
+      return appointments
+          .where((apt) => ['confirmed', 'completed', 'verified'].contains(apt.status.toLowerCase()))
+          .map((apt) => MessageModel(
+                id: apt.id,
+                name: apt.doctorName ?? 'Doctor',
+                lastMessage: 'Tap to chat',
+                time: DateFormat('h:mm a').format(apt.appointmentDateTime),
+                unread: false,
+                appointmentDate: apt.appointmentDateTime,
+              ))
+          .toList();
     } catch (_) {
       return [];
     }
@@ -436,6 +455,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   List<Map<String, dynamic>> _messages = [];
   bool _isLoading = true;
   bool _isSending = false;
+  bool _isChatExpired = false;
+  String? _chatExpiryLabel;
 
   @override
   void initState() {
@@ -453,12 +474,27 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Future<void> _loadMessages() async {
     try {
       final data = await _messageService.getChatHistory(widget.message.id);
+      final rawMessages = data['messages'] as List? ?? [];
+      final expired = data['isChatExpired'] as bool? ?? false;
+      final expiryIso = data['chatExpiryDate'] as String?;
+
+      String? expiryLabel;
+      if (expiryIso != null) {
+        try {
+          final expiry = DateTime.parse(expiryIso).toLocal();
+          expiryLabel =
+              '${expiry.day}/${expiry.month}/${expiry.year}';
+        } catch (_) {}
+      }
+
       if (mounted) {
         setState(() {
-          _messages = data
+          _messages = rawMessages
               .map((m) => m is Map<String, dynamic> ? m : <String, dynamic>{})
               .toList();
           _isLoading = false;
+          _isChatExpired = expired;
+          _chatExpiryLabel = expiryLabel;
         });
         _scrollToBottom();
       }
@@ -469,7 +505,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
-    if (text.isEmpty || widget.message.isChatExpired) return;
+    if (text.isEmpty || _isChatExpired) return;
 
     _messageController.clear();
     setState(() {
@@ -547,10 +583,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     ),
                   ),
                   Text(
-                    widget.message.isChatExpired ? 'Chat Expired' : 'Active',
+                    widget.message.isChatExpired || _isChatExpired ? 'Chat Expired' : 'Active',
                     style: GoogleFonts.poppins(
                       fontSize: 10,
-                      color: widget.message.isChatExpired
+                      color: (widget.message.isChatExpired || _isChatExpired)
                           ? Colors.red
                           : const Color(0xFF12B8A6),
                       fontWeight: FontWeight.w600,
@@ -612,13 +648,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     },
                   ),
           ),
-          if (widget.message.isChatExpired)
+          if (_isChatExpired)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               color: Colors.red.withOpacity(0.05),
               child: Text(
-                'This chat has expired (7 days post-appointment). Please book a new consultation.',
+                'Chat window has closed${_chatExpiryLabel != null ? " (expired $_chatExpiryLabel)" : ""}. Book a new appointment to continue.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
@@ -797,9 +833,10 @@ class MessageModel {
   });
 
   bool get isChatExpired {
-    final now = DateTime.now();
-    final difference = now.difference(appointmentDate).inDays;
-    return difference > 7;
+    // Chat is open for 7 days from appointment date.
+    // e.g. appointment on 15 Feb → chat expires at end of 21 Feb.
+    final expiryDate = appointmentDate.add(const Duration(days: 7));
+    return DateTime.now().isAfter(expiryDate);
   }
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {

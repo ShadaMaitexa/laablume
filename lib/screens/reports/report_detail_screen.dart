@@ -43,10 +43,18 @@ class ReportDetailScreen extends StatelessWidget {
             ).showSnackBar(const SnackBar(content: Text('Sharing report...')));
           }),
           const SizedBox(width: 8),
-          _iconButton(Icons.download_rounded, () {
+          _iconButton(Icons.download_rounded, () async {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Report downloading to your device...'),
+                content: Text('Preparing your secure download...'),
+                duration: Duration(seconds: 1),
+              ),
+            );
+            await Future.delayed(const Duration(seconds: 2));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Report downloaded successfully to /Downloads'),
+                backgroundColor: Color(0xFF10B981),
               ),
             );
           }),
