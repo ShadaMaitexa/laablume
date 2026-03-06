@@ -26,6 +26,24 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
   final TextEditingController diastolicBPController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    final user = context.read<PatientProvider>().user;
+    if (user?.healthProfile != null) {
+      final hp = user!.healthProfile!;
+      selectedBlood = hp.bloodType ?? 'B';
+      selectedRh = hp.rhFactor ?? '+';
+      allergiesController.text = hp.allergies ?? '';
+      chronicConditionsController.text = hp.chronicConditions ?? '';
+      heightController.text = hp.height?.toString() ?? '';
+      weightController.text = hp.weight?.toString() ?? '';
+      systolicBPController.text = hp.bloodPressure?.systolic?.toString() ?? '';
+      diastolicBPController.text =
+          hp.bloodPressure?.diastolic?.toString() ?? '';
+    }
+  }
+
+  @override
   void dispose() {
     allergiesController.dispose();
     chronicConditionsController.dispose();

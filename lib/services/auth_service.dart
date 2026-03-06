@@ -16,6 +16,7 @@ class AuthService extends ApiBaseService {
     final response = await post('/auth/v2/signup', {
       'name': name,
       'phone': phone,
+      'email': email,
       'role': role,
     });
     return response;

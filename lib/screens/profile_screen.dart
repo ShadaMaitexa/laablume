@@ -274,17 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                       ),
-                      _menuItem(
-                        Icons.shield_outlined,
-                        'Insurance Information',
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const InsuranceInformationScreen(),
-                          ),
-                        ),
-                      ),
+
                       _menuItem(
                         Icons.health_and_safety_outlined,
                         'Health Assessment',

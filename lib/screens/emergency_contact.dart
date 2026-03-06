@@ -24,6 +24,22 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
   final TextEditingController cityController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    final user = context.read<PatientProvider>().user;
+    if (user?.emergencyContact != null) {
+      final ec = user!.emergencyContact!;
+      firstNameController.text = ec.firstName ?? '';
+      lastNameController.text = ec.lastName ?? '';
+      relationship = ec.relationship ?? 'Select relationship';
+      phoneController.text = ec.phone ?? '';
+      emailController.text = ec.email ?? '';
+      cityController.text = ec.city ?? '';
+      addressController.text = ec.address ?? '';
+    }
+  }
+
+  @override
   void dispose() {
     firstNameController.dispose();
     lastNameController.dispose();
