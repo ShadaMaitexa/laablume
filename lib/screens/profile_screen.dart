@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
+import '../providers/user_provider.dart';
 import 'personal_information_screen.dart';
 import 'emergency_contact.dart';
 import 'insurance_information_screen.dart';
@@ -72,9 +73,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement actual logout logic (e.g., clear tokens, navigate to login)
+                  onPressed: () async {
                     Navigator.pop(context);
+                    await context.read<UserProvider>().logout();
+                    if (mounted) {
+                      Navigator.of(context, rootNavigator: true)
+                          .pushNamedAndRemoveUntil('/', (route) => false);
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF12B8A6),

@@ -53,37 +53,61 @@ class Prescription {
 }
 
 class Medication {
+  final String id;
+  final String? medicationId;
   final String name;
+  final String? type;
+  final String? description;
   final String dosage;
   final String frequency;
   final String duration;
-  final String? instructions;
+  final DateTime? endDate;
+  final String? specialInstructions;
+  final String? refillStatus;
 
   Medication({
+    required this.id,
+    this.medicationId,
     required this.name,
+    this.type,
+    this.description,
     required this.dosage,
     required this.frequency,
     required this.duration,
-    this.instructions,
+    this.endDate,
+    this.specialInstructions,
+    this.refillStatus,
   });
 
   factory Medication.fromJson(Map<String, dynamic> json) {
     return Medication(
-      name: json['name'] ?? '',
+      id: json['id'] ?? json['_id'] ?? '',
+      medicationId: json['medicationId'],
+      name: json['medication'] ?? json['name'] ?? '',
+      type: json['type'],
+      description: json['description'],
       dosage: json['dosage'] ?? '',
       frequency: json['frequency'] ?? '',
       duration: json['duration'] ?? '',
-      instructions: json['instructions'],
+      endDate: json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
+      specialInstructions: json['specialInstructions'],
+      refillStatus: json['refillStatus'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
+      'medicationId': medicationId,
       'name': name,
+      'type': type,
+      'description': description,
       'dosage': dosage,
       'frequency': frequency,
       'duration': duration,
-      'instructions': instructions,
+      'endDate': endDate?.toIso8601String(),
+      'specialInstructions': specialInstructions,
+      'refillStatus': refillStatus,
     };
   }
 }

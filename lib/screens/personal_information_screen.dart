@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../providers/patient_provider.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
@@ -24,17 +25,20 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     super.initState();
     final user = context.read<PatientProvider>().user;
 
-    // Split name into first and last if possible, or just use as is
-    final nameParts = user?.name.split(' ') ?? [''];
-    firstNameController = TextEditingController(text: nameParts[0]);
+    firstNameController =
+        TextEditingController(text: user?.firstName ?? user?.name.split(' ')[0] ?? '');
     lastNameController = TextEditingController(
-      text: nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '',
+      text: user?.lastName ??
+          (user?.name != null && user!.name.contains(' ')
+              ? user.name.split(' ').sublist(1).join(' ')
+              : ''),
     );
 
-    birthDateController = TextEditingController(text: '');
-    phoneController = TextEditingController(text: user?.mobileNumber ?? '');
-    cityController = TextEditingController(text: '');
-    addressController = TextEditingController(text: '');
+    birthDateController = TextEditingController(text: user?.dob ?? '');
+    phoneController =
+        TextEditingController(text: user?.mobileNumber ?? user?.phone ?? '');
+    cityController = TextEditingController(text: user?.city ?? '');
+    addressController = TextEditingController(text: user?.address ?? '');
   }
 
   @override
@@ -48,15 +52,82 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     super.dispose();
   }
 
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt_rounded),
+              title: const Text('Take a photo'),
+              onTap: () async {
+                Navigator.pop(context);
+                final XFile? image =
+                    await picker.pickImage(source: ImageSource.camera);
+                if (image != null) _uploadImage(image.path);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: const Text('Choose from gallery'),
+              onTap: () async {
+                Navigator.pop(context);
+                final XFile? image =
+                    await picker.pickImage(source: ImageSource.gallery);
+                if (image != null) _uploadImage(image.path);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _uploadImage(String path) async {
+    final success = await context.read<PatientProvider>().uploadProfileImage(
+      path,
+    );
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? 'Profile image updated' : 'Upload failed'),
+        backgroundColor: success ? const Color(0xFF12B8A6) : Colors.red,
+      ),
+    );
+  }
+
   Future<void> _handleSave() async {
     final success = await context.read<PatientProvider>().updateProfile({
+      'firstName': firstNameController.text.trim(),
+      'lastName': lastNameController.text.trim(),
       'name':
           '${firstNameController.text.trim()} ${lastNameController.text.trim()}',
       'phone': phoneController.text.trim(),
-      // Add other fields as needed by backend
+      'dob': birthDateController.text.trim(),
+      'city': cityController.text.trim(),
+      'address': addressController.text.trim(),
     });
 
+    if (!mounted) return;
+
     if (success) {
+      // Refresh global user state
+      final updatedUser = context.read<PatientProvider>().user;
+      if (updatedUser != null) {
+        context.read<UserProvider>().setCurrentUser(updatedUser);
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -257,9 +328,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                             right: 0,
                             bottom: 0,
                             child: GestureDetector(
-                              onTap: () {
-                                // TODO: Implement image selection and call uploadProfileImage
-                              },
+                              onTap: _pickImage,
                               child: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: const BoxDecoration(

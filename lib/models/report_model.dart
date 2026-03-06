@@ -1,72 +1,71 @@
 class Report {
   final String id;
-  final String bookingId;
-  final String patientId;
-  final String labId;
-  final String testName;
+  final String title;
+  final String category;
   final DateTime date;
-  final String status; // pending, validated, delivered
+  final String status;
   final String? reportUrl;
-  final bool? verifiedByDoctor;
-  final String? validatedBy;
-  final DateTime? validatedAt;
-  final Map<String, dynamic>? results;
+  final DateTime? resultDate;
+  final String type; // lab_test or doctor_exam
+  final String? image;
+  final String? doctorName;
 
   Report({
     required this.id,
-    required this.bookingId,
-    required this.patientId,
-    required this.labId,
-    required this.testName,
+    required this.title,
+    required this.category,
     required this.date,
     required this.status,
     this.reportUrl,
-    this.verifiedByDoctor,
-    this.validatedBy,
-    this.validatedAt,
-    this.results,
+    this.resultDate,
+    required this.type,
+    this.image,
+    this.doctorName,
   });
 
   factory Report.fromJson(Map<String, dynamic> json) {
     return Report(
-      id: json['_id'] ?? json['id'] ?? '',
-      bookingId: json['bookingId'] ?? '',
-      patientId: json['patientId'] ?? '',
-      labId: json['labId'] ?? '',
-      testName: json['testName'] ?? '',
+      id: json['id'] ?? json['_id'] ?? '',
+      title: json['title'] ?? json['testName'] ?? '',
+      category: json['category'] ?? 'General',
       date: DateTime.parse(
         json['date'] ?? json['createdAt'] ?? DateTime.now().toIso8601String(),
       ),
       status: json['status'] ?? 'pending',
-      reportUrl: json['reportUrl'] ?? json['fileUrl'] ?? json['url'],
-      verifiedByDoctor: json['verifiedByDoctor'] ?? json['isValidated'] ?? false,
-      validatedBy: json['validatedBy'],
-      validatedAt: json['validatedAt'] != null
-          ? DateTime.parse(json['validatedAt'])
+      reportUrl: json['reportUrl'] ?? json['url'] ?? json['fileUrl'],
+      resultDate: json['resultDate'] != null
+          ? DateTime.parse(json['resultDate'])
           : null,
-      results: json['results'],
+      type: json['type'] ?? 'lab_test',
+      image: json['image'],
+      doctorName: json['doctorName'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'bookingId': bookingId,
-      'patientId': patientId,
-      'labId': labId,
-      'testName': testName,
+      'title': title,
+      'category': category,
       'date': date.toIso8601String(),
       'status': status,
       'reportUrl': reportUrl,
-      'verifiedByDoctor': verifiedByDoctor,
-      'validatedBy': validatedBy,
-      'validatedAt': validatedAt?.toIso8601String(),
-      'results': results,
+      'resultDate': resultDate?.toIso8601String(),
+      'type': type,
+      'image': image,
+      'doctorName': doctorName,
     };
   }
 
   // Helper method for Report visibility rules
-  bool get shouldShowReport => verifiedByDoctor ?? false;
-  bool get shouldShowUnderReview => (reportUrl != null && (verifiedByDoctor == false || verifiedByDoctor == null));
+  bool get shouldShowReport =>
+      status.toLowerCase().contains('normal') ||
+      status.toLowerCase().contains('results') ||
+      status.toLowerCase() == 'completed' ||
+      status.toLowerCase() == 'verified';
+
+  bool get shouldShowUnderReview =>
+      reportUrl != null && !shouldShowReport;
+
   bool get shouldShowNothing => reportUrl == null;
 }

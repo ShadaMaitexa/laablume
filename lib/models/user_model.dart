@@ -9,6 +9,11 @@ class UserModel {
   final String? hospitalId;
   final String? hospitalName;
   final bool isOnboarded;
+  final String? dob;
+  final String? city;
+  final String? address;
+  final String? firstName;
+  final String? lastName;
 
   UserModel({
     required this.id,
@@ -21,6 +26,11 @@ class UserModel {
     this.hospitalId,
     this.hospitalName,
     this.isOnboarded = false,
+    this.dob,
+    this.city,
+    this.address,
+    this.firstName,
+    this.lastName,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -46,15 +56,19 @@ class UserModel {
       profileImageUrl: userData['profileImageUrl']?.toString(),
       hospitalId: userData['hospitalId']?.toString(),
       hospitalName: userData['hospitalName']?.toString(),
-      isOnboarded: userData['onboardingCompleted'] == true ||
+      isOnboarded: userData['isHealthProfileComplete'] == true ||
+          userData['onboardingCompleted'] == true ||
           userData['isOnboarded'] == true ||
           (userData['role'] != null && userData['role'] != 'patient') ||
-          (userData['dob'] != null && userData['dob'].toString().isNotEmpty && userData['dob'].toString() != 'DD / MM / YYYY') ||
-          (userData['bloodType'] != null) ||
-          (userData['personalData'] != null &&
-              userData['personalData']['dob'] != null &&
-              userData['personalData']['dob'].toString().isNotEmpty &&
-              userData['personalData']['dob'].toString() != 'DD / MM / YYYY'),
+          (userData['dob'] != null &&
+              userData['dob'].toString().isNotEmpty &&
+              userData['dob'].toString() != 'DD / MM / YYYY') ||
+          (userData['bloodType'] != null),
+      dob: userData['dob'],
+      city: userData['city'],
+      address: userData['address'],
+      firstName: userData['firstName'],
+      lastName: userData['lastName'],
     );
   }
 
@@ -70,6 +84,11 @@ class UserModel {
       'hospitalId': hospitalId,
       'hospitalName': hospitalName,
       'isOnboarded': isOnboarded,
+      'dob': dob,
+      'city': city,
+      'address': address,
+      'firstName': firstName,
+      'lastName': lastName,
     };
   }
 }
@@ -123,18 +142,22 @@ class DashboardData {
   final int upcomingAppointments;
   final int pendingReports;
   final int healthScore;
+  final String? summary;
 
   DashboardData({
     required this.upcomingAppointments,
     required this.pendingReports,
     required this.healthScore,
+    this.summary,
   });
 
   factory DashboardData.fromJson(Map<String, dynamic> json) {
     return DashboardData(
-      upcomingAppointments: json['upcoming_appointments'] ?? 0,
-      pendingReports: json['pending_reports'] ?? 0,
-      healthScore: json['health_score'] ?? 0,
+      upcomingAppointments:
+          json['upcomingAppointments'] ?? json['upcoming_appointments'] ?? 0,
+      pendingReports: json['labReports'] ?? json['pending_reports'] ?? 0,
+      healthScore: json['healthScore'] ?? json['health_score'] ?? 0,
+      summary: json['summary'],
     );
   }
 }

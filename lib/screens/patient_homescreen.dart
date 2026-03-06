@@ -63,6 +63,10 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       _buildSearch(),
                       const SizedBox(height: 36),
                       _buildSummaryCard(provider),
+                      if (provider.dashboardData?.summary != null) ...[
+                        const SizedBox(height: 24),
+                        _buildAISummary(provider.dashboardData!.summary!),
+                      ],
                       const SizedBox(height: 40),
                       _buildServicesSection(context),
                       const SizedBox(height: 36),
@@ -292,6 +296,58 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               'Health Score',
               '${data?.healthScore ?? 0}%',
               Icons.favorite_border_rounded,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAISummary(String summary) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF12B8A6).withOpacity(0.08),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFF12B8A6).withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF12B8A6),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'AI INSIGHT',
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Icon(
+                Icons.auto_awesome_rounded,
+                size: 16,
+                color: Color(0xFF12B8A6),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            summary,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF111827),
+              height: 1.5,
             ),
           ),
         ],

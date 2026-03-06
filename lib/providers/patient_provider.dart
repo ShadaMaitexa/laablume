@@ -56,20 +56,7 @@ class PatientProvider with ChangeNotifier {
     try {
       final dashboardResponse = await _patientService.getDashboard();
 
-      _dashboardData = DashboardData(
-        upcomingAppointments:
-            dashboardResponse['upcomingAppointments'] ??
-            dashboardResponse['upcoming_appointments'] ??
-            0,
-        pendingReports:
-            dashboardResponse['pendingReports'] ??
-            dashboardResponse['pending_reports'] ??
-            0,
-        healthScore:
-            dashboardResponse['healthScore'] ??
-            dashboardResponse['health_score'] ??
-            0,
-      );
+      _dashboardData = DashboardData.fromJson(dashboardResponse);
 
       await loadProfile();
     } catch (e) {
@@ -173,10 +160,38 @@ class PatientProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      final response = await _patientService.getPrescriptions();
-      _prescriptions = response
-          .map((json) => Prescription.fromJson(json))
-          .toList();
+      final List<dynamic> response = await _patientService.getPrescriptions();
+
+      // Backend returns flattened list of medications. Group them by bookingId.
+      final Map<String, List<Medication>> groupedMeds = {};
+      final Map<String, Map<String, dynamic>> bookingData = {};
+
+      for (var json in response) {
+        final bookingId = json['bookingId'] ?? 'unknown';
+        if (!groupedMeds.containsKey(bookingId)) {
+          groupedMeds[bookingId] = [];
+          bookingData[bookingId] = json; // Sample data for doctorName/date
+        }
+        groupedMeds[bookingId]!.add(Medication.fromJson(json));
+      }
+
+      _prescriptions =
+          groupedMeds.entries.map((entry) {
+            final data = bookingData[entry.key]!;
+            return Prescription(
+              id: entry.key,
+              patientId: '', // Not provided in flattened list
+              doctorId: '', // Not provided in flattened list
+              date: DateTime.parse(
+                data['date'] ?? DateTime.now().toIso8601String(),
+              ),
+              medications: entry.value,
+              diagnosis: data['description'] ?? data['specialization'],
+              notes: data['specialInstructions'],
+            );
+          }).toList();
+
+      _prescriptions.sort((a, b) => b.date.compareTo(a.date));
     } catch (e) {
       debugPrint("Error loading prescriptions: $e");
     } finally {
@@ -195,9 +210,9 @@ class PatientProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> uploadProfileImage(Map<String, dynamic> imageData) async {
+  Future<bool> uploadProfileImage(String filePath) async {
     try {
-      await _patientService.uploadProfileImage(imageData);
+      await _patientService.uploadProfileImage(filePath);
       await loadProfile();
       return true;
     } catch (e) {

@@ -260,7 +260,7 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        report.testName,
+                        report.title,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -269,7 +269,9 @@ class _LabReportsScreenState extends State<LabReportsScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        "Laboratory", // Since we only have labId in the model
+                        report.type == 'doctor_exam'
+                            ? (report.doctorName ?? 'Doctor Consultation')
+                            : "Laboratory",
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
