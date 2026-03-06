@@ -1,8 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/patient_provider.dart';
+import '../providers/user_provider.dart';
+import '../services/patient_service.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
   const PersonalInformationScreen({super.key});
@@ -15,6 +18,7 @@ class PersonalInformationScreen extends StatefulWidget {
 class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   late TextEditingController firstNameController;
   late TextEditingController lastNameController;
+  late TextEditingController emailController;
   late TextEditingController birthDateController;
   late TextEditingController phoneController;
   late TextEditingController cityController;
@@ -26,7 +30,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     final user = context.read<PatientProvider>().user;
 
     firstNameController =
-        TextEditingController(text: user?.firstName ?? user?.name.split(' ')[0] ?? '');
+        TextEditingController(text: user?.firstName ?? (user?.name != null && user!.name.isNotEmpty ? user.name.split(' ')[0] : ''));
     lastNameController = TextEditingController(
       text: user?.lastName ??
           (user?.name != null && user!.name.contains(' ')
@@ -34,9 +38,10 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
               : ''),
     );
 
+    emailController = TextEditingController(text: user?.email ?? '');
     birthDateController = TextEditingController(text: user?.dob ?? '');
     phoneController =
-        TextEditingController(text: user?.mobileNumber ?? user?.phone ?? '');
+        TextEditingController(text: user?.mobileNumber ?? '');
     cityController = TextEditingController(text: user?.city ?? '');
     addressController = TextEditingController(text: user?.address ?? '');
   }
@@ -45,6 +50,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   void dispose() {
     firstNameController.dispose();
     lastNameController.dispose();
+    emailController.dispose();
     birthDateController.dispose();
     phoneController.dispose();
     cityController.dispose();
@@ -113,6 +119,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       'lastName': lastNameController.text.trim(),
       'name':
           '${firstNameController.text.trim()} ${lastNameController.text.trim()}',
+      'email': emailController.text.trim(),
       'phone': phoneController.text.trim(),
       'dob': birthDateController.text.trim(),
       'city': cityController.text.trim(),
@@ -352,6 +359,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
 
                 _buildField('First name', firstNameController),
                 _buildField('Last name', lastNameController),
+                _buildField('Email', emailController),
                 _buildDatePickerField('Birth date', birthDateController),
                 _buildPhoneField(),
                 _buildField('City', cityController),

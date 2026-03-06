@@ -183,12 +183,12 @@ class PatientService extends ApiBaseService {
   }
 
   // Upload profile image
-  Future<Map<String, dynamic>> uploadProfileImage(
-    Map<String, dynamic> imageData,
-  ) async {
-    // Note: If this is an actual file upload, might need multipart.
-    // Assuming backend takes base64 or URL for now based on post() implementation.
-    final response = await post('/patients/upload-profile-image', imageData);
+  Future<Map<String, dynamic>> uploadProfileImage(String filePath) async {
+    final response = await upload(
+      '/patients/upload-profile-image',
+      filePath,
+      fieldName: 'image',
+    );
     return response;
   }
 

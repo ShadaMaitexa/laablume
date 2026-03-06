@@ -106,7 +106,7 @@ class ReportDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    report.testName,
+                    report.title,
                     style: GoogleFonts.poppins(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
@@ -142,7 +142,7 @@ class ReportDetailScreen extends StatelessWidget {
                       const Spacer(),
                       _headerStat(
                         'Status',
-                        (report.verifiedByDoctor ?? false)
+                        (report.shouldShowReport)
                             ? 'Normal'
                             : 'Processing',
                       ),
@@ -158,16 +158,16 @@ class ReportDetailScreen extends StatelessWidget {
             _sectionTitle('Health Recommendation'),
             const SizedBox(height: 16),
             _statusCard(
-              status: (report.verifiedByDoctor ?? false)
+              status: (report.shouldShowReport)
                   ? 'Good Health Condition'
                   : 'Processing Analysis',
-              color: (report.verifiedByDoctor ?? false)
+              color: (report.shouldShowReport)
                   ? const Color(0xFF10B981)
                   : const Color(0xFFF59E0B),
-              icon: (report.verifiedByDoctor ?? false)
+              icon: (report.shouldShowReport)
                   ? Icons.verified_rounded
                   : Icons.sync_rounded,
-              description: (report.verifiedByDoctor ?? false)
+              description: (report.shouldShowReport)
                   ? 'Great! All your diagnostic parameters are within the standard medical reference ranges.'
                   : 'We are currently processing your report tokens. AI analysis will be available shortly.',
             ),
@@ -618,7 +618,7 @@ class ReportDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Select a hospital to share your ${report.testName} report. They will be able to view this for diagnostic purposes.',
+                'Select a hospital to share your ${report.title} report. They will be able to view this for diagnostic purposes.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 13,
