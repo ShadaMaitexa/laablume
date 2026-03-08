@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:file_picker/file_picker.dart';
 import '../providers/patient_provider.dart';
 import '../services/message_service.dart';
 import '../services/ai_service.dart';
 import '../utils/responsive_layout.dart';
+import 'search_doctors_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -586,6 +588,69 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     });
   }
 
+  Future<void> _pickAndAnalyzeReport() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        withData: true,
+      );
+
+      if (result != null) {
+        final bytes = result.files.single.bytes;
+        final filename = result.files.single.name;
+        final filePath = result.files.single.path;
+
+        if (mounted) {
+          setState(() {
+            _messages.add({
+              'content': 'Uploaded Lab Report: $filename\nAnalyzing...',
+              'isMe': true,
+              'timestamp': DateTime.now().toIso8601String(),
+            });
+            _isSending = true;
+          });
+          _scrollToBottom();
+        }
+
+        final analysis = await AIService().analyzeLabReport(
+          filePath: filePath,
+          bytes: bytes,
+          filename: filename,
+        );
+
+        final aiResponse =
+            'Summary: ${analysis['summary'] ?? 'Analysis complete.'}\n\n'
+            'Key Findings:\n'
+            '${(analysis['findings'] as List? ?? []).map((f) => '• $f').join('\n')}\n\n'
+            'Recommendations:\n'
+            '${(analysis['recommendations'] as List? ?? []).map((r) => '• $r').join('\n')}\n\n'
+            'Based on these findings, we strongly advise consulting a specialist for further steps.';
+
+        if (mounted) {
+          setState(() {
+            _isSending = false;
+            // Provide the AI response with the Book Doctor action flagged
+            _messages.add({
+              'content': aiResponse,
+              'isMe': false,
+              'timestamp': DateTime.now().toIso8601String(),
+              'hasBookDoctorAction': true,
+            });
+          });
+          _scrollToBottom();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSending = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error analyzing report: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -740,10 +805,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       final time = msg['timestamp'] != null
                           ? _formatTime(msg['timestamp'])
                           : '';
+                      final hasBookDoctorAction =
+                          msg['hasBookDoctorAction'] as bool? ?? false;
                       return _buildMessageBubble(
                         message: content,
                         isMe: isMe,
                         time: time,
+                        hasBookDoctorAction: hasBookDoctorAction,
                       );
                     },
                   ),
@@ -786,6 +854,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     required String message,
     required bool isMe,
     required String time,
+    bool hasBookDoctorAction = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -832,6 +901,43 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               ),
             ),
           ],
+          if (hasBookDoctorAction && !isMe) ...[
+            const SizedBox(height: 8),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SearchDoctorsScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(
+                Icons.person_search_rounded,
+                size: 16,
+                color: Colors.white,
+              ),
+              label: Text(
+                'Book Doctor Now',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF12B8A6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -846,6 +952,23 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       ),
       child: Row(
         children: [
+          if (widget.message.id == 'laablume_ai_assistant') ...[
+            Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFFF3F4F6),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.attach_file_rounded,
+                  color: Color(0xFF6B7280),
+                  size: 20,
+                ),
+                onPressed: _isSending ? null : _pickAndAnalyzeReport,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
