@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../../providers/patient_provider.dart';
+import '../../models/appointment_model.dart';
 import 'visit_summary_detail_screen.dart';
 
 class VisitSummariesScreen extends StatefulWidget {
@@ -13,40 +17,21 @@ class _VisitSummariesScreenState extends State<VisitSummariesScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _sortBy = 'Date: Newest first';
 
-  final List<Map<String, dynamic>> _summaries = [
-    {
-      'id': '1',
-      'doctorName': 'Dr. John Smith',
-      'specialization': 'Cardiologist',
-      'date': '17 Nov',
-      'time': '11:00 - 11:45 PM',
-      'type': 'In-person visit',
-    },
-    {
-      'id': '2',
-      'doctorName': 'Dr. Ch. P. Montgomery',
-      'specialization': 'Cardiologist',
-      'date': '12 Nov',
-      'time': '12:00 - 12:45 PM',
-      'type': 'In-person visit',
-    },
-    {
-      'id': '3',
-      'doctorName': 'Dr. Helen Poe',
-      'specialization': 'Radiologist',
-      'date': '11 Nov',
-      'time': '11:00 - 12:45 PM',
-      'type': 'In-person visit',
-    },
-    {
-      'id': '4',
-      'doctorName': 'Dr. Arianna Liston',
-      'specialization': 'Neurologist',
-      'date': '10 Nov',
-      'time': '10:00 - 10:45 AM',
-      'type': 'In-person visit',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PatientProvider>().loadAppointments();
+    });
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('d MMM').format(date);
+  }
+
+  String _formatTime(DateTime date) {
+    return DateFormat('h:mm a').format(date);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,101 +54,131 @@ class _VisitSummariesScreenState extends State<VisitSummariesScreen> {
         ),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 16),
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Container(
-              height: 56,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: TextField(
-                controller: _searchController,
-                style: GoogleFonts.poppins(fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Start typing name or specialization...',
-                  hintStyle: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: const Color(0xFF9CA3AF),
-                  ),
-                  prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF9CA3AF), size: 20),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Sort/Filter Action Bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: _showSortBottomSheet,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.swap_vert_rounded, size: 18, color: Color(0xFF9CA3AF)),
-                        const SizedBox(width: 8),
-                        Text(
-                          'By date',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF4B5563),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.all(10),
+      body: Consumer<PatientProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading && provider.appointments.isEmpty) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
+            );
+          }
+
+          final appointments = provider.appointments.where((a) {
+            final search = _searchController.text.toLowerCase();
+            return (a.doctorName?.toLowerCase().contains(search) ?? false) ||
+                   (a.doctorSpecialty?.toLowerCase().contains(search) ?? false);
+          }).toList();
+
+          if (_sortBy == 'Date: Newest first') {
+            appointments.sort((a, b) => b.appointmentDateTime.compareTo(a.appointmentDateTime));
+          } else {
+            appointments.sort((a, b) => (a.doctorName ?? '').compareTo(b.doctorName ?? ''));
+          }
+
+          return Column(
+            children: [
+              const SizedBox(height: 16),
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Container(
+                  height: 56,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.tune_rounded, size: 18, color: Color(0xFF9CA3AF)),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) => setState(() {}),
+                    style: GoogleFonts.poppins(fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'Start typing name or specialization...',
+                      hintStyle: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                      prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF9CA3AF), size: 20),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                    ),
+                  ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          // List
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              itemCount: _summaries.length,
-              itemBuilder: (context, index) {
-                final summary = _summaries[index];
-                return _buildSummaryCard(summary);
-              },
-            ),
-          ),
-        ],
+              ),
+              const SizedBox(height: 16),
+              // Sort/Filter Action Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: _showSortBottomSheet,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.swap_vert_rounded, size: 18, color: Color(0xFF9CA3AF)),
+                            const SizedBox(width: 8),
+                            Text(
+                              _sortBy.startsWith('Date') ? 'By date' : 'A-Z',
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF4B5563),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.tune_rounded, size: 18, color: Color(0xFF9CA3AF)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              // List
+              Expanded(
+                child: appointments.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No visit summaries found',
+                          style: GoogleFonts.poppins(color: const Color(0xFF6B7280)),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        itemCount: appointments.length,
+                        itemBuilder: (context, index) {
+                          final appointment = appointments[index];
+                          return _buildSummaryCard(appointment);
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildSummaryCard(Map<String, dynamic> summary) {
+  Widget _buildSummaryCard(AppointmentModel appointment) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -195,7 +210,7 @@ class _VisitSummariesScreenState extends State<VisitSummariesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  summary['doctorName'],
+                  appointment.doctorName ?? 'Unknown Doctor',
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -203,7 +218,7 @@ class _VisitSummariesScreenState extends State<VisitSummariesScreen> {
                   ),
                 ),
                 Text(
-                  summary['specialization'],
+                  appointment.doctorSpecialty ?? 'Medical Specialist',
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -216,7 +231,7 @@ class _VisitSummariesScreenState extends State<VisitSummariesScreen> {
                     const Icon(Icons.calendar_month_rounded, size: 14, color: Color(0xFF12B8A6)),
                     const SizedBox(width: 4),
                     Text(
-                      '${summary['date']}, ${summary['time']}',
+                      '${_formatDate(appointment.appointmentDateTime)}, ${_formatTime(appointment.appointmentDateTime)}',
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
@@ -228,10 +243,10 @@ class _VisitSummariesScreenState extends State<VisitSummariesScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_rounded, size: 14, color: Color(0xFF12B8A6)),
+                    const Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFF12B8A6)),
                     const SizedBox(width: 4),
                     Text(
-                      summary['type'],
+                      appointment.status,
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
@@ -247,7 +262,9 @@ class _VisitSummariesScreenState extends State<VisitSummariesScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const VisitSummaryDetailScreen()),
+                MaterialPageRoute(
+                  builder: (context) => VisitSummaryDetailScreen(appointment: appointment),
+                ),
               );
             },
             child: Container(

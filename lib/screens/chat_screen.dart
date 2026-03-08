@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/patient_provider.dart';
 import '../services/message_service.dart';
+import '../services/ai_service.dart';
 import '../utils/responsive_layout.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -23,22 +24,46 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<List<MessageModel>> fetchConversations() async {
+    final List<MessageModel> list = [];
+
+    // 1. ADD AI HEALTH ASSISTANT (Persistent for presentation)
+    list.add(
+      MessageModel(
+        id: 'laablume_ai_assistant',
+        name: 'Laablume AI Assistant',
+        lastMessage: 'Ask me anything about your health!',
+        time: 'Now',
+        unread: true,
+        avatarUrl: null, // We can use a special icon
+        appointmentDate: DateTime.now(),
+      ),
+    );
+
     try {
       final appointments = context.read<PatientProvider>().appointments;
-      return appointments
-          .where((apt) => ['confirmed', 'completed', 'verified'].contains(apt.status.toLowerCase()))
-          .map((apt) => MessageModel(
-                id: apt.id,
-                name: apt.doctorName ?? 'Doctor',
-                lastMessage: 'Tap to chat',
-                time: DateFormat('h:mm a').format(apt.appointmentDateTime),
-                unread: false,
-                appointmentDate: apt.appointmentDateTime,
-              ))
+      final patientConvos = appointments
+          .where(
+            (apt) => [
+              'confirmed',
+              'completed',
+              'verified',
+            ].contains(apt.status.toLowerCase()),
+          )
+          .map(
+            (apt) => MessageModel(
+              id: apt.id,
+              name: apt.doctorName ?? 'Doctor',
+              lastMessage: 'Tap to chat',
+              time: DateFormat('h:mm a').format(apt.appointmentDateTime),
+              unread: false,
+              appointmentDate: apt.appointmentDateTime,
+            ),
+          )
           .toList();
-    } catch (_) {
-      return [];
-    }
+      list.addAll(patientConvos);
+    } catch (_) {}
+
+    return list;
   }
 
   MessageModel? _selectedMessage;
@@ -349,7 +374,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12B8A6).withOpacity(0.1),
+                    color: conversation.id == 'laablume_ai_assistant'
+                        ? const Color(0xFF111827)
+                        : const Color(0xFF12B8A6).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                     image: conversation.avatarUrl != null
                         ? DecorationImage(
@@ -359,9 +386,13 @@ class _ChatScreenState extends State<ChatScreen> {
                         : null,
                   ),
                   child: conversation.avatarUrl == null
-                      ? const Icon(
-                          Icons.person_rounded,
-                          color: Color(0xFF12B8A6),
+                      ? Icon(
+                          conversation.id == 'laablume_ai_assistant'
+                              ? Icons.auto_awesome_rounded
+                              : Icons.person_rounded,
+                          color: conversation.id == 'laablume_ai_assistant'
+                              ? const Color(0xFF12B8A6)
+                              : const Color(0xFF12B8A6),
                           size: 28,
                         )
                       : null,
@@ -482,8 +513,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       if (expiryIso != null) {
         try {
           final expiry = DateTime.parse(expiryIso).toLocal();
-          expiryLabel =
-              '${expiry.day}/${expiry.month}/${expiry.year}';
+          expiryLabel = '${expiry.day}/${expiry.month}/${expiry.year}';
         } catch (_) {}
       }
 
@@ -519,10 +549,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _scrollToBottom();
 
     try {
-      await _messageService.sendMessage({
-        'bookingId': widget.message.id,
-        'content': text,
-      });
+      if (widget.message.id == 'laablume_ai_assistant') {
+        final answer = await AIService().askHealthQuestion(text);
+        if (mounted) {
+          setState(() {
+            _messages.add({
+              'content': answer,
+              'isMe': false,
+              'timestamp': DateTime.now().toIso8601String(),
+            });
+          });
+          _scrollToBottom();
+        }
+      } else {
+        await _messageService.sendMessage({
+          'bookingId': widget.message.id,
+          'content': text,
+        });
+      }
     } catch (_) {
       // Message was optimistically added; silently fail or show a retry indicator
     } finally {
@@ -561,10 +605,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundColor: const Color(0xFF12B8A6).withOpacity(0.1),
-              child: const Icon(
-                Icons.person_rounded,
-                color: Color(0xFF12B8A6),
+              backgroundColor: widget.message.id == 'laablume_ai_assistant'
+                  ? const Color(0xFF111827)
+                  : const Color(0xFF12B8A6).withOpacity(0.1),
+              child: Icon(
+                widget.message.id == 'laablume_ai_assistant'
+                    ? Icons.auto_awesome_rounded
+                    : Icons.person_rounded,
+                color: const Color(0xFF12B8A6),
                 size: 20,
               ),
             ),
@@ -583,10 +631,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     ),
                   ),
                   Text(
-                    widget.message.isChatExpired || _isChatExpired ? 'Chat Expired' : 'Active',
+                    widget.message.id == 'laablume_ai_assistant'
+                        ? 'Always Online'
+                        : (widget.message.isChatExpired || _isChatExpired
+                              ? 'Chat Expired'
+                              : 'Active'),
                     style: GoogleFonts.poppins(
                       fontSize: 10,
-                      color: (widget.message.isChatExpired || _isChatExpired)
+                      color:
+                          (widget.message.id != 'laablume_ai_assistant' &&
+                              (widget.message.isChatExpired || _isChatExpired))
                           ? Colors.red
                           : const Color(0xFF12B8A6),
                       fontWeight: FontWeight.w600,
@@ -598,14 +652,20 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.videocam_rounded, color: Color(0xFF12B8A6)),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Starting video consultation...')),
-              );
-            },
-          ),
+          if (widget.message.id != 'laablume_ai_assistant')
+            IconButton(
+              icon: const Icon(
+                Icons.videocam_rounded,
+                color: Color(0xFF12B8A6),
+              ),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Starting video consultation...'),
+                  ),
+                );
+              },
+            ),
           const SizedBox(width: 8),
         ],
       ),
@@ -630,7 +690,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     padding: const EdgeInsets.all(24),
                     itemCount: _messages.length + 1, // +1 for the notice
                     itemBuilder: (context, index) {
-                      if (index == 0) {
+                      if (index == 0 &&
+                          widget.message.id != 'laablume_ai_assistant') {
                         return Container(
                           margin: const EdgeInsets.only(bottom: 24),
                           padding: const EdgeInsets.all(16),
@@ -638,13 +699,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                             color: const Color(0xFF12B8A6).withOpacity(0.08),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                                color:
-                                    const Color(0xFF12B8A6).withOpacity(0.2)),
+                              color: const Color(0xFF12B8A6).withOpacity(0.2),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.info_outline_rounded,
-                                  color: Color(0xFF12B8A6), size: 18),
+                              const Icon(
+                                Icons.info_outline_rounded,
+                                color: Color(0xFF12B8A6),
+                                size: 18,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
@@ -661,10 +725,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         );
                       }
 
+                      if (index == 0 &&
+                          widget.message.id == 'laablume_ai_assistant') {
+                        return const SizedBox.shrink();
+                      }
+
                       final msg = _messages[index - 1];
                       final isMe =
                           msg['isMe'] as bool? ?? msg['sender'] == 'patient';
-                      final content = msg['content'] as String? ??
+                      final content =
+                          msg['content'] as String? ??
                           msg['message'] as String? ??
                           '';
                       final time = msg['timestamp'] != null

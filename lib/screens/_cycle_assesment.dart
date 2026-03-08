@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider.dart';
 import '../providers/user_provider.dart';
-import 'package:laablume/screens/main_navigation_screen.dart';
+import 'main_navigation_screen.dart';
 
 class LifestyleInformationScreen extends StatefulWidget {
   const LifestyleInformationScreen({super.key});
@@ -39,13 +39,25 @@ class _LifestyleInformationScreenState
         patientProvider.user?.lifestyle ?? userProvider.currentUser?.lifestyle;
 
     if (localLifestyle != null) {
-      _selectedSmokingIndex = smokingOptions.indexOf(localLifestyle['smoking'] ?? 'No');
-      _selectedAlcoholIndex = alcoholOptions.indexOf(localLifestyle['alcohol'] ?? 'Occasionally');
-      _selectedActivityIndex = activityOptions.indexOf(localLifestyle['activityLevel'] ?? 'Moderate');
+      _selectedSmokingIndex = smokingOptions.indexOf(
+        localLifestyle['smoking'] ?? 'No',
+      );
+      _selectedAlcoholIndex = alcoholOptions.indexOf(
+        localLifestyle['alcohol'] ?? 'Occasionally',
+      );
+      _selectedActivityIndex = activityOptions.indexOf(
+        localLifestyle['activityLevel'] ?? 'Moderate',
+      );
     } else if (userLifestyle != null) {
-      _selectedSmokingIndex = smokingOptions.indexOf(userLifestyle.smoking ?? 'No');
-      _selectedAlcoholIndex = alcoholOptions.indexOf(userLifestyle.alcohol ?? 'Occasionally');
-      _selectedActivityIndex = activityOptions.indexOf(userLifestyle.activityLevel ?? 'Moderate');
+      _selectedSmokingIndex = smokingOptions.indexOf(
+        userLifestyle.smoking ?? 'No',
+      );
+      _selectedAlcoholIndex = alcoholOptions.indexOf(
+        userLifestyle.alcohol ?? 'Occasionally',
+      );
+      _selectedActivityIndex = activityOptions.indexOf(
+        userLifestyle.activityLevel ?? 'Moderate',
+      );
     }
 
     // Fallback for indexOf returning -1
@@ -66,10 +78,9 @@ class _LifestyleInformationScreenState
           onPressed: () => Navigator.pop(context),
         ),
         title: _buildProgressBar(4, 4),
-        centerTitle: true,
         actions: [
           TextButton(
-            onPressed: () => _completeOnboarding(context),
+            onPressed: () => _finishOnboarding(context),
             child: Text(
               'Skip',
               style: GoogleFonts.poppins(
@@ -162,7 +173,7 @@ class _LifestyleInformationScreenState
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () => _completeOnboarding(context),
+                  onPressed: () => _finishOnboarding(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF12B8A6),
                     shape: RoundedRectangleBorder(
@@ -171,7 +182,9 @@ class _LifestyleInformationScreenState
                     elevation: 0,
                   ),
                   child: Text(
-                    'Save & Complete',
+                    context.read<PatientProvider>().user?.isOnboarded == true
+                        ? 'Update Information'
+                        : 'Next',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -218,12 +231,13 @@ class _LifestyleInformationScreenState
     );
   }
 
-  Future<void> _completeOnboarding(BuildContext ctx) async {
+  Future<void> _finishOnboarding(BuildContext ctx) async {
     final smokingOptions = ['Yes', 'No', 'Occasionally'];
     final alcoholOptions = ['Yes', 'No', 'Occasionally'];
     final activityOptions = ['Light', 'Moderate', 'Very Active'];
 
     final provider = ctx.read<PatientProvider>();
+    final userProvider = ctx.read<UserProvider>();
 
     // Accumulate lifestyle data
     provider.updateOnboardingData({
@@ -234,22 +248,30 @@ class _LifestyleInformationScreenState
       },
     });
 
-    // Submit unified onboarding payload
-    // Strip phone/email if they haven't changed to avoid backend duplicate errors
-    final Map<String, dynamic> finalData = Map.from(provider.onboardingData);
-    if (finalData.containsKey('personalData')) {
-      final Map<String, dynamic> personalData =
-          Map.from(finalData['personalData']);
+    showDialog(
+      context: ctx,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
+      ),
+    );
 
-      // Normalize comparison (strip common prefix if needed)
-      String? currentMobile = provider.user?.mobileNumber ??
-          context.read<UserProvider>().currentUser?.mobileNumber;
-      String? currentEmail = provider.user?.email ??
-          context.read<UserProvider>().currentUser?.email;
+    // Prepare final data (mirroring logic from removed Insurance screen)
+    final Map<String, dynamic> finalData = Map.from(provider.onboardingData);
+
+    if (finalData.containsKey('personalData')) {
+      final Map<String, dynamic> personalData = Map.from(
+        finalData['personalData'],
+      );
+
+      String? currentMobile =
+          provider.user?.mobileNumber ?? userProvider.currentUser?.mobileNumber;
+      String? currentEmail =
+          provider.user?.email ?? userProvider.currentUser?.email;
 
       String submittedPhone = personalData['phone']?.toString() ?? '';
-      // Simple heuristic for +91 stripping/matching
-      bool isPhoneDuplicate = submittedPhone.isNotEmpty &&
+      bool isPhoneDuplicate =
+          submittedPhone.isNotEmpty &&
           (currentMobile == submittedPhone ||
               currentMobile == '+91$submittedPhone' ||
               (currentMobile?.startsWith('+91') == true &&
@@ -269,38 +291,29 @@ class _LifestyleInformationScreenState
     final success = await provider.completeOnboarding(finalData);
 
     if (!mounted) return;
+    Navigator.pop(ctx); // Remove loading
 
     if (success) {
       provider.clearOnboardingData();
-      
-      // Update global user provider to reflect onboarding status
-      if (mounted) {
-        final user = provider.user;
-        if (user != null) {
-          context.read<UserProvider>().setCurrentUser(user);
-        }
+      final user = provider.user;
+      if (user != null) {
+        userProvider.setCurrentUser(user);
       }
-      
-      _showSnackBar('Onboarding complete! Welcome aboard 🎉');
-      await Future.delayed(const Duration(milliseconds: 600));
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-          (route) => false,
-        );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Failed to save your profile. Please try again.'),
-          backgroundColor: Colors.red.shade600,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text('Onboarding complete! Welcome 🎉'),
+          backgroundColor: Color(0xFF12B8A6),
         ),
       );
+
+      Navigator.pushAndRemoveUntil(
+        ctx,
+        MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+        (route) => false,
+      );
+    } else {
+      _showSnackBar('Failed to complete onboarding. Please try again.');
     }
   }
 

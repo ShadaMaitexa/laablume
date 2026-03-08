@@ -150,9 +150,7 @@ class ReportDetailScreen extends StatelessWidget {
                       const Spacer(),
                       _headerStat(
                         'Status',
-                        (report.shouldShowReport)
-                            ? 'Normal'
-                            : 'Processing',
+                        (report.shouldShowReport) ? 'Normal' : 'Processing',
                       ),
                     ],
                   ),
@@ -167,7 +165,7 @@ class ReportDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _statusCard(
               status: (report.shouldShowReport)
-                  ? 'Good Health Condition'
+                  ? (report.aiAnalysis?['summary'] ?? 'Good Health Condition')
                   : 'Processing Analysis',
               color: (report.shouldShowReport)
                   ? const Color(0xFF10B981)
@@ -176,7 +174,8 @@ class ReportDetailScreen extends StatelessWidget {
                   ? Icons.verified_rounded
                   : Icons.sync_rounded,
               description: (report.shouldShowReport)
-                  ? 'Great! All your diagnostic parameters are within the standard medical reference ranges.'
+                  ? (report.aiAnalysis?['summary'] ??
+                        'Great! All your diagnostic parameters are within the standard medical reference ranges.')
                   : 'We are currently processing your report tokens. AI analysis will be available shortly.',
             ),
 
@@ -185,29 +184,41 @@ class ReportDetailScreen extends StatelessWidget {
             // Test Parameters
             _sectionTitle('Detailed Findings'),
             const SizedBox(height: 16),
-            _parameterCard(
-              name: 'Hemoglobin',
-              value: '14.2',
-              unit: 'g/dL',
-              normalRange: '13.0 - 17.0',
-              status: 'normal',
-            ),
-            const SizedBox(height: 12),
-            _parameterCard(
-              name: 'White Blood Cells',
-              value: '7.5',
-              unit: 'x10³/µL',
-              normalRange: '4.0 - 11.0',
-              status: 'normal',
-            ),
-            const SizedBox(height: 12),
-            _parameterCard(
-              name: 'Platelets',
-              value: '250',
-              unit: 'x10³/µL',
-              normalRange: '150 - 400',
-              status: 'normal',
-            ),
+            if (report.aiAnalysis != null &&
+                report.aiAnalysis!['findings'] != null)
+              ...((report.aiAnalysis!['findings'] as List)
+                  .map(
+                    (f) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _parameterCardSimple(f.toString()),
+                    ),
+                  )
+                  .toList())
+            else ...[
+              _parameterCard(
+                name: 'Hemoglobin',
+                value: '14.2',
+                unit: 'g/dL',
+                normalRange: '13.0 - 17.0',
+                status: 'normal',
+              ),
+              const SizedBox(height: 12),
+              _parameterCard(
+                name: 'White Blood Cells',
+                value: '7.5',
+                unit: 'x10³/µL',
+                normalRange: '4.0 - 11.0',
+                status: 'normal',
+              ),
+              const SizedBox(height: 12),
+              _parameterCard(
+                name: 'Platelets',
+                value: '250',
+                unit: 'x10³/µL',
+                normalRange: '150 - 400',
+                status: 'normal',
+              ),
+            ],
 
             const SizedBox(height: 32),
 
@@ -490,6 +501,8 @@ class ReportDetailScreen extends StatelessWidget {
   }
 
   Widget _recommendationsCard() {
+    final recommendations = report.aiAnalysis?['recommendations'] as List?;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -519,11 +532,19 @@ class ReportDetailScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _recommendationItem(
-            'Maintain your current diet and hydration levels',
-          ),
-          _recommendationItem('Stay active with at least 30 minutes of cardio'),
-          _recommendationItem('Schedule a routine checkup in 6 months'),
+          if (recommendations != null)
+            ...recommendations
+                .map((r) => _recommendationItem(r.toString()))
+                .toList()
+          else ...[
+            _recommendationItem(
+              'Maintain your current diet and hydration levels',
+            ),
+            _recommendationItem(
+              'Stay active with at least 30 minutes of cardio',
+            ),
+            _recommendationItem('Schedule a routine checkup in 6 months'),
+          ],
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(12),
@@ -532,13 +553,51 @@ class ReportDetailScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              'DISCLAIMER: This analysis is AI-generated for informative purposes only. Always consult a certified medical professional.',
+              report.aiAnalysis?['note'] ??
+                  'DISCLAIMER: This analysis is AI-generated for informative purposes only. Always consult a certified medical professional.',
               style: GoogleFonts.poppins(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF9CA3AF),
                 fontStyle: FontStyle.italic,
                 height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _parameterCardSimple(String text) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF111827).withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.analytics_outlined,
+            color: Color(0xFF12B8A6),
+            size: 18,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF374151),
               ),
             ),
           ),

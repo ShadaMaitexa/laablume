@@ -9,6 +9,7 @@ class Report {
   final String type; // lab_test or doctor_exam
   final String? image;
   final String? doctorName;
+  final Map<String, dynamic>? aiAnalysis;
 
   Report({
     required this.id,
@@ -21,6 +22,7 @@ class Report {
     required this.type,
     this.image,
     this.doctorName,
+    this.aiAnalysis,
   });
 
   factory Report.fromJson(Map<String, dynamic> json) {
@@ -39,6 +41,7 @@ class Report {
       type: json['type'] ?? 'lab_test',
       image: json['image'],
       doctorName: json['doctorName'],
+      aiAnalysis: json['aiAnalysis'],
     );
   }
 
@@ -54,6 +57,7 @@ class Report {
       'type': type,
       'image': image,
       'doctorName': doctorName,
+      'aiAnalysis': aiAnalysis,
     };
   }
 
@@ -64,8 +68,7 @@ class Report {
       status.toLowerCase() == 'completed' ||
       status.toLowerCase() == 'verified';
 
-  bool get shouldShowUnderReview =>
-      reportUrl != null && !shouldShowReport;
+  bool get shouldShowUnderReview => reportUrl != null && !shouldShowReport;
 
   bool get shouldShowNothing => reportUrl == null;
 }

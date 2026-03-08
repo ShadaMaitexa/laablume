@@ -307,18 +307,34 @@ const submitFeedback = async (req, res) => {
 
         // Update entity rating
         let Model;
-        if (targetType === 'doctor') Model = Doctor;
-        if (targetType === 'lab') Model = Lab;
-        if (targetType === 'hospital') Model = Hospital;
+        if (targetType === 'doctor') {
+            const userDoc = await User.findById(targetId);
+            if (userDoc && userDoc.role === 'doctor') {
+                Model = User;
+            } else {
+                Model = Doctor;
+            }
+        } else if (targetType === 'lab') {
+            Model = Lab;
+        } else if (targetType === 'hospital') {
+            Model = Hospital;
+        }
 
         if (Model) {
             const reviews = await Review.find({ [targetType]: targetId });
             const avgRating = reviews.reduce((acc, item) => item.rating + acc, 0) / reviews.length;
 
-            await Model.findByIdAndUpdate(targetId, {
-                rating: avgRating,
-                reviewsCount: reviews.length
-            });
+            if (Model === User) {
+                await User.findByIdAndUpdate(targetId, {
+                    'doctorProfile.rating': avgRating,
+                    'doctorProfile.reviewsCount': reviews.length
+                });
+            } else {
+                await Model.findByIdAndUpdate(targetId, {
+                    rating: avgRating,
+                    reviewsCount: reviews.length
+                });
+            }
         }
 
         res.status(201).json(review);
@@ -416,7 +432,7 @@ const getAllReviews = async (req, res) => {
 // @access  Private (Patient)
 const updateHealthProfile = async (req, res) => {
     try {
-        const { personalData, emergencyContact, healthProfile, lifestyle } = req.body;
+        const { personalData, emergencyContact, healthProfile, lifestyle, insurance } = req.body;
         const user = await User.findById(req.user.id);
 
         if (!user) {
@@ -444,7 +460,8 @@ const updateHealthProfile = async (req, res) => {
                     },
                     emergencyContact: user.emergencyContact,
                     healthProfile: user.healthProfile,
-                    lifestyle: user.lifestyle
+                    lifestyle: user.lifestyle,
+                    insurance: user.insurance
                 }
             });
         }
@@ -491,6 +508,15 @@ const updateHealthProfile = async (req, res) => {
             user.lifestyle = { ...user.lifestyle, ...lifestyle };
         }
 
+        // 5. Insurance
+        if (insurance) {
+            user.insurance = {
+                ...user.insurance,
+                ...insurance,
+                policyExpiryDate: insurance.policyExpiryDate || user.insurance?.policyExpiryDate
+            };
+        }
+
         user.isHealthProfileComplete = true;
         await user.save();
 
@@ -511,7 +537,8 @@ const updateHealthProfile = async (req, res) => {
                 },
                 emergencyContact: user.emergencyContact,
                 healthProfile: user.healthProfile,
-                lifestyle: user.lifestyle
+                lifestyle: user.lifestyle,
+                insurance: user.insurance
             }
         });
     } catch (error) {

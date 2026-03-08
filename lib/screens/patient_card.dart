@@ -18,7 +18,6 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
 
   DateTime? selectedDate;
 
-
   // Text editing controllers for input fields
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
@@ -32,9 +31,11 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     super.initState();
     final user = context.read<UserProvider>().currentUser;
     if (user != null) {
-      firstNameController.text = user.firstName ??
+      firstNameController.text =
+          user.firstName ??
           (user.name.isNotEmpty ? user.name.split(' ')[0] : '');
-      lastNameController.text = user.lastName ??
+      lastNameController.text =
+          user.lastName ??
           (user.name.contains(' ')
               ? user.name.split(' ').sublist(1).join(' ')
               : '');
@@ -368,7 +369,6 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     }
   }
 
-
   void _validateAndProceed() {
     if (firstNameController.text.trim().isEmpty) {
       _showSnackBar('Please enter your first name');
@@ -386,7 +386,10 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
       _showSnackBar('Please enter your phone number');
       return;
     }
-    final phoneDigits = phoneController.text.trim().replaceAll(RegExp(r'\D'), '');
+    final phoneDigits = phoneController.text.trim().replaceAll(
+      RegExp(r'\D'),
+      '',
+    );
     if (phoneDigits.length < 10) {
       _showSnackBar('Please enter a valid 10-digit phone number');
       return;

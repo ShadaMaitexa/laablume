@@ -31,12 +31,16 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
     super.initState();
     final patientProvider = context.read<PatientProvider>();
     final userProvider = context.read<UserProvider>();
-    
+
     // Check local onboarding state
-    final localHP = patientProvider.onboardingData['healthProfile'] as Map<String, dynamic>?;
-    
+    final localHP =
+        patientProvider.onboardingData['healthProfile']
+            as Map<String, dynamic>?;
+
     // Check backend state
-    final userHP = patientProvider.user?.healthProfile ?? userProvider.currentUser?.healthProfile;
+    final userHP =
+        patientProvider.user?.healthProfile ??
+        userProvider.currentUser?.healthProfile;
 
     if (localHP != null) {
       selectedBlood = localHP['bloodType'] ?? 'B';
@@ -45,7 +49,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
       chronicConditionsController.text = localHP['chronicConditions'] ?? '';
       heightController.text = localHP['height']?.toString() ?? '';
       weightController.text = localHP['weight']?.toString() ?? '';
-      
+
       final bp = localHP['bloodPressure'];
       if (bp != null) {
         systolicBPController.text = bp['systolic']?.toString() ?? '';
@@ -58,8 +62,10 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
       chronicConditionsController.text = userHP.chronicConditions ?? '';
       heightController.text = userHP.height?.toString() ?? '';
       weightController.text = userHP.weight?.toString() ?? '';
-      systolicBPController.text = userHP.bloodPressure?.systolic?.toString() ?? '';
-      diastolicBPController.text = userHP.bloodPressure?.diastolic?.toString() ?? '';
+      systolicBPController.text =
+          userHP.bloodPressure?.systolic?.toString() ?? '';
+      diastolicBPController.text =
+          userHP.bloodPressure?.diastolic?.toString() ?? '';
     }
   }
 
@@ -328,21 +334,25 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                           'bloodType': selectedBlood,
                           'rhFactor': selectedRh,
                           'allergies': allergiesController.text.trim(),
-                          'chronicConditions':
-                              chronicConditionsController.text.trim(),
+                          'chronicConditions': chronicConditionsController.text
+                              .trim(),
                           'height':
                               double.tryParse(heightController.text.trim()) ??
-                                  0,
+                              0,
                           'weight':
                               double.tryParse(weightController.text.trim()) ??
-                                  0,
+                              0,
                           'bloodPressure': {
                             'systolic':
-                                int.tryParse(systolicBPController.text.trim()) ??
-                                    0,
+                                int.tryParse(
+                                  systolicBPController.text.trim(),
+                                ) ??
+                                0,
                             'diastolic':
-                                int.tryParse(diastolicBPController.text.trim()) ??
-                                    0,
+                                int.tryParse(
+                                  diastolicBPController.text.trim(),
+                                ) ??
+                                0,
                           },
                         },
                       };
@@ -356,8 +366,9 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                         if (success) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content:
-                                  Text('Health profile updated successfully'),
+                              content: Text(
+                                'Health profile updated successfully',
+                              ),
                               backgroundColor: Colors.green,
                             ),
                           );
@@ -365,8 +376,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content:
-                                  Text('Failed to update health profile'),
+                              content: Text('Failed to update health profile'),
                               backgroundColor: Colors.red,
                             ),
                           );

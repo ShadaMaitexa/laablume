@@ -29,12 +29,16 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
     super.initState();
     final patientProvider = context.read<PatientProvider>();
     final userProvider = context.read<UserProvider>();
-    
+
     // First priority: Local onboarding data (partial save during session)
-    final localEC = patientProvider.onboardingData['emergencyContact'] as Map<String, dynamic>?;
-    
+    final localEC =
+        patientProvider.onboardingData['emergencyContact']
+            as Map<String, dynamic>?;
+
     // Second priority: Backend data
-    final userEC = patientProvider.user?.emergencyContact ?? userProvider.currentUser?.emergencyContact;
+    final userEC =
+        patientProvider.user?.emergencyContact ??
+        userProvider.currentUser?.emergencyContact;
 
     if (localEC != null) {
       firstNameController.text = localEC['firstName'] ?? '';
@@ -86,7 +90,10 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
       _showSnackBar('Please enter emergency contact\'s phone number');
       return;
     }
-    final phoneDigits = phoneController.text.trim().replaceAll(RegExp(r'\D'), '');
+    final phoneDigits = phoneController.text.trim().replaceAll(
+      RegExp(r'\D'),
+      '',
+    );
     if (phoneDigits.length < 10) {
       _showSnackBar('Please enter a valid 10-digit phone number');
       return;
@@ -276,8 +283,9 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                         if (success) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content:
-                                  Text('Emergency contact updated successfully'),
+                              content: Text(
+                                'Emergency contact updated successfully',
+                              ),
                               backgroundColor: Colors.green,
                             ),
                           );
@@ -285,8 +293,9 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content:
-                                  Text('Failed to update emergency contact'),
+                              content: Text(
+                                'Failed to update emergency contact',
+                              ),
                               backgroundColor: Colors.red,
                             ),
                           );

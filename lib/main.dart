@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'screens/common/splash_screen.dart';
 import 'providers/patient_provider.dart';
 import 'providers/user_provider.dart';
+import 'screens/reports/report_detail_screen.dart';
+import 'models/report_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +38,15 @@ class LabLumeApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF12B8A6)),
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
+      onGenerateRoute: (settings) {
+        if (settings.name == '/report-detail') {
+          final report = settings.arguments as Report;
+          return MaterialPageRoute(
+            builder: (context) => ReportDetailScreen(report: report),
+          );
+        }
+        return null;
+      },
       home: const SplashScreen(),
     );
   }

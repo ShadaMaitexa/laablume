@@ -6,7 +6,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:laablume/services/ai_service.dart';
 import 'package:provider/provider.dart';
-import '../../providers/patient_provider.dart';
+import 'package:laablume/providers/patient_provider.dart';
+import 'package:laablume/models/report_model.dart';
+import 'package:laablume/screens/chat_screen.dart';
+import 'package:laablume/screens/reports/report_detail_screen.dart';
 
 class UploadReportScreen extends StatefulWidget {
   final String? bookingId;
@@ -20,9 +23,9 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
   Uint8List? _selectedFileBytes;
   String? _selectedFileName;
   String? _selectedFilePath; // Still used on mobile if available
-  bool _isUploading = false;
   bool _isAnalyzing = false;
   String? _aiAnalysis;
+  Map<String, dynamic>? _rawAnalysis;
 
   Future<void> _uploadAndAnalyze() async {
     if (_selectedFileBytes == null && _selectedFilePath == null) {
@@ -35,29 +38,30 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
     });
 
     try {
-      // Try to upload to backend
-      if (widget.bookingId != null) {
-        try {
-          await context.read<PatientProvider>().uploadReport(
-                widget.bookingId!,
-                _selectedFilePath,
-                bytes: _selectedFileBytes,
-                filename: _selectedFileName,
-              );
-        } catch (e) {
-          debugPrint('Backend upload failed: $e');
-        }
-      }
-
-      // Perform AI Analysis via Groq
+      // 1. Perform AI Analysis via Groq/Backend
       final analysis = await AIService().analyzeLabReport(
         filePath: _selectedFilePath,
         bytes: _selectedFileBytes,
         filename: _selectedFileName,
       );
 
+      // 2. Try to upload to backend if bookingId is present
+      if (widget.bookingId != null) {
+        try {
+          await context.read<PatientProvider>().uploadReport(
+            widget.bookingId!,
+            _selectedFilePath,
+            bytes: _selectedFileBytes,
+            filename: _selectedFileName,
+          );
+        } catch (e) {
+          debugPrint('Backend upload failed: $e');
+        }
+      }
+
       setState(() {
         _isAnalyzing = false;
+        _rawAnalysis = analysis;
         _aiAnalysis =
             '**Summary:** ${analysis['summary'] ?? 'Analysis complete.'}\n\n'
             '**Key Findings:**\n'
@@ -70,7 +74,6 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
       _showSnackBar('AI analysis complete!');
     } catch (e) {
       setState(() {
-        _isUploading = false;
         _isAnalyzing = false;
       });
       _showSnackBar('Analysis failed: $e');
@@ -343,9 +346,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                   ],
                 ),
                 child: ElevatedButton(
-                  onPressed: _isAnalyzing
-                      ? null
-                      : _uploadAndAnalyze,
+                  onPressed: _isAnalyzing ? null : _uploadAndAnalyze,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF12B8A6),
                     shape: RoundedRectangleBorder(
@@ -440,8 +441,54 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
               Container(
                 width: double.infinity,
                 height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final report = Report(
+                      id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+                      title: _selectedFileName ?? 'Lab Report Analysis',
+                      category: 'Analysis',
+                      date: DateTime.now(),
+                      status: 'Completed',
+                      type: 'lab_test',
+                      aiAnalysis: _rawAnalysis,
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ReportDetailScreen(report: report),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF12B8A6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    'View Detailed Analysis',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                height: 56,
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ChatScreen(),
+                      ),
+                    );
+                  },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF12B8A6), width: 2),
                     shape: RoundedRectangleBorder(
@@ -449,7 +496,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
                     ),
                   ),
                   child: Text(
-                    'Consult a Doctor',
+                    'Consult a Specialist',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,

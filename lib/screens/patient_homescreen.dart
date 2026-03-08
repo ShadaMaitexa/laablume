@@ -366,22 +366,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             _sectionHeader('Quick Services'),
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SearchDoctorsScreen()),
-                );
-              },
-              child: Text(
-                'View all',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF12B8A6),
-                ),
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -585,22 +569,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _sectionHeader('Popular Hospitals'),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SearchHospitalsScreen()),
-                );
-              },
-              child: Text(
-                'View All',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF12B8A6),
-                ),
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 16),
