@@ -219,6 +219,19 @@ class PatientService extends ApiBaseService {
     return response['slots'] ?? response['data'] ?? [];
   }
 
+  // Get full shared doctor profile (Profile Sharing)
+  Future<Map<String, dynamic>> getDoctorDetails(String doctorId) async {
+    // Note: The base path for this endpoint is usually /api according to docs, but ApiBaseService adds /api automatically
+    final response = await get('/doctors/$doctorId/details');
+    return response['doctor'] ?? response['data'] ?? {};
+  }
+
+  // History of all reviews the patient has posted
+  Future<List<dynamic>> getMyReviews() async {
+    final response = await get('/patients/feedback/my');
+    return response['reviews'] ?? response['data'] ?? [];
+  }
+
   // Upload profile image
   Future<Map<String, dynamic>> uploadProfileImage(
     String? filePath, {

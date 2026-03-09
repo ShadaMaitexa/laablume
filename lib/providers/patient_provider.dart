@@ -391,6 +391,47 @@ class PatientProvider with ChangeNotifier {
     }
   }
 
+  // Real-time (lively) updates for doctor slots
+  Stream<List<dynamic>> watchDoctorSlots(
+    String doctorId, {
+    String? date,
+  }) async* {
+    while (true) {
+      try {
+        final slots = await _patientService.getDoctorSlots(
+          doctorId,
+          date: date,
+        );
+        yield slots;
+      } catch (e) {
+        debugPrint("Error watching doctor slots: $e");
+        yield [];
+      }
+      // Poll every 5 seconds for "lively" updates
+      await Future.delayed(const Duration(seconds: 5));
+    }
+  }
+
+  // Profile Sharing functionality (Doctor Details)
+  Future<Map<String, dynamic>> getDoctorDetails(String doctorId) async {
+    try {
+      return await _patientService.getDoctorDetails(doctorId);
+    } catch (e) {
+      debugPrint("Error getting doctor details: $e");
+      return {};
+    }
+  }
+
+  // Patient's review history
+  Future<List<dynamic>> getMyReviews() async {
+    try {
+      return await _patientService.getMyReviews();
+    } catch (e) {
+      debugPrint("Error getting my reviews: $e");
+      return [];
+    }
+  }
+
   Future<List<dynamic>> searchLabs({String? city}) async {
     try {
       return await _patientService.searchLabs(city: city);

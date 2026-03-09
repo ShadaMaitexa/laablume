@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/report_model.dart';
 import '../chat_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ReportDetailScreen extends StatelessWidget {
   final Report report;
@@ -44,17 +45,21 @@ class ReportDetailScreen extends StatelessWidget {
           }),
           const SizedBox(width: 8),
           _iconButton(Icons.download_rounded, () async {
+            if (report.reportUrl != null && report.reportUrl!.isNotEmpty) {
+              final uri = Uri.tryParse(report.reportUrl!);
+              if (uri != null) {
+                try {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  return;
+                } catch (e) {
+                  // Fallback to error snackbar
+                }
+              }
+            }
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Preparing your secure download...'),
-                duration: Duration(seconds: 1),
-              ),
-            );
-            await Future.delayed(const Duration(seconds: 2));
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Report downloaded successfully to /Downloads'),
-                backgroundColor: Color(0xFF10B981),
+                content: Text('Report document is not available for download.'),
+                backgroundColor: Color(0xFFF59E0B),
               ),
             );
           }),

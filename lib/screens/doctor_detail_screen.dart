@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../providers/patient_provider.dart';
 import 'common/feedback_screen.dart';
 import 'payment_screen.dart';
@@ -15,24 +16,15 @@ class DoctorDetailScreen extends StatefulWidget {
 }
 
 class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
-  List<dynamic> _slots = [];
-  bool _isLoadingSlots = true;
+  Stream<List<dynamic>>? _slotsStream;
   String? _selectedSlot;
 
   @override
   void initState() {
     super.initState();
-    _fetchSlots();
-  }
-
-  Future<void> _fetchSlots() async {
-    setState(() => _isLoadingSlots = true);
     final provider = context.read<PatientProvider>();
-    final results = await provider.getDoctorSlots(widget.doctor['id'] ?? widget.doctor['_id'] ?? '');
-    setState(() {
-      _slots = results;
-      _isLoadingSlots = false;
-    });
+    final docId = widget.doctor['id'] ?? widget.doctor['_id'] ?? '';
+    _slotsStream = provider.watchDoctorSlots(docId);
   }
 
   @override
@@ -50,9 +42,25 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.black,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share_rounded, color: Colors.black),
+            onPressed: () {
+              final docId = widget.doctor['id'] ?? widget.doctor['_id'] ?? '';
+              Share.share(
+                'Check out this doctor on Labloom: ${widget.doctor['name']}.\n'
+                'Profile: https://labloom.onrender.com/api/doctors/$docId/details',
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -63,11 +71,19 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
             const SizedBox(height: 32),
             _buildSectionHeader('Available Slots'),
             const SizedBox(height: 16),
-            _isLoadingSlots
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF12B8A6)))
-                : _slots.isEmpty
-                    ? _buildEmptySlots()
-                    : _buildSlotsGrid(),
+            StreamBuilder<List<dynamic>>(
+              stream: _slotsStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF12B8A6)),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return _buildEmptySlots();
+                }
+                return _buildSlotsGrid(snapshot.data!);
+              },
+            ),
             const SizedBox(height: 32),
             _buildActionButtons(),
             const SizedBox(height: 40),
@@ -96,7 +112,11 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
           CircleAvatar(
             radius: 50,
             backgroundColor: const Color(0xFFEAF8F6),
-            child: const Icon(Icons.person_rounded, size: 50, color: Color(0xFF12B8A6)),
+            child: const Icon(
+              Icons.person_rounded,
+              size: 50,
+              color: Color(0xFF12B8A6),
+            ),
           ),
           const SizedBox(height: 16),
           Text(
@@ -109,15 +129,30 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
           ),
           Text(
             widget.doctor['specialty'] ?? 'Specialty',
-            style: GoogleFonts.poppins(fontSize: 16, color: const Color(0xFF6B7280)),
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: const Color(0xFF6B7280),
+            ),
           ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildStatColumn('Experience', '${widget.doctor['experience'] ?? 5}+ Yrs', Icons.work_outline_rounded),
-              _buildStatColumn('Patients', '${widget.doctor['patients'] ?? '1K'}+', Icons.people_outline_rounded),
-              _buildStatColumn('Rating', (widget.doctor['rating'] ?? 4.8).toString(), Icons.star_outline_rounded),
+              _buildStatColumn(
+                'Experience',
+                '${widget.doctor['experience'] ?? 5}+ Yrs',
+                Icons.work_outline_rounded,
+              ),
+              _buildStatColumn(
+                'Patients',
+                '${widget.doctor['patients'] ?? '1K'}+',
+                Icons.people_outline_rounded,
+              ),
+              _buildStatColumn(
+                'Rating',
+                (widget.doctor['rating'] ?? 4.8).toString(),
+                Icons.star_outline_rounded,
+              ),
             ],
           ),
         ],
@@ -147,7 +182,10 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
         ),
         Text(
           label,
-          style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280)),
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: const Color(0xFF6B7280),
+          ),
         ),
       ],
     );
@@ -185,7 +223,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
     );
   }
 
-  Widget _buildSlotsGrid() {
+  Widget _buildSlotsGrid(List<dynamic> slots) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -195,9 +233,9 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
         mainAxisSpacing: 12,
         childAspectRatio: 2.2,
       ),
-      itemCount: _slots.length,
+      itemCount: slots.length,
       itemBuilder: (context, index) {
-        final slot = _slots[index].toString();
+        final slot = slots[index].toString();
         final isSelected = _selectedSlot == slot;
         return GestureDetector(
           onTap: () => setState(() => _selectedSlot = slot),
@@ -206,7 +244,9 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
               color: isSelected ? const Color(0xFF12B8A6) : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isSelected ? const Color(0xFF12B8A6) : const Color(0xFFE5E7EB),
+                color: isSelected
+                    ? const Color(0xFF12B8A6)
+                    : const Color(0xFFE5E7EB),
               ),
             ),
             alignment: Alignment.center,
@@ -234,7 +274,9 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
             onPressed: _selectedSlot == null ? null : _bookAppointment,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF12B8A6),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               elevation: 0,
               disabledBackgroundColor: Colors.grey[300],
             ),
@@ -267,7 +309,9 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
             },
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: Color(0xFF12B8A6)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
             child: Text(
               'Submit Review',
