@@ -18,13 +18,22 @@ class DoctorDetailScreen extends StatefulWidget {
 class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
   Stream<List<dynamic>>? _slotsStream;
   String? _selectedSlot;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
+    _updateSlotsStream();
+  }
+
+  void _updateSlotsStream() {
     final provider = context.read<PatientProvider>();
     final docId = widget.doctor['id'] ?? widget.doctor['_id'] ?? '';
-    _slotsStream = provider.watchDoctorSlots(docId);
+    final String dateStr = _selectedDate.toIso8601String().split('T')[0];
+    setState(() {
+      _slotsStream = provider.watchDoctorSlots(docId, date: dateStr);
+      _selectedSlot = null;
+    });
   }
 
   @override
@@ -68,6 +77,10 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildDoctorHeader(),
+            const SizedBox(height: 32),
+            _buildSectionHeader('Select Date'),
+            const SizedBox(height: 16),
+            _buildDateSelector(),
             const SizedBox(height: 32),
             _buildSectionHeader('Available Slots'),
             const SizedBox(height: 16),
@@ -202,6 +215,79 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
     );
   }
 
+  Widget _buildDateSelector() {
+    return SizedBox(
+      height: 80,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 14, // Show next 14 days
+        itemBuilder: (context, index) {
+          final date = DateTime.now().add(Duration(days: index));
+          final isSelected =
+              date.year == _selectedDate.year &&
+              date.month == _selectedDate.month &&
+              date.day == _selectedDate.day;
+
+          final dayName = [
+            'Mon',
+            'Tue',
+            'Wed',
+            'Thu',
+            'Fri',
+            'Sat',
+            'Sun',
+          ][date.weekday - 1];
+
+          return GestureDetector(
+            onTap: () {
+              _selectedDate = date;
+              _updateSlotsStream();
+            },
+            child: Container(
+              width: 65,
+              margin: const EdgeInsets.only(right: 12),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF12B8A6) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected
+                      ? const Color(0xFF12B8A6)
+                      : const Color(0xFFE5E7EB),
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    dayName,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected
+                          ? Colors.white70
+                          : const Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${date.day}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF111827),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildEmptySlots() {
     return Container(
       padding: const EdgeInsets.all(40),
@@ -215,7 +301,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
           Icon(Icons.event_busy_rounded, size: 48, color: Colors.grey[300]),
           const SizedBox(height: 16),
           Text(
-            'No slots available for today',
+            'No slots available on this date.',
             style: GoogleFonts.poppins(color: const Color(0xFF6B7280)),
           ),
         ],
@@ -339,7 +425,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
           bookingData: {
             'doctorId': widget.doctor['id'] ?? widget.doctor['_id'],
             'slot': _selectedSlot,
-            'date': DateTime.now().toIso8601String().split('T')[0],
+            'date': _selectedDate.toIso8601String().split('T')[0],
           },
         ),
       ),
